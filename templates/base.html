@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords"
+        content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 5 admin, bootstrap 5, css3 dashboard, bootstrap 5 dashboard, Monsterlite admin bootstrap 5 dashboard, frontend, responsive bootstrap 5 admin template, Monster admin lite design, Monster admin lite dashboard bootstrap 5 dashboard template">
+    <meta name="description"
+        content="Monster Lite is powerful and clean admin dashboard template, inpired from Bootstrap Framework">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Classroom Management System</title>
+    <link rel="canonical" href="https://www.wrappixel.com/templates/monster-admin-lite/" />
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/images/training_15.png">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename="assets/plugins/chartist/dist/chartist.min.css") }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.min.css') }}" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<style>
+    /* Make all cards equal height */
+  .card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+  }
+  
+  /* Make the image fixed height and crop excess */
+  .card-img-top {
+      height: 180px;
+      width: 100%;
+      object-fit: cover;
+  }
+  
+  /* Prevent overflow in the card-body */
+  .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+  }
+  
+  /* Ellipsis for overflow text */
+  .card-body h3,
+  .card-body ul li {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+  }
+  
+  
+  /* Fix dropdown clipping if not already fixed */
+  .navbar-collapse {
+      overflow: visible !important;
+  }
+  
+  
+  /* Force Bootstrap dropdown to show even with Monster theme overrides */
+  .dropdown-menu {
+      display: none !important;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.2s ease-in-out;
+      z-index: 99999 !important;
+  }
+  
+  .dropdown-menu.show {
+      display: block !important;
+      opacity: 1;
+      visibility: visible;
+  }
+  
+  /* Fix Monster Admin cutting off dropdowns */
+  .topbar .navbar-collapse {
+      overflow: visible !important;
+  }
+  
+  .navbar-collapse {
+      overflow: visible !important;
+  }
+  .dropdown-menu {
+      z-index: 99999 !important;
+  }
+
+  /* Dropdown items text color */
+.navbar .dropdown-menu .dropdown-item {
+    color: #fff !important;
+}
+
+/* Dropdown items hover effect */
+.navbar .dropdown-menu .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff !important;
+}
+  
+  /* Fixed Navbar Profile Pic */
+  .navbar .dropdown-toggle img.profile-pic {
+      width: 48px !important;        /* fixed width */
+      height: 48px !important;       /* fixed height */
+      border-radius: 50% !important;/* perfect circle */
+      object-fit: cover !important;  /* fill circle, crop excess */
+      flex-shrink: 0 !important;     /* don't let flex resize */
+      display: block !important;     /* avoid flex distortion */
+      max-width: none !important;    /* override Bootstrap */
+      max-height: none !important;   /* override Bootstrap */
+  }
+  
+  .navbar .dropdown-toggle {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px;
+      min-height: 60px;  /* match image height */
+  }
+
+  /* bg color & text color the dropdown  */
+  /* Dropdown menu with gradient background */
+.navbar .dropdown-menu {
+    background: linear-gradient(135deg, #72bde8, #4684ba) !important; /* gradient */
+    min-width: 220px !important;           /* slightly bigger width */
+    border-radius: 0.5rem;                 /* optional: rounded corners */
+    padding: 0.5rem 0;                     /* vertical padding */
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); /* subtle shadow */
+}
+
+/* Dropdown items text color */
+.navbar .dropdown-menu .dropdown-item {
+    color: #fff !important;               /* white text */
+    padding: 0.5rem 1.25rem;             /* padding for nicer spacing */
+    font-weight: 500;                     /* slightly bolder */
+}
+
+/* Hover effect for dropdown items */
+.navbar .dropdown-menu .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important; /* semi-transparent highlight */
+    color: #fff !important;
+}
+
+/* Divider color */
+.navbar .dropdown-menu .dropdown-divider {
+    border-top: 1px solid rgba(255,255,255,0.3);
+    margin: 0.25rem 0;
+}
+
+/* FIX: Add spacing between all dashboard rows */
+.container-fluid .row {
+    margin-bottom: 25px !important;
+}
+
+
+</style>
+</head>
+
+<body>
+    <!-- ============================================================== -->
+    <!-- Preloader - style you can find in spinners.css -->
+    <!-- ============================================================== -->
+    <div class="preloader">
+        <div class="lds-ripple">
+            <div class="lds-pos"></div>
+            <div class="lds-pos"></div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- Main wrapper - style you can find in pages.scss -->
+    <!-- ============================================================== -->
+    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+        data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full">
+        <!-- ============================================================== -->
+        <!-- Topbar header - style you can find in pages.scss -->
+        <!-- ============================================================== -->
+        <header class="topbar" data-navbarbg="skin6">
+            <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+                <div class="navbar-header" data-logobg="skin6">
+                    <!-- ============================================================== -->
+                    <!-- Logo -->
+                    <!-- ============================================================== -->
+                    <a class="navbar-brand" href="index.html">
+                        <!-- Logo icon -->
+                        <b class="logo-icon">
+                            <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
+                            <!-- Dark Logo icon -->
+                            <img src="./assets/images/training_32.png" alt="homepage" class="dark-logo" />
+
+                        </b>
+                        <!--End Logo icon -->
+                        <!-- Logo text -->
+                        <span class="logo-text">
+                            <!-- dark Logo text -->
+                            <!-- <img src="./assets/images/logo-text.png" alt="homepage" class="dark-logo" /> -->
+                            Omi's Class
+                        </span>
+                    </a>
+                    <!-- ============================================================== -->
+                    <!-- End Logo -->
+                    <!-- ============================================================== -->
+                    <!-- ============================================================== -->
+                    <!-- toggle and nav items -->
+                    <!-- ============================================================== -->
+                    <a class="nav-toggler waves-effect waves-light text-dark d-block d-md-none"
+                        href="javascript:void(0)"><i class="ti-menu ti-close"></i></a>
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Logo -->
+                <!-- ============================================================== -->
+                <div class="navbar-collapse collapse" id="navbarSupportedContent" data-navbarbg="skin5">
+
+                    <!-- ============================================================== -->
+                    <!-- toggle and nav items -->
+                    <!-- ============================================================== -->
+                    <ul class="navbar-nav me-auto mt-md-0 ">
+                        <!-- ============================================================== -->
+                        <!-- Search -->
+                        <!-- ============================================================== -->
+
+                        <li class="nav-item hidden-sm-down">
+                            <form class="app-search ps-3">
+                                <input type="text" class="form-control" placeholder="Search for..."> <a
+                                    class="srh-btn"><i class="ti-search"></i></a>
+                            </form>
+                        </li>
+                    </ul>
+
+                    <!-- ============================================================== -->
+                    <!-- Right side toggle and nav items -->
+                    <!-- ============================================================== -->
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                          <a class="nav-link dropdown-toggle d-flex align-items-center"
+                             href="#"
+                             id="navbarDropdown"
+                             role="button"
+                             data-bs-toggle="dropdown"
+                             aria-expanded="false">
+                            <img src="{{ url_for('static', filename='assets/images/profile_photos/profile_1.jpg') }}"
+                                 alt="user"
+                                 class="profile-pic me-2"
+                                 
+                                 />
+                      
+                            <span>Bwalya Chanda</span>
+                          </a>
+                      
+                          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                      
+                            <li>
+                              <a class="dropdown-item d-flex align-items-center" href="#">
+                                <i class="fa fa-user me-3"></i> Profile
+                              </a>
+                            </li>
+                      
+                            <li>
+                              <a class="dropdown-item d-flex align-items-center" href="#">
+                                <i class="fa fa-cog me-3"></i> Settings
+                              </a>
+                            </li>
+                      
+                            <li><hr class="dropdown-divider"></li>
+                      
+                            <li>
+                              <a class="dropdown-item d-flex align-items-center text-danger" href="#">
+                                <i class="fas fa-sign-out-alt me-3"></i> Logout
+                              </a>
+                            </li>
+                      
+                          </ul>
+                        </li>
+                      </ul>
+                      
+                </div>
+            </nav>
+        </header>
+        <!-- ============================================================== -->
+        <!-- End Topbar header -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Left Sidebar - style you can find in sidebar.scss  -->
+        <!-- ============================================================== -->
+        <aside class="left-sidebar" data-sidebarbg="skin6">
+            <!-- Sidebar scroll-->
+            <div class="scroll-sidebar">
+                <!-- Sidebar navigation-->
+                <nav class="sidebar-nav">
+                    <ul id="sidebarnav">
+                        <!-- Dashboard -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link" href="index.html" aria-expanded="false">
+                                <i class="me-3 far fa-clock fa-fw" aria-hidden="true"></i>
+                                <span class="hide-menu">Dashboard</span>
+                            </a>
+                        </li>
+                
+                        <!-- Attendance -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="attendance.html" aria-expanded="false">
+                                <i class="me-3 fa fa-check-square" aria-hidden="true"></i>
+                                <span class="hide-menu">Attendance</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_attendance') }}" class="sidebar-link">
+                                        <span class="hide-menu">Create Attendance</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_attendance') }}" class="sidebar-link">
+                                        <span class="hide-menu">View All Attendance</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                
+                        <!-- Grades -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
+                                <i class="me-3 fa fa-graduation-cap" aria-hidden="true"></i>
+                                <span class="hide-menu">Grades</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_grade') }}" class="sidebar-link"><span class="hide-menu">Create Grade</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_grade') }}" class="sidebar-link"><span class="hide-menu">View All Grades</span></a>
+                                </li>
+                            </ul>
+                        </li>
+                
+                        <!-- Assignments -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
+                                <i class="me-3 fa fa-tasks" aria-hidden="true"></i>
+                                <span class="hide-menu">Assignments</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_assignment') }}" class="sidebar-link"><span class="hide-menu">Create Assignment</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_assignment') }}" class="sidebar-link"><span class="hide-menu">View All Assignments</span></a>
+                                </li>
+                            </ul>
+                        </li>
+                
+                        <!-- Students Management -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
+                                <i class="me-3 fa fa-users" aria-hidden="true"></i>
+                                <span class="hide-menu">Students Management</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student') }}" class="sidebar-link"><span class="hide-menu">View Students</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_student') }}" class="sidebar-link"><span class="hide-menu">Add Student</span></a>
+                                </li>
+                            </ul>
+                        </li>
+                
+                        <!-- Profile -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link" href="pages-profile.html" aria-expanded="false">
+                                <i class="me-3 fa fa-user" aria-hidden="true"></i>
+                                <span class="hide-menu">Profile</span>
+                            </a>
+                        </li>
+                
+                        <!-- Settings -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link" href="settings.html" aria-expanded="false">
+                                <i class="me-3 fa fa-cog" aria-hidden="true"></i>
+                                <span class="hide-menu">Settings</span>
+                            </a>
+                        </li>
+                
+                        <!-- Logout -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link" href="logout.html" aria-expanded="false">
+                                <i class="me-3 fa fa-sign-out-alt" aria-hidden="true"></i>
+                                <span class="hide-menu">Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <!-- End Sidebar navigation -->
+            </div>
+            <!-- End Sidebar scroll-->
+        </aside>
+        <!-- ============================================================== -->
+        <!-- End Left Sidebar - style you can find in sidebar.scss  -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Page wrapper  -->
+        <!-- ============================================================== -->
+        <div class="page-wrapper">
+           
+            {% block content %}
+              
+            {% endblock content %}
+          
+
+
+	          <footer class="footer text-center">
+                © 2025 Classroom Management Dashbaord Created by <a href="https://www.naomiphiri.com/">Naomi Phiri</a> 
+            </footer>
+            <!-- ============================================================== -->
+            <!-- End footer -->
+            <!-- ============================================================== -->
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page wrapper  -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Wrapper -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+
+   
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+     <!-- custom chart -->
+    <script src="{{ url_for('static', filename='js/custom_chart.js') }}"></script>
+
+
+    <!-- custom flot -->
+    <!-- jQuery (required for Flot) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Flot.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.categories.min.js"></script>
+    <script src="{{ url_for('static', filename='js/custom_float.js') }}"></script>
+
+    
+
+
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="{{ url_for('static', filename='assets/plugins/jquery/dist/jquery.min.js') }}"></script>
+    <!-- Bootstrap tether Core JavaScript -->
+    <script src="{{ url_for('static', filename='assets/plugins/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app-style-switcher.js') }}"></script>
+    <!--Wave Effects -->
+    <script src="{{ url_for('static', filename='js/waves.js') }}"></script>
+    <!--Menu sidebar -->
+    <script src="{{ url_for('static', filename='js/sidebarmenu.js') }}"></script>
+    <!--Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+    <!--This page JavaScript -->
+    <!--flot chart-->
+    <script src="{{ url_for('static', filename='assets/plugins/flot/jquery.flot.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/plugins/flot.tooltip/js/jquery.flot.tooltip.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pages/dashboards/dashboard1.js') }}"></script>
+
+    
+    
+</body>
+
+</html>

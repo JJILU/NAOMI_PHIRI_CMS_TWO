@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<h1>Assignments Links</h1>
+<li><a href="{{ url_for('dash.create_assignment') }}">Create Assignment</a></li>
+<li><a href="{{ url_for('dash.view_assignment') }}">View Assignment</a></li>
+<li><a href="{{ url_for('dash.update_assignment') }}">Update Assignment</a></li>
+<li><a href="{{ url_for('dash.delete_assignment') }}">Delete Assignment</a></li>
+
+<h1>Attendance Links</h1>
+<li><a href="{{ url_for('dash.create_attendance') }}">Create Attendance</a></li>
+<li><a href="{{ url_for('dash.view_attendance') }}">View Attendance</a></li>
+<li><a href="{{ url_for('dash.update_attendance') }}">Update Attendance</a></li>
+<li><a href="{{ url_for('dash.delete_attendance') }}">Delete Attendance</a></li>
+
+<h1>Grade Links</h1>
+<li><a href="{{ url_for('dash.create_grade') }}">Create Grade</a></li>
+<li><a href="{{ url_for('dash.view_grade') }}">View Grade</a></li>
+<li><a href="{{ url_for('dash.update_grade') }}">Update Grade</a></li>
+<li><a href="{{ url_for('dash.delete_grade') }}">Delete Grade</a></li>
+
+
+
+  
+{% endblock content %}
