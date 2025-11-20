@@ -17,7 +17,7 @@ from flask_login import login_user,logout_user
 @auth_bp.route("/register", methods=["GET", "POST"]) # type: ignore
 def register():
     if request.method == "GET":
-        return render_template('auth/index.html')
+        return render_template('auth/register.html')
     else:
         data = request.get_json()
         print("registered: ",data)
@@ -132,7 +132,7 @@ def register():
 @auth_bp.route("/", methods=["GET", "POST"]) # type: ignore
 def login():
     if request.method == "GET":
-        return render_template("auth/index.html")
+        return render_template("auth/login.html")
     else: 
         data = request.get_json()
         print("registered: ",data)
