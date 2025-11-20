@@ -29,8 +29,8 @@ def update_student(id):
     return render_template("student_management/update_student.html")
 
 
-@dash_bp.route("/delete_assignment", methods=["GET","POST"])
-def delete_student():
+@dash_bp.route("/delete_student/<int:id>", methods=["GET","POST"])
+def delete_student(id):
     return render_template("student_management/delete_student.html")
 
 
@@ -50,13 +50,13 @@ def view_one_assignment(id):
     return render_template("student_management/view_one_assignment.html")
 
 
-@dash_bp.route("/update_assignment", methods=["GET","POST"])
-def update_assignment():
+@dash_bp.route("/update_assignment/<int:id>", methods=["GET","POST"])
+def update_assignment(id):
     return render_template("assignment/update_assignment.html")
 
 
-@dash_bp.route("/delete_assignment", methods=["GET","POST"])
-def delete_assignment():
+@dash_bp.route("/delete_assignment/<int:id>", methods=["GET","POST"])
+def delete_assignment(id):
     return render_template("assignment/delete_assignment.html")
 
 
@@ -69,17 +69,21 @@ def create_attendance():
 
 @dash_bp.route("/view_attendances", methods=["GET","POST"])
 def view_attendances():
-    return render_template("attendance/view_attendance.html")
+    return render_template("attendance/view_attendances.html")
+
+@dash_bp.route("/view_one_attendance/<int:id>", methods=["GET","POST"])
+def view_one_attendance(id): 
+    return render_template("attendance/view_one_attendance.html")
 
 
-@dash_bp.route("/update_attendance", methods=["GET","POST"])
-def update_attendance():
+@dash_bp.route("/update_attendance/<int:id>", methods=["GET","POST"])
+def update_attendance(id):
     return render_template("attendance/update_attendance.html")
 
 
 
-@dash_bp.route("/delete_attendance", methods=["GET","POST"])
-def delete_attendance():
+@dash_bp.route("/delete_attendance/<int:id>", methods=["GET","POST"])
+def delete_attendance(id):
     return render_template("attendance/delete_attendance.html")
 
 
@@ -89,17 +93,21 @@ def create_grade():
     return render_template("grades/create_grade.html")
 
 
-@dash_bp.route("/view_grade", methods=["GET","POST"])
-def view_grade():
+@dash_bp.route("/view_grades", methods=["GET","POST"])
+def view_grades():
     return render_template("grades/view_grade.html")
 
+@dash_bp.route("/view_one_grade/<int:id>", methods=["GET","POST"])
+def view_one_grade(id):
+    return render_template("grades/update_grade.html")
 
-@dash_bp.route("/update_grade", methods=["GET","POST"])
-def update_grade():
+
+@dash_bp.route("/update_grade/<int:id>", methods=["GET","POST"])
+def update_grade(id):
     return render_template("grades/update_grade.html")
 
 
 
-@dash_bp.route("/delete_grade", methods=["GET","POST"])
-def delete_grade():
+@dash_bp.route("/delete_grade/<int:id>", methods=["GET","POST"])
+def delete_grade(id):
     return render_template("grades/delete_grade.html")

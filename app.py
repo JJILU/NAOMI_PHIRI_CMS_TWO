@@ -15,7 +15,7 @@ def create_app():
 
 
     # import and register blueprints
-    from views import dash_bp
+    from dash.views import dash_bp
     app.register_blueprint(dash_bp,url_prefix="/")
 
     return app
