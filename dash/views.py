@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for,request
 from . import dash_bp
 
 
@@ -126,6 +126,16 @@ def create_attendance():
     #     return redirect(url_for("dash.create_attendance"))
 
     # return render_template("create_attendance.html", classes=classes, students=students)
+
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    
+    pagination = Attendance.query.order_by(Attendance.date.desc()).paginate(page=page, per_page=per_page)
+    attendances = pagination.items
+    
+    return render_template("attendance/view_attendance.html", 
+                           attendances=attendances, 
+                           pagination=pagination)
     return render_template("attendance/create_attendance.html")
 
 
