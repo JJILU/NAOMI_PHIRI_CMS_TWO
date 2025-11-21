@@ -110,8 +110,7 @@
   }
   
   /* Keep "I agree" and "Already have an account?" white */
-  .register-card .form-check-label,
-  .register-card .text-center a {
+  .register-card .form-check-label {
     color: #fff !important;
   }
   
