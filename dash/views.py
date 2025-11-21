@@ -14,6 +14,20 @@ def index():
 # ------------------ Student Management End-Points ------------------------
 @dash_bp.route("/create_student", methods=["GET", "POST"])
 def create_student():
+    # classes = Class.query.all()
+    # if request.method == "POST":
+    #     name = request.form.get("name")
+    #     class_id = request.form.get("class_id")
+    #     if not name or not class_id:
+    #         flash("All fields are required.", "danger")
+    #         return redirect(url_for("dash.create_student"))
+
+    #     student = Student(name=name, class_id=class_id)
+    #     db.session.add(student)
+    #     db.session.commit()
+    #     flash("Student created successfully!", "success")
+    #     return redirect(url_for("dash.create_student"))
+    # return render_template("create_student.html", classes=classes)
     return render_template("student_management/create_student.html")
 
 
@@ -40,6 +54,24 @@ def delete_student(id):
 # ------------------ Assignments End-Points ------------------------
 @dash_bp.route("/create_assignment", methods=["GET", "POST"])
 def create_assignment():
+    # students = Student.query.all()
+    # if request.method == "POST":
+    #     title = request.form.get("title")
+    #     student_id = request.form.get("student_id")
+    #     due_date = request.form.get("due_date")
+
+    #     if not all([title, student_id, due_date]):
+    #         flash("All fields are required.", "danger")
+    #         return redirect(url_for("dash.create_assignment"))
+
+    #     assignment = Assignment(title=title, student_id=student_id, due_date=due_date)
+    #     db.session.add(assignment)
+    #     db.session.commit()
+    #     flash("Assignment created successfully!", "success")
+    #     return redirect(url_for("dash.create_assignment"))
+
+    # return render_template("create_assignment.html", students=students)
+
     return render_template("assignment/create_assignment.html")
 
 
@@ -66,6 +98,34 @@ def delete_assignment(id):
 # ------------------ Attendance End-Points ------------------------
 @dash_bp.route("/create_attendance", methods=["GET", "POST"])
 def create_attendance():
+    # from .models import Student, Class, Attendance
+    # from extensions import db
+
+    # classes = Class.query.all()
+    # students = Student.query.all()
+
+    # if request.method == "POST":
+    #     student_id = request.form.get("student_id")
+    #     class_id = request.form.get("class_id")
+    #     day = request.form.get("day")
+    #     status = request.form.get("status")
+
+    #     if not all([student_id, class_id, day, status]):
+    #         flash("All fields are required.", "danger")
+    #         return redirect(url_for("dash.create_attendance"))
+
+    #     attendance = Attendance(
+    #         student_id=student_id,
+    #         class_id=class_id,
+    #         day=day,
+    #         status=status
+    #     )
+    #     db.session.add(attendance)
+    #     db.session.commit()
+    #     flash("Attendance created successfully!", "success")
+    #     return redirect(url_for("dash.create_attendance"))
+
+    # return render_template("create_attendance.html", classes=classes, students=students)
     return render_template("attendance/create_attendance.html")
 
 
@@ -92,6 +152,23 @@ def delete_attendance(id):
 # ------------------ Grade End-Points ------------------------
 @dash_bp.route("/create_grade", methods=["GET", "POST"])
 def create_grade():
+    # students = Student.query.all()
+    # if request.method == "POST":
+    #     student_id = request.form.get("student_id")
+    #     subject = request.form.get("subject")
+    #     score = request.form.get("score")
+
+    #     if not all([student_id, subject, score]):
+    #         flash("All fields are required.", "danger")
+    #         return redirect(url_for("dash.create_grade"))
+
+    #     grade = Grade(student_id=student_id, subject=subject, score=score)
+    #     db.session.add(grade)
+    #     db.session.commit()
+    #     flash("Grade created successfully!", "success")
+    #     return redirect(url_for("dash.create_grade"))
+
+    # return render_template("create_grade.html", students=students)
     return render_template("grades/create_grade.html")
 
 

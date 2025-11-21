@@ -14,6 +14,12 @@ def create_app():
     @app.errorhandler(500)
     def internal_server_error(error):
         return render_template('errors/internal_server_error.html')
+    
+    # raise a 500 error
+    @app.route("/cause500")
+    def cause500():
+        raise Exception("This is a forced 500 error!")
+
 
     # app configurations
     app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///classflow.sqlite3'
