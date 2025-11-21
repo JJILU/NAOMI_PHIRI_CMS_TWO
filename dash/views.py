@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for
+from . import dash_bp
 
 
-dash_bp = Blueprint(
-    "dash", __name__, template_folder="templates", static_folder="static")
 
 # --------------- Use Here Only ----------------------------------
 

@@ -21,5 +21,88 @@
 </div>
 <!-- ============================================================== -->
 <!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->  
+<!-- ============================================================== --> 
+
+<!-- ============================================================== -->
+          <!-- Start Page Content -->
+          <!-- ============================================================== -->
+          <!-- Row -->
+          <div class="row">
+            <!-- Column -->
+            <div class="col-lg-4 col-xlg-3 col-md-5">
+              <div class="card">
+                <div class="card-body profile-card">
+                  <center class="mt-4">
+                    <img
+                      src="{{ url_for('dash.static', filename="dash_static/assets/images/profile_photos/profile_1.jpg") }}"
+                      class="rounded-circle"
+                      width="150"
+                    />
+                    <h4 class="card-title mt-2">Bwalya Chanda</h4>
+                    <h6 class="card-subtitle">Classroom Name: 10A</h6>
+                    <div class="row justify-content-center">
+                      <div class="col-4">
+                        <a href="javascript:void(0)" class="link">
+                          <i class="icon-eye" aria-hidden="true"></i>
+                          <span class="font-normal">View</span>
+                        </a>
+                      </div>
+                      <div class="col-4">
+                        <a href="javascript:void(0)" class="link">
+                          <i class="icon-picture" aria-hidden="true"></i>
+                          <span class="font-normal">54</span>
+                        </a>
+                      </div>
+                    </div>
+                  </center>
+                </div>
+              </div>
+            </div>
+            <!-- Column -->
+            <!-- Column -->
+            <div class="col-lg-8 col-xlg-9 col-md-7">
+              <div class="card">
+                <div class="card-body">
+                  <form class="form-horizontal form-material mx-2">
+                    <div class="form-group">
+                      <label class="col-md-12 mb-0">School ID</label>
+                      <div class="col-md-12">
+                        <input
+                          type="text"
+                          placeholder="S1458"
+                          class="form-control ps-0 form-control-line"
+                          readonly
+                        />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-md-12 mb-0">Password</label>
+                      <div class="col-md-12">
+                        <input
+                          type="password"
+                          value="password"
+                          class="form-control ps-0 form-control-line"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div class="form-group">
+                      <div class="col-sm-12 d-flex">
+                        <button
+                          class="btn btn-success mx-auto mx-md-0 text-white"
+                        >
+                          Update Profile
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <!-- Column -->
+          </div>
+          <!-- Row -->
+          <!-- ============================================================== -->
+          <!-- End PAge Content -->
+          <!-- ============================================================== -->
 {% endblock content %}

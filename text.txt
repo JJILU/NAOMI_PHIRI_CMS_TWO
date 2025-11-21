@@ -1,0 +1,125 @@
+from flask import render_template, request, redirect, url_for
+from datetime import datetime, timedelta
+from .models import Class, Student, Attendance
+from . import dash_bp
+from extensions import db
+
+@dash_bp.route('/class/<int:class_id>/attendance', methods=['GET', 'POST'])
+def class_attendance(class_id):
+    classroom = Class.query.get_or_404(class_id)
+    students = classroom.students
+
+    # Get current week (Monday → Sunday)
+    today = datetime.today()
+    monday = today - timedelta(days=today.weekday())
+    week_dates = [monday + timedelta(days=i) for i in range(7)]
+
+    # Collect attendance records for all students
+    attendance_map = {}
+    for student in students:
+        for day in week_dates:
+            att = Attendance.query.filter_by(student_id=student.id, date=day.date()).first()
+            attendance_map[(student.id, day.date())] = att
+
+    return render_template('attendance/class_attendance.html',
+                           classroom=classroom,
+                           students=students,
+                           week_dates=week_dates,
+                           attendance_map=attendance_map)
+
+
+<div class="table-responsive mt-5">
+    <table class="table stylish-table no-wrap">
+        <thead>
+            <tr>
+                <th>Student</th>
+                {% for day in week_dates %}
+                    <th>{{ day.strftime('%A') }}<br>{{ day.strftime('%Y-%m-%d') }}</th>
+                {% endfor %}
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>
+                    <h6>{{ student.name }}</h6>
+                    <small class="text-muted">{{ student.classroom.name }}</small>
+                </td>
+
+                {% for day in week_dates %}
+                    {% set att = attendance_map.get((student.id, day.date())) %}
+                    <td>
+                        {% if att %}
+                            {{ att.status }}
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+
+                <td>
+                    {% for day in week_dates %}
+                        {% set att = attendance_map.get((student.id, day.date())) %}
+                        {% if att %}
+                            <a href="{{ url_for('dash.view_attendance', id=att.id) }}" class="btn btn-sm btn-info">View</a>
+                            <a href="{{ url_for('dash.update_attendance', id=att.id) }}" class="btn btn-sm btn-warning">Update</a>
+                            <a href="{{ url_for('dash.delete_attendance', id=att.id) }}" class="btn btn-sm btn-danger">Delete</a>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+from extensions import db
+from datetime import date
+
+class Class(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    students = db.relationship('Student', backref='classroom')
+
+class Student(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
+    attendances = db.relationship('Attendance', backref='student')
+
+class Attendance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(10), nullable=False)  # 'Present' or 'Absent'
+    remarks = db.Column(db.String(255))
+
+
+
+from flask import Blueprint, render_template
+
+dash_bp = Blueprint('dash', __name__, url_prefix='/dash')
+
+@dash_bp.app_errorhandler(404)
+def dash_not_found(error):
+    return render_template('errors/404.html'), 404
+
+@dash_bp.app_errorhandler(500)
+def dash_internal_error(error):
+    return render_template('errors/500.html'), 500
+
+
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+# 404 Not Found
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
+
+# 500 Internal Server Error
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('errors/500.html'), 500
