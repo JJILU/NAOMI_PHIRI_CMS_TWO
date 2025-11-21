@@ -154,3 +154,9 @@ def view_profile():
 @dash_bp.route("/update_account_password/<int:id>", methods=["POST"])
 def update_account_password(id):
     return redirect(url_for('view_profile'))
+
+@dash_bp.route("/settings", methods=["GET"])
+def settings():
+    return render_template("profile/settings.html")
+
+

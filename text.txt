@@ -123,3 +123,141 @@ def not_found_error(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('errors/500.html'), 500
+
+
+
+
+{% extends 'base.html' %}
+
+{% block title %}
+Internal Server Error | 500 
+{% endblock title %}
+
+{% block content %}
+<div class="main-wrapper">
+  <!-- ============================================================== -->
+  <!-- Preloader - style you can find in spinners.css -->
+  <!-- ============================================================== -->
+  <div class="preloader">
+      <div class="lds-ripple">
+          <div class="lds-pos"></div>
+          <div class="lds-pos"></div>
+      </div>
+  </div>
+  <!-- ============================================================== -->
+  <!-- Preloader - style you can find in spinners.css -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Login box.scss -->
+  <!-- ============================================================== -->
+  <div class="error-box">
+      <div class="error-body text-center">
+          <h1 class="error-title">500</h1>
+          <h3 class="text-uppercase error-subtitle">INTERNAL SERVER ERROR !</h3>
+          <p class="text-muted mb-4 mt-4">AN INTERNAL SERVER ERROR OCCURED,PLEASE CONTACT SUPPORT</p>
+          <a href="index.html" class="btn btn-info btn-rounded waves-effect waves-light mb-4 text-white">Back to
+              home</a>
+      </div>
+      <footer class="footer text-center w-100">
+          © 2021 Monster Admin by <a href="https://www.wrappixel.com/">wrappixel.com</a> Distributed By <a href="https://themewagon.com">ThemeWagon</a>
+      </footer>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- Login box.scss -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Page wrapper scss in scafholding.scss -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Page wrapper scss in scafholding.scss -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Right Sidebar -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Right Sidebar -->
+  <!-- ============================================================== -->
+</div>
+<!-- ============================================================== -->
+<!-- All Required js -->
+<!-- ============================================================== -->
+<script src="./assets/plugins/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap tether Core JavaScript -->
+<script src="./assets/plugins/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- ============================================================== -->
+<!-- This page plugin js -->
+<!-- ============================================================== -->
+<script>
+  $(".preloader").fadeOut();
+</script>
+{% endblock content %}
+
+
+
+{% extends 'base.html' %}
+
+{% block title %}
+Page Not Found | 404 
+{% endblock title %} 
+
+
+{% block content %}
+<div class="main-wrapper">
+  <!-- ============================================================== -->
+  <!-- Preloader - style you can find in spinners.css -->
+  <!-- ============================================================== -->
+  <div class="preloader">
+      <div class="lds-ripple">
+          <div class="lds-pos"></div>
+          <div class="lds-pos"></div>
+      </div>
+  </div>
+  <!-- ============================================================== -->
+  <!-- Preloader - style you can find in spinners.css -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Login box.scss -->
+  <!-- ============================================================== -->
+  <div class="error-box">
+      <div class="error-body text-center">
+          <h1 class="error-title">404</h1>
+          <h3 class="text-uppercase error-subtitle">PAGE NOT FOUND !</h3>
+          <p class="text-muted mb-4 mt-4">THIS RESOURCE DOES NOT EXIST</p>
+          <a href="index.html" class="btn btn-info btn-rounded waves-effect waves-light mb-4 text-white">Back to
+              home</a>
+      </div>
+      <footer class="footer text-center w-100">
+          © 2021 Monster Admin by <a href="https://www.wrappixel.com/">wrappixel.com</a> Distributed By <a href="https://themewagon.com">ThemeWagon</a>
+      </footer>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- Login box.scss -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Page wrapper scss in scafholding.scss -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Page wrapper scss in scafholding.scss -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Right Sidebar -->
+  <!-- ============================================================== -->
+  <!-- ============================================================== -->
+  <!-- Right Sidebar -->
+  <!-- ============================================================== -->
+</div>
+<!-- ============================================================== -->
+<!-- All Required js -->
+<!-- ============================================================== -->
+<script src="./assets/plugins/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap tether Core JavaScript -->
+<script src="./assets/plugins/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- ============================================================== -->
+<!-- This page plugin js -->
+<!-- ============================================================== -->
+<script>
+  $(".preloader").fadeOut();
+</script>
+{% endblock content %}
