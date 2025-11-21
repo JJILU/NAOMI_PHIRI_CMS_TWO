@@ -181,19 +181,10 @@
                     <!-- ============================================================== -->
                     <!-- Logo -->
                     <!-- ============================================================== -->
-                    <a class="navbar-brand" href="index.html">
-                        <!-- Logo icon -->
-                        <b class="logo-icon">
-                            <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
-                            <!-- Dark Logo icon -->
-                            <img src="./assets/images/training_32.png" alt="homepage" class="dark-logo" />
-
-                        </b>
-                        <!--End Logo icon -->
+                    <a class="navbar-brand" href="{{ url_for('dash.index') }}">
                         <!-- Logo text -->
-                        <span class="logo-text">
+                        <span class="logo-text" style="color:#4684ba; font-size: 2rem;font-weight: 300;">
                             <!-- dark Logo text -->
-                            <!-- <img src="./assets/images/logo-text.png" alt="homepage" class="dark-logo" /> -->
                             Omi's Class
                         </span>
                     </a>
@@ -290,7 +281,7 @@
                     <ul id="sidebarnav">
                         <!-- Dashboard -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link" href="index.html" aria-expanded="false">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url_for('dash.index') }}" aria-expanded="false">
                                 <i class="me-3 far fa-clock fa-fw" aria-hidden="true"></i>
                                 <span class="hide-menu">Dashboard</span>
                             </a>
@@ -327,7 +318,7 @@
                                     <a href="{{ url_for('dash.create_grade') }}" class="sidebar-link"><span class="hide-menu">Create Grade</span></a>
                                 </li>
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_grade') }}" class="sidebar-link"><span class="hide-menu">View All Grades</span></a>
+                                    <a href="{{ url_for('dash.view_grades') }}" class="sidebar-link"><span class="hide-menu">View All Grades</span></a>
                                 </li>
                             </ul>
                         </li>
@@ -363,6 +354,26 @@
                                 </li>
                             </ul>
                         </li>
+
+                        <!-- Students Only -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
+                                <i class="fa fa-user-circle me-3"></i>
+                                <span class="hide-menu">Student</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student_grades') }}" class="sidebar-link"><span class="hide-menu">View grades</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link"><span class="hide-menu">View  Assignments</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student_attendances') }}" class="sidebar-link"><span class="hide-menu">View Attendances</span></a>
+                                </li>
+                            </ul>
+                        </li>
+                
                 
                         <!-- Profile -->
                         <li class="sidebar-item">
