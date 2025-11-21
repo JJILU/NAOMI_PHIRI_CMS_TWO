@@ -144,3 +144,13 @@ def view_student_attendances():
 @dash_bp.route("/view_student_attendance_details/<int:id>", methods=["GET"])
 def view_student_attendances_details(id):
     return render_template("student_only/view_student_attendance_detail.html")
+
+
+# ------------------ Profile ------------------------
+@dash_bp.route("/view_profile", methods=["GET"])
+def view_profile():
+    return render_template("profile/view_profile.html")
+
+@dash_bp.route("/update_account_password/<int:id>", methods=["POST"])
+def update_account_password(id):
+    return redirect(url_for('view_profile'))
