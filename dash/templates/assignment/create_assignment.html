@@ -59,6 +59,31 @@
                         </div>
                     </div>
 
+                    <!-- <div class="form-group">
+                        <label class="col-md-12 mb-0">Upload Assignment Files</label>
+                        <div class="col-md-12">
+                            <input type="file" name="assginment_files" class="form-control ps-0 form-control-line" multiple required>
+                        </div>
+                    </div> -->
+
+                    <div class="form-group mb-3">
+                        <label class="col-md-12 mb-2">Upload Assignment Files</label>
+                        <div class="col-md-12">
+                            <div class="custom-file">
+                                <input 
+                                    type="file" 
+                                    name="assignment_files" 
+                                    class="form-control form-control-line form-control-file" 
+                                    id="assignmentFiles" 
+                                    multiple 
+                                    required
+                                >
+                                <label class="form-label mt-1" for="assignmentFiles" id="fileLabel">Choose files...</label>
+                            </div>
+                            <small class="text-muted">You can select multiple files.</small>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label class="col-md-12 mb-0">Due Date</label>
                         <div class="col-md-12">
@@ -82,11 +107,39 @@
 .btn-close { font-size:1.5rem; background:none; border:none; cursor:pointer; }
 .create-btn { background-color: #009efb; color: white; transition: 0.3s; }
 .create-btn:hover { background-color:#007acc; color:white; }
+
+/* Optional: custom hover/focus effect */
+#assignmentFiles {
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    padding: 6px 12px;
+    transition: 0.3s;
+}
+
+#assignmentFiles:hover, 
+#assignmentFiles:focus {
+    border-color: #009efb;
+    box-shadow: 0 0 5px rgba(0, 158, 251, 0.5);
+}
+
+/* Display selected files */
+#fileLabel::after {
+    content: attr(data-files);
+    display: block;
+    font-size: 0.9em;
+    color: #555;
+}
 </style>
 
 <script>
 document.getElementById("openModalBtn").addEventListener("click", function(){ document.getElementById("assignmentModal").style.display="flex"; });
 document.getElementById("closeModalBtn").addEventListener("click", function(){ document.getElementById("assignmentModal").style.display="none"; });
 document.getElementById("cancelModalBtn").addEventListener("click", function(){ document.getElementById("assignmentModal").style.display="none"; });
+
+//Update label when files are selected
+document.getElementById("assignmentFiles").addEventListener("change", function() {
+    const fileList = Array.from(this.files).map(f => f.name).join(', ');
+    document.getElementById("fileLabel").innerText = fileList || 'Choose files...';
+});
 </script>
 {% endblock content %}
