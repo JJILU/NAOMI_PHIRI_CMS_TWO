@@ -98,12 +98,12 @@ def create_grade():
 
 @dash_bp.route("/view_grades", methods=["GET", "POST"])
 def view_grades():
-    return render_template("grades/view_grade.html")
+    return render_template("grades/view_grades.html")
 
 
 @dash_bp.route("/view_one_grade/<int:id>", methods=["GET", "POST"])
 def view_one_grade(id):
-    return render_template("grades/update_grade.html")
+    return render_template("grades/view_one_grade.html")
 
 
 @dash_bp.route("/update_grade/<int:id>", methods=["GET", "POST"])
