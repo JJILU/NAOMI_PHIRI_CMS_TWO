@@ -22,7 +22,7 @@ def create_app():
 
 
     # app configurations
-    app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///classflow.sqlite3'
+    app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///classroom.sqlite3'
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # init extensions

@@ -16,33 +16,36 @@ class CustomIDProviders(BaseProvider):
     def student_id(self):
         return f"S{random.randint(1000,9999)}"
 
-# generate randomly is_admin value
-is_admin = random.choices([True,False],[10,90])[0]    
+  
     
 
 faker.add_provider(CustomIDProviders)
 
 
-def create_teacher_school_records():
-    for _ in range(10):
-        new_teacher = TeacherSchoolRecord(
-            first_name=faker.first_name(),
-            last_name=faker.last_name(),
-            card_id=faker.teacher_id()
-        )
-        db.session.add(new_teacher)
-    db.session.commit()   
+# def create_teacher_school_records():
+#     for _ in range(10):
+#         new_teacher = TeacherSchoolRecord(
+#             first_name=faker.first_name(),
+#             last_name=faker.last_name(),
+#             card_id=faker.teacher_id()
+#         )
+#         db.session.add(new_teacher)
+#     db.session.commit()   
 
 def create_student_school_records():
     for _ in range(10):
-        new_teacher = StudentSchoolRecord(
+        # generate randomly is_admin value
+        is_admin = random.choices([True,False],weights=[10,90])[0]  
+        new_student = StudentSchoolRecord(
             first_name=faker.first_name(),
             last_name=faker.last_name(),
             card_id=faker.student_id(),
             is_admin=is_admin
         )
-        db.session.add(new_teacher)
+        db.session.add(new_student)
     db.session.commit()      
+
+
 
 
 with flask_app.app_context():
@@ -50,8 +53,9 @@ with flask_app.app_context():
     
     try:
         # create_teacher_school_records()
+        # print(f"Teachers created successfully")
         create_student_school_records()
-        print(f"Teachers & Students created successfully")
+        print(f" Students created successfully")
     except Exception as e:
         print(f"Failed to create teachers & students error occured {str(e)}")
         

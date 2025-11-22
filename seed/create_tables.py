@@ -1,3 +1,4 @@
+# SEQUENCE: 1
 from dash.models import compulsarysubject_class,CompulsarySubject,OptionalSubject,Classroom
 from app import create_app
 from extensions import db

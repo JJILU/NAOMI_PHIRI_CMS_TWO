@@ -9,6 +9,13 @@ compulsarysubject_class = db.Table(
     db.Column("subject_id", db.Integer, db.ForeignKey("compulsary_subject.id"), primary_key=True),
 )
 
+
+teacherschoolrecord_classroom = db.Table(
+    "teacherschoolrecord_classroom",
+    db.Column("classroom_id", db.Integer, db.ForeignKey("classroom.id"), primary_key=True),
+    db.Column("teacherschoolrecord_id", db.Integer, db.ForeignKey("teacher_school_record.id"), primary_key=True),
+)
+
 # ==================== SUBJECT MODELS ========================
 
 class CompulsarySubject(db.Model):
@@ -61,12 +68,11 @@ class Classroom(db.Model):
     optional_subjects = db.relationship("OptionalSubject", backref="classroom", lazy="joined")
 
     # many-to-many with teacher school record
-    # teacher_school_record = db.relationship(
-    #     "TeacherSchoolRecord",
-    #     secondary=teacher_school_record_class,
-    #     backref="classrooms",
-    #     lazy="joined"
-    # )
+    teacherschoolrecords = db.relationship(
+        "TeacherSchoolRecord",
+        secondary="teacherschoolrecord_classroom",
+        overlaps="classrooms",
+        lazy="joined")
 
     # one-to-many: StudentSchoolRecord.classroom_id must exist (added in auth.models)
     # student_school_record = db.relationship("StudentSchoolRecord", backref="classroom", lazy="joined")

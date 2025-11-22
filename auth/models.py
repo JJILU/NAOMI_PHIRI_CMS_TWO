@@ -8,15 +8,27 @@ from flask_login import UserMixin
 # ========================= School Records Database ==========================
 
 class TeacherSchoolRecord(db.Model):
+    __tablename__ = "teacher_school_record"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
     id = db.Column(db.Integer,primary_key=True)
     first_name = db.Column(db.String(50),nullable=False) 
     last_name = db.Column(db.String(50),nullable=False) 
     card_id = db.Column(db.String(50),nullable=False) 
-    # filename = db.Column(db.String(500),nullable=False) 
-    # filepath = db.Column(db.String(500),nullable=False) 
+    
+      
+    # one:one relationship
+    teacher = db.relationship(
+        "Teacher",
+        backref="teacherschoolrecord",
+        uselist=False,
+        lazy="joined"
+        )
 
-    teacher_id = db.Column(db.Integer,db.ForeignKey("teacher.id"),unique=True,nullable=False)
+    classrooms = db.relationship(
+        "Classroom",
+        secondary="teacherschoolrecord_classroom",
+        overlaps="teacherschoolrecords",
+        lazy="joined")
 
     def __init__(self,first_name,last_name,card_id):
         self.first_name = first_name
@@ -30,23 +42,36 @@ class TeacherSchoolRecord(db.Model):
 
 
 class StudentSchoolRecord(db.Model):
+    __tablename__ = "student_school_record"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
     id = db.Column(db.Integer,primary_key=True)   
     first_name = db.Column(db.String(50),nullable=False) 
     last_name = db.Column(db.String(50),nullable=False) 
     card_id = db.Column(db.String(50),nullable=False) 
     is_admin = db.Column(db.Boolean,default=False)
-    # filename = db.Column(db.String(500),nullable=False) 
-    # filepath = db.Column(db.String(500),nullable=False) 
+    
+    # one:one relationship
+    student = db.relationship(
+        "Student",
+        backref="student",
+        uselist=False,
+        lazy="joined"
+        )
+    admin = db.relationship(
+        "Admin",
+        backref="admin",
+        uselist=False,
+        lazy="joined"
+        )
+    
 
-    school_id = db.Column(db.Integer,db.ForeignKey("teacher.id"),unique=True,nullable=False)
 
 
-
-    def __init__(self,first_name,last_name,card_id):
+    def __init__(self,first_name,last_name,card_id,is_admin):
         self.first_name = first_name
         self.last_name = last_name
         self.card_id = card_id
+        self.is_admin = is_admin
 
         # check if teacher id is in school records, before creating one
     @classmethod
@@ -69,8 +94,15 @@ class Teacher(db.Model,UserMixin):
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
     
-    # one:one relationship
-    teacher_school_record = db.relationship("TeacherSchoolRecord",backref="teacher",uselist=False,lazy="joined")
+    # fk
+    teacher_school_record_id = db.Column(
+        db.Integer,
+        db.ForeignKey("teacher_school_record.id"),
+        unique=True,
+        nullable=False
+        )
+  
+    
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: teacher card id {self.user_card_id}>"
@@ -122,8 +154,12 @@ class Admin(db.Model,UserMixin):
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
 
-    # one:one relationship
-    admin_school_record = db.relationship("StudentSchoolRecord",backref="admin",uselist=False,lazy="joined")
+    student_school_record_id = db.Column(
+        db.Integer,
+        db.ForeignKey("student_school_record.id"),
+        unique=True,
+        nullable=False
+        )
 
 
     def __repr__(self) -> str:
@@ -175,10 +211,15 @@ class Student(db.Model,UserMixin):
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
 
-    # one:one relationship
-    student_school_record = db.relationship("StudentSchoolRecord",backref="student",uselist=False,lazy="joined")
+    # fk
+    student_school_record_id = db.Column(
+        db.Integer,
+        db.ForeignKey("student_school_record.id"),
+        unique=True,
+        nullable=False
+        )
     # one:many relationship
-    student_attendance = db.relationship("StudentAttendance",backref="student",uselist=True,lazy="joined")
+    # student_attendance = db.relationship("StudentAttendance",backref="student",uselist=True,lazy="joined")
 
 
     def __repr__(self) -> str:
