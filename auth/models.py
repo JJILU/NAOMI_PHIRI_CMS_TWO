@@ -2,6 +2,7 @@ from extensions import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_login import UserMixin
+from dash.models import StudentAttendance
 # from uuid import uuid4
 
 
@@ -39,14 +40,16 @@ class StudentSchoolRecord(db.Model):
     # filename = db.Column(db.String(500),nullable=False) 
     # filepath = db.Column(db.String(500),nullable=False) 
 
-    school_id = db.Column(db.Integer,db.ForeignKey("teacher.id"),unique=True,nullable=False)
+    student_school_id = db.Column(db.Integer,db.ForeignKey("student.id"),unique=True,nullable=False)
+    admin_school_id = db.Column(db.Integer,db.ForeignKey("admin.id"),unique=True,nullable=False)
 
 
 
-    def __init__(self,first_name,last_name,card_id):
+    def __init__(self,first_name,last_name,card_id, is_admin):
         self.first_name = first_name
         self.last_name = last_name
         self.card_id = card_id
+        self.is_admin =  is_admin
 
         # check if teacher id is in school records, before creating one
     @classmethod
@@ -124,6 +127,8 @@ class Admin(db.Model,UserMixin):
 
     # one:one relationship
     admin_school_record = db.relationship("StudentSchoolRecord",backref="admin",uselist=False,lazy="joined")
+    # one:many
+    admin_attendance = db.relationship("StudentAttendance",backref="admin",uselist=True,lazy="joined")
 
 
     def __repr__(self) -> str:

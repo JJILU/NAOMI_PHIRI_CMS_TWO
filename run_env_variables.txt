@@ -1,0 +1,17 @@
+run in terminal where main.py is:
+--------------------------------
+
+$env:FLASK_APP="main.py"
+$env:FLASK_RUN_PORT="5001"
+$env:FLASK_DEBUG="True"   
+$env:FLASK_ENV="development"
+
+run flask server
+-----------------
+flask run
+
+
+run seed files
+--------------
+NOTE: This way, Python automatically recognizes extensions.py as part of your package
+python -m seed.create_school_records

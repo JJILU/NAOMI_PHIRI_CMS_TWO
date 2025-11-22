@@ -1,61 +1,100 @@
-from extensions import db 
+from extensions import db
+from auth.models import Teacher,Admin,Student,TeacherSchoolRecord,StudentSchoolRecord
+from datetime import datetime
 
-# class StudentSchoolRecord(db.Model):
-#     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-#     id = db.Column(db.Integer,primary_key=True)   
-#     first_name = db.Column(db.String(50),nullable=False) 
-#     last_name = db.Column(db.String(50),nullable=False) 
-#     card_id = db.Column(db.String(50),nullable=False) 
-#     is_admin = db.Column(db.Boolean,default=False)
-#     # filename = db.Column(db.String(500),nullable=False) 
-#     # filepath = db.Column(db.String(500),nullable=False) 
+# =========== Dashboard End-Points ===================
 
-#     school_id = db.Column(db.Integer,db.ForeignKey("teacher.id"),unique=True,nullable=False)
+compulsarysubject_class = db.Table(
+    "compulsarysubject_class",
+    db.Column(db.Integer,db.ForeignKey('compulsarysubject.id')),
+    db.Column(db.Integer,db.ForeignKey('classroom.id')),
+)
 
-
-
-#     def __init__(self,first_name,last_name,card_id):
-#         self.first_name = first_name # type: ignore
-#         self.last_name = last_name
-#         self.card_id = card_id
-
-#         # check if teacher id is in school records, before creating one
-#     @classmethod
-#     def get_student_by_card_id(cls,card_id):
-#         return StudentSchoolRecord.query.filter_by(card_id=card_id).first()  
-
-
-
-# class ProfileFileUpload(db.Model):
-#     id = db.Column(db.Integer,primary_key=True)
-#     original_file_name = db.Column(db.String(255),nullable=False)    
-#     filepath = db.Column(db.String(255),nullable=False)    
-#     filename = db.Column(db.String(255),nullable=False) 
-
-
-
-class ClassRoom(db.Model):
+class CompulsarySubject(db.Model):
     id = db.Column(db.Integer,primary_key=True)
-    name = db.Column(db.String(50),nullable=False, unique=True)
+    subject_name = db.Column(db.String(50),nullable=False,unique=True) 
+    subject_code = db.Column(db.String(50),nullable=False,unique=True) 
 
-    assignments = db.relationship("Assignment",backref="classroom", uselist=True)
 
 
-class Assignment(db.Model):
+
+class OptionalSubject(db.Model):
     id = db.Column(db.Integer,primary_key=True)
-    title = db.Column(db.String(50),nullable=False)
-    description = db.Column(db.String(100),nullable=False)
+    subject_name = db.Column(db.String(50),nullable=False,unique=True) 
+    subject_code = db.Column(db.String(50),nullable=False,unique=True) 
 
-    classroom_id = db.Column(db.Integer,db.ForeignKey("classroom.id"))
+    # fk
+    classroom_id = db.Column(db.Integer,db.ForeignKey('classroom.id'))
+    classroom = db.relationship("Classroom", backref="optional_subjects")
 
-    file_uploads = db.relationship("AssignmentFileUpload", backref="assignment", uselist=True)
+
+teacher_school_record_class = db.Table(
+    "teacher_school_record_class",
+    db.Column(db.Integer,db.ForeignKey('teacherschoolrecord.id')),
+    db.Column(db.Integer,db.ForeignKey('classroom.id')),
+)
+
+
+class Classroom(db.Model):
+    id = db.Column(db.Integer,primary_key=True) 
+    classroom_name = db.Column(db.String(50),nullable=False,unique=True) 
+    # relationships
+    compulsary_subjects = db.relationship("CompulsarySubject",secondary=compulsarysubject_class,backref="classrooms",lazy="joined")
+    optional_subjects = db.relationship("OptionalSubject",backref="classroom",uselist=True,lazy="joined")
+    teacher_school_record = db.relationship("TeacherSchoolRecord",secondary=teacher_school_record_class,backref="classrooms",lazy="joined")
+    student_school_record = db.relationship("StudentSchoolRecord",backref="classroom",uselist=True,lazy="joined")
+    assignments = db.relationship("ClassAssignments",backref="classroom",uselist=True,lazy="joined")
+    # teachers = db.relationship("Teacher",secondary=teacher_class,backref="classroom",lazy="joined")
+    # admin = db.relationship("Admin",backref="classroom",uselist=True,lazy="joined")
+    # students = db.relationship("Student",backref="classroom",uselist=True,lazy="joined")
+
+
+class StudentAttendance(db.Model):
+    id = db.Column(db.Integer,primary_key=True) 
+    is_present = db.Column(db.Boolean,nullable=False,default=False)
+    created_at = db.Column(db.DateTime,default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+    # fk
+    student_id = db.Column(db.Integer,db.ForeignKey('student.id'))
+    admin_id = db.Column(db.Integer,db.ForeignKey('admin.id'))
+    # relationships
+    student = db.relationship("Student",backref="student_attendances",lazy="joined")
+
+
+class StudentGrade(db.Model):
+    id = db.Column(db.Integer,primary_key=True) 
+    exam_name = db.Column(db.String(50),nullable=False)
+    exam_code = db.Column(db.String(50),nullable=False)
+    exam_subject_Name = db.Column(db.String(50),nullable=False)
+    student_score = db.Column(db.Integer,nullable=False) 
+    student_grade = db.Column(db.String(5),nullable=False) 
+    created_at = db.Column(db.DateTime,default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+    # fk
+    student_id = db.Column(db.Integer,db.ForeignKey('student.id'))
+    # relationships
+    student = db.relationship("Student",backref="student_grade",uselist=False,lazy="joined")
+
+
+class ClassAssignment(db.Model):
+    id = db.Column(db.Integer,primary_key=True) 
+    assignment_name = db.Column(db.String(50),nullable=False)
+    assignment_code = db.Column(db.String(50),nullable=False)
+    assignment_subject_Name = db.Column(db.String(50),nullable=False)
+    created_at = db.Column(db.DateTime,default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+    # fk
+    classroom_id = db.Column(db.Integer,db.ForeignKey('classroom.id'))
+    # relationships
+    classroom = db.relationship("Classroom",backref="class_assignments",lazy="joined")
+    assignment_file_uploads = db.relationship("AssignmentFileUpload",backref="class_assignment",uselist=True,lazy="joined")
+
 
 
 class AssignmentFileUpload(db.Model):
-    id = db.Column(db.Integer,primary_key=True)
-    original_file_name = db.Column(db.String(255),nullable=False)    
-    filepath = db.Column(db.String(255),nullable=False)    
-    filename = db.Column(db.String(255),nullable=False)    
-
-    assignment_id = db.Column(db.Integer,db.ForeignKey("assignment.id"))
-
+    # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
+    id = db.Column(db.Integer,primary_key=True)   
+    filename = db.Column(db.String(500),nullable=False) 
+    filepath = db.Column(db.String(500),nullable=False) 
+    # fk
+    classassingment_id = db.Column(db.Integer,db.ForeignKey('classassignment.id'))
