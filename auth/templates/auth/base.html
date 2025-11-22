@@ -4,18 +4,48 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}{% endblock title %}</title>
-  <link href="{{ url_for('auth.static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('auth.static', filename='auth.css') }}">
-    <link rel="stylesheet" href="{{ url_for('auth.static', filename='login.css') }}">
-    <link rel="stylesheet" href="{{ url_for('auth.static', filename='register.css') }}">
+  <title>{% block title %}CLASSROOM MANAGEMENT SYSTEM | Login & Registration {% endblock title %}</title>
+  <!-- boxicons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- images -->
+  <link rel="icon" href="{{ url_for('static', filename='assets/favicon/learning.png') }}" type="image/png">
+  <!-- css -->
+  <link rel="stylesheet" href="{{ url_for('auth.static', filename='css/auth.css') }}">
 </head>
-<body class="auth-page login-page register-page">
+<body>
+<div class="wrapper">
+  <nav class="nav">
+    <!-- logo  -->
+    <div class="nav-logo" id="navLogo">
+      <img src="{{ url_for('static', filename='assets/images/training_32.png') }}" alt="college logo">
+    </div>
+    <!-- menu -->
+    <div class="nav-menu" id="navMenu">
+      <ul>
+        <li><a href="{{ url_for('auth.login') }}" class="link active">Home</a></li>
+        <li><a href="{{ url_for('auth.services') }}" class="link">Services</a></li>
+        <li><a href="{{ url_for('auth.contact_us') }}" class="link">Contact Us</a></li>
+        <li><a href="{{ url_for('auth.about') }}" class="link">About</a></li>
+      </ul>
+    </div>
+    <!-- buttons -->
+    <div class="nav-button">
+      <button class="btn white-btn" id="loginBtn" onclick="login()">Sign In</button>
+      <button class="btn" id="registerBtn" onclick="register()">Sign Up</button>
+    </div>
+    <!-- menu icon -->
+    <div class="nav-menu-btn">
+      <i class="bx bx-menu" onclick="myMenuFunction()"></i>
+    </div>
+  </nav>
+
   {% block content %}
     
   {% endblock content %}
-  <script src="{{ url_for('auth.static', filename='js/bootstrap.bundle.min.js') }}"></script>
-  <script src="{{ url_for('auth.static', filename='auth.js') }}"></script>
+</div>  
+
+ 
+
+  <script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
 </body>
 </html>

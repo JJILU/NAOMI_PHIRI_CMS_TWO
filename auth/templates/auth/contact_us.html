@@ -1,0 +1,26 @@
+{% extends 'auth/base.html' %}
+
+{% block content %}
+<div class="form-box">
+  <div class="login-container">
+    <header>Contact Us</header>
+    <form id="contactForm">
+      <div class="input-box">
+        <input type="text" id="contactName" class="input-field" placeholder="Your Name">
+        <i class='bx bx-user'></i>
+      </div>
+      <div class="input-box">
+        <input type="email" id="contactEmail" class="input-field" placeholder="Your Email">
+        <i class='bx bx-envelope'></i>
+      </div>
+      <div class="input-box">
+        <textarea id="contactMessage" class="input-field" placeholder="Your Message" style="height:100px; border-radius:20px; padding:10px 15px;"></textarea>
+      </div>
+      <div class="input-box">
+        <input type="submit" class="submit" value="Send Message">
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
+

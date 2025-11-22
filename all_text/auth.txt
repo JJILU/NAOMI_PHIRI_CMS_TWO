@@ -1,0 +1,198 @@
+from extensions import db
+from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+
+# ========================= School Records Database ==========================
+
+class TeacherSchoolRecord(db.Model):
+    __tablename__ = "teacherschoolrecord"
+
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    card_id = db.Column(db.String(50), nullable=False)
+
+    # FK -> teachers table (string name avoids circular import)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), unique=True, nullable=False)
+
+    def __init__(self, first_name, last_name, card_id):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.card_id = card_id
+
+    @classmethod
+    def get_teacher_by_card_id(cls, card_id):
+        return cls.query.filter_by(card_id=card_id).first()
+
+
+class StudentSchoolRecord(db.Model):
+    __tablename__ = "studentschoolrecord"
+
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    card_id = db.Column(db.String(50), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+
+    # link to student/admin records (string FKs)
+    student_school_id = db.Column(db.Integer, db.ForeignKey("students.id"), unique=True, nullable=True)
+    admin_school_id = db.Column(db.Integer, db.ForeignKey("admins.id"), unique=True, nullable=True)
+
+    # NEW: optional link to classroom so Classroom.student_school_record has a FK to join against
+    classroom_id = db.Column(db.Integer, db.ForeignKey("classroom.id"), nullable=True)
+
+    def __init__(self, first_name, last_name, card_id, is_admin):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.card_id = card_id
+        self.is_admin = is_admin
+
+    @classmethod
+    def get_student_by_card_id(cls, card_id):
+        return cls.query.filter_by(card_id=card_id).first()
+
+
+# ========================= Classroom Management Users ==========================
+
+class Teacher(db.Model, UserMixin):
+    __tablename__ = "teachers"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_card_id = db.Column(db.String(50), nullable=False)
+    hashed_password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # one-to-one
+    teacher_school_record = db.relationship(
+        "TeacherSchoolRecord", backref="teacher", uselist=False, lazy="joined"
+    )
+
+    # one-to-many attendance (string name)
+    teacher_attendance = db.relationship("StudentAttendance", backref="teacher", lazy="joined")
+
+    def __repr__(self):
+        return f"<Teacher {self.user_card_id}>"
+
+    def __init__(self, user_card_id, password, role):
+        self.user_card_id = user_card_id
+        self.hashed_password = self.set_hashed_password(password)
+        self.role = role
+
+    def get_id(self):
+        return f"Teacher:{self.id}"
+
+    def set_hashed_password(self, password):
+        return generate_password_hash(password)
+
+    def check_hashed_password(self, password):
+        return check_password_hash(self.hashed_password, password)
+
+    @classmethod
+    def get_teacher_card_id(cls, user_card_id):
+        return cls.query.filter_by(user_card_id=user_card_id).first()
+
+    def save_teacher(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_teacher(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+class Admin(db.Model, UserMixin):
+    __tablename__ = "admins"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_card_id = db.Column(db.String(50), nullable=False)
+    hashed_password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # one-to-one (school record)
+    admin_school_record = db.relationship("StudentSchoolRecord", backref="admin", uselist=False, lazy="joined")
+
+    # one-to-many attendance (string name)
+    admin_attendance = db.relationship("StudentAttendance", backref="admin", lazy="joined")
+
+    def __repr__(self):
+        return f"<Admin {self.user_card_id}>"
+
+    def __init__(self, user_card_id, password, role):
+        self.user_card_id = user_card_id
+        self.hashed_password = self.set_hashed_password(password)
+        self.role = role
+
+    def get_id(self):
+        return f"Admin:{self.id}"
+
+    def set_hashed_password(self, password):
+        return generate_password_hash(password)
+
+    def check_hashed_password(self, password):
+        return check_password_hash(self.hashed_password, password)
+
+    @classmethod
+    def get_user_card_id(cls, user_card_id):
+        return cls.query.filter_by(user_card_id=user_card_id).first()
+
+    def save_admin(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_admin(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+class Student(db.Model, UserMixin):
+    __tablename__ = "students"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_card_id = db.Column(db.String(50), nullable=False)
+    hashed_password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # one-to-one
+    student_school_record = db.relationship("StudentSchoolRecord", backref="student", uselist=False, lazy="joined")
+
+    # one-to-many attendance
+    student_attendance = db.relationship("StudentAttendance", backref="student", lazy="joined")
+
+    # one-to-many grades (if needed)
+    student_grades = db.relationship("StudentGrade", backref="student", lazy="joined")
+
+    def __repr__(self):
+        return f"<Student {self.user_card_id}>"
+
+    def __init__(self, user_card_id, password, role):
+        self.user_card_id = user_card_id
+        self.hashed_password = self.set_hashed_password(password)
+        self.role = role
+
+    def get_id(self):
+        return f"Student:{self.id}"
+
+    def set_hashed_password(self, password):
+        return generate_password_hash(password)
+
+    def check_hashed_password(self, password):
+        return check_password_hash(self.hashed_password, password)
+
+    @classmethod
+    def get_user_card_id(cls, user_card_id):
+        return cls.query.filter_by(user_card_id=user_card_id).first()
+
+    def save_student(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_student(self):
+        db.session.delete(self)
+        db.session.commit()
