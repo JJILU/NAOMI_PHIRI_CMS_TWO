@@ -35,11 +35,14 @@ def create_app():
 
 
     # import and register blueprints
-    from dash.views import dash_bp
     from auth.views import auth_bp
+    from dash.views import dash_bp
+    from legal.views import legal_bp
+    
 
     app.register_blueprint(auth_bp,url_prefix="/")
     app.register_blueprint(dash_bp,url_prefix="/dash")
+    app.register_blueprint(legal_bp,url_prefix="/legal")
 
     return app
 
