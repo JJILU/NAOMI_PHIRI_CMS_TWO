@@ -15,3 +15,5 @@ run seed files
 --------------
 NOTE: This way, Python automatically recognizes extensions.py as part of your package
 python -m seed.create_school_records
+python -m seed.create_tables
+python -m seed.create_subjects_classes

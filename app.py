@@ -29,12 +29,16 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app,db)
 
+    # REGISTER MODELS IN CORRECT ORDER
+    # import auth.models
+    import dash.models
+
 
     # import and register blueprints
     from dash.views import dash_bp
-    from auth.views import auth_bp
+    # from auth.views import auth_bp
 
-    app.register_blueprint(auth_bp,url_prefix="/")
+    # app.register_blueprint(auth_bp,url_prefix="/")
     app.register_blueprint(dash_bp,url_prefix="/dash")
 
     return app
