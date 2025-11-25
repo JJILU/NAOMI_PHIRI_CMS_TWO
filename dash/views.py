@@ -34,7 +34,7 @@ def create_admin():
 
 @dash_bp.route("/view_admins", methods=["GET", "POST"])
 def view_admins():
-    return render_template("student_management/view_students.html")
+    return render_template("admin_management/view_admins.html")
 
 
 @dash_bp.route("/view_one_admin/<int:id>", methods=["GET", "POST"])
