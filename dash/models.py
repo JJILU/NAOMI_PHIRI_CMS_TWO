@@ -75,7 +75,10 @@ class Classroom(db.Model):
         lazy="joined")
 
     # one-to-many: StudentSchoolRecord.classroom_id must exist (added in auth.models)
-    # student_school_record = db.relationship("StudentSchoolRecord", backref="classroom", lazy="joined")
+    student_school_record = db.relationship(
+        "StudentSchoolRecord", 
+        backref="classroom", 
+        lazy="joined")
 
     # class_assignments = db.relationship("ClassAssignment", backref="classroom", lazy="joined")
 

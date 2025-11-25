@@ -326,7 +326,7 @@
                         <!-- Assignments -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
-                                <i class="me-3 fa fa-tasks" aria-hidden="true"></i>
+                                <i class="fa fa-lock me-3" aria-hidden="true"></i>
                                 <span class="hide-menu">Assignments</span>
                             </a>
                             <ul class="collapse first-level" aria-expanded="false">
@@ -351,6 +351,22 @@
                                 </li>
                                 <li class="sidebar-item">
                                     <a href="{{ url_for('dash.create_student') }}" class="sidebar-link"><span class="hide-menu">Add Student</span></a>
+                                </li>
+                            </ul>
+                        </li>
+
+                         <!-- Admin Management -->
+                         <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
+                                <i class="fa fa-user-secret me-3" aria-hidden="true"></i>
+                                <span class="hide-menu">Admin Management</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_admins') }}" class="sidebar-link"><span class="hide-menu">View Admin</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_admin') }}" class="sidebar-link"><span class="hide-menu">Add Admin</span></a>
                                 </li>
                             </ul>
                         </li>

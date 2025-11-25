@@ -63,6 +63,12 @@ class StudentSchoolRecord(db.Model):
         uselist=False,
         lazy="joined"
         )
+    # one:many relationship
+    class_id = db.Column(
+        db.Integer,
+        db.ForeignKey('classroom.id'),
+        nullable=False
+    )
     
 
 

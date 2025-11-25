@@ -11,6 +11,49 @@ def index():
     return render_template("index.html")
 
 
+
+# ------------------ Admin Management End-Points ------------------------
+@dash_bp.route("/create_admin", methods=["GET", "POST"])
+def create_admin():
+    # classes = Class.query.all()
+    # if request.method == "POST":
+    #     name = request.form.get("name")
+    #     class_id = request.form.get("class_id")
+    #     if not name or not class_id:
+    #         flash("All fields are required.", "danger")
+    #         return redirect(url_for("dash.create_student"))
+
+    #     student = Student(name=name, class_id=class_id)
+    #     db.session.add(student)
+    #     db.session.commit()
+    #     flash("Student created successfully!", "success")
+    #     return redirect(url_for("dash.create_student"))
+    # return render_template("create_student.html", classes=classes)
+    return render_template("admin_management/create_admin.html")
+
+
+@dash_bp.route("/view_admins", methods=["GET", "POST"])
+def view_admins():
+    return render_template("student_management/view_students.html")
+
+
+@dash_bp.route("/view_one_admin/<int:id>", methods=["GET", "POST"])
+def view_one_admin(id):
+    return render_template("admin_management/view_one_admin.html")
+
+
+@dash_bp.route("/update_admin/<int:id>", methods=["GET", "POST"])
+def update_admin(id):
+    return render_template("admin_management/update_admin.html")
+
+
+@dash_bp.route("/delete_admin/<int:id>", methods=["GET", "POST"])
+def delete_admin(id):
+    return render_template("student_management/delete_admin.html")
+
+
+
+
 # ------------------ Student Management End-Points ------------------------
 @dash_bp.route("/create_student", methods=["GET", "POST"])
 def create_student():
