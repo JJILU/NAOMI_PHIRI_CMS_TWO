@@ -72,7 +72,8 @@ class Classroom(db.Model):
         "TeacherSchoolRecord",
         secondary="teacherschoolrecord_classroom",
         overlaps="classrooms",
-        lazy="joined")
+        lazy="joined"
+        )
 
     # one-to-many: StudentSchoolRecord.classroom_id must exist (added in auth.models)
     student_school_record = db.relationship(
