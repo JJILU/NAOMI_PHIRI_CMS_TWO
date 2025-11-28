@@ -25,11 +25,19 @@ class TeacherSchoolRecord(db.Model):
         )
 
     # many : many relationship
-    classrooms = db.relationship(
-        "Classroom",
+    compulsarysubject = db.relationship(
+        "CompulsarySubject",
         secondary="teacherschoolrecord_classroom",
         overlaps="teacherschoolrecords",
-        lazy="joined")
+        lazy="joined"
+        )
+    
+    optionalsubject = db.relationship(
+        "OptionalSubject",
+        secondary="teacherschoolrecord_optionalsubject",
+        overlaps="teacherschoolrecords",
+        lazy="joined"
+        )
     
     # one : one relationship
     teacher_avator = db.relationship(

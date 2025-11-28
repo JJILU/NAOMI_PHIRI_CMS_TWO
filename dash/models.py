@@ -10,12 +10,18 @@ compulsarysubject_class = db.Table(
 )
 
 
-teacherschoolrecord_classroom = db.Table(
-    "teacherschoolrecord_classroom",
-    db.Column("classroom_id", db.Integer, db.ForeignKey("classroom.id"), primary_key=True),
+teacherschoolrecord_compulsarysubject = db.Table(
+    "teacherschoolrecord_compulsarysubject",
+    db.Column("compulsary_subject_id", db.Integer, db.ForeignKey("compulsary_subject.id"), primary_key=True),
     db.Column("teacherschoolrecord_id", db.Integer, db.ForeignKey("teacher_school_record.id"), primary_key=True),
 )
 
+
+teacherschoolrecord_optionalsubject = db.Table(
+    "teacherschoolrecord_optionalsubject",
+    db.Column("optional_subject_id", db.Integer, db.ForeignKey("optional_subject.id"), primary_key=True),
+    db.Column("teacherschoolrecord_id", db.Integer, db.ForeignKey("teacher_school_record.id"), primary_key=True),
+)
 # ==================== SUBJECT MODELS ========================
 
 class CompulsarySubject(db.Model):
@@ -24,6 +30,13 @@ class CompulsarySubject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     subject_name = db.Column(db.String(50), nullable=False, unique=True)
     subject_code = db.Column(db.String(50), nullable=False, unique=True)
+
+    teacherschoolrecords = db.relationship(
+        "TeacherSchoolRecord",
+        secondary="teacherschoolrecord_compulsarysubject",
+        # overlaps="",
+        lazy="joined"
+        )
 
     def __init__(self,subject_name,subject_code) -> None:
         self.subject_name = subject_name
@@ -39,6 +52,13 @@ class OptionalSubject(db.Model):
     subject_code = db.Column(db.String(50), nullable=False, unique=True)
 
     classroom_id = db.Column(db.Integer, db.ForeignKey("classroom.id"))
+
+    teacherschoolrecords = db.relationship(
+        "TeacherSchoolRecord",
+        secondary="teacherschoolrecord_optionalsubject",
+        # overlaps="classrooms",
+        lazy="joined"
+        )
 
     def __init__(self,subject_name,subject_code,classroom_id) -> None:
         self.subject_name = subject_name
@@ -67,14 +87,7 @@ class Classroom(db.Model):
     # one-to-many
     optional_subjects = db.relationship("OptionalSubject", backref="classroom", lazy="joined")
 
-    # many-to-many with teacher school record
-    teacherschoolrecords = db.relationship(
-        "TeacherSchoolRecord",
-        secondary="teacherschoolrecord_classroom",
-        overlaps="classrooms",
-        lazy="joined"
-        )
-
+  
     # one-to-many: StudentSchoolRecord.classroom_id must exist (added in auth.models)
     student_school_record = db.relationship(
         "StudentSchoolRecord", 

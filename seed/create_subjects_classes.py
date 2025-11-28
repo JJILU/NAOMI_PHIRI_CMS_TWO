@@ -228,7 +228,7 @@ with app.app_context():
 
 
 
-        print("Subjects and classes for Grade 12 created successfully!")
+        print("Subjects and classes for Grade 10,11,12 created successfully!")
 
     except Exception as e:
         db.session.rollback()
