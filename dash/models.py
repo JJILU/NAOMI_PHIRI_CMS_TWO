@@ -81,7 +81,12 @@ class Classroom(db.Model):
         backref="classroom", 
         lazy="joined")
     
-    class_assignments = db.relationship("ClassAssignment", backref="classroom", lazy="joined")
+    # one-to-many: ClassAssignment.classroom_id must exist (added in dash.models)
+    class_assignments = db.relationship(
+        "ClassAssignment", 
+        backref="classroom", 
+        lazy="joined"
+        )
 
     def __init__(self, classroom_name) -> None:
         self.classroom_name = classroom_name
@@ -95,10 +100,21 @@ class StudentAttendance(db.Model):
     is_present = db.Column(db.Boolean,nullable=False,default=False)
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+    
+     # relationships
+    student = db.relationship(
+        "StudentSchoolRecord",
+        backref="student_attendances",
+        lazy="joined"
+        )
+
     # fk
-    student_id = db.Column(db.Integer,db.ForeignKey('student.id'))
-    # relationships
-    student = db.relationship("Student",backref="student_attendances",uselist=False,lazy="joined")
+    student_id = db.Column(
+        db.Integer,
+        db.ForeignKey('student.id'),
+        nullable=False
+        )
+   
 
 # ==================== STUDENT GRADE MODEL ============================= 
 class StudentGrade(db.Model):
@@ -111,10 +127,20 @@ class StudentGrade(db.Model):
     student_grade = db.Column(db.String(5),nullable=False) 
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
-    # fk
-    student_id = db.Column(db.Integer,db.ForeignKey('student.id'))
     # relationships
-    student = db.relationship("Student",backref="student_grade",uselist=False,lazy="joined")
+    student = db.relationship(
+        "StudentSchoolRecord",
+        backref="student_grade",
+        lazy="joined"
+        )
+    
+    # fk
+    student_id = db.Column(
+        db.Integer,
+        db.ForeignKey('student_school_record.id'),
+        nullable=False
+        )
+   
 
 
 # ==================== STUDENT ASSIGNMENT MODEL ============================= 
@@ -127,11 +153,26 @@ class ClassAssignment(db.Model):
     assignment_subject_code = db.Column(db.String(50),nullable=False)
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
-    # fk
-    classroom_id = db.Column(db.Integer,db.ForeignKey('classroom.id'))
+
     # relationships
-    classroom = db.relationship("Classroom", backref="class_assignments",lazy="joined")
-    assignment_file_uploads = db.relationship("AssignmentFileUpload",backref="class_assignment",uselist=True,lazy="joined")
+    classroom = db.relationship(
+        "Classroom", 
+        backref="class_assignments",
+        lazy="joined"
+        )
+    assignment_file_uploads = db.relationship(
+        "AssignmentFileUpload",
+        backref="class_assignment",
+        uselist=True,
+        lazy="joined"
+        )
+    
+    # fk
+    classroom_id = db.Column(
+        db.Integer,
+        db.ForeignKey('classroom.id'),
+        )
+    
 
 
 # ==================== STUDENT ASSIGNMENT MODEL ============================= 
@@ -144,7 +185,10 @@ class AssignmentFileUpload(db.Model):
     filename = db.Column(db.String(500),nullable=False) 
     filepath = db.Column(db.String(500),nullable=False) 
     # fk
-    class_assignment_id = db.Column(db.Integer,db.ForeignKey('class_assignment.id'), nullable=False)
+    class_assignment_id = db.Column(
+        db.Integer,
+        db.ForeignKey('class_assignment.id'),
+        nullable=False)
 
 
         

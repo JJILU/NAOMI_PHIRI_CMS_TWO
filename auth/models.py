@@ -82,6 +82,14 @@ class StudentSchoolRecord(db.Model):
         nullable=False
     )
 
+    # one : many relationship
+    grades = db.relationship(
+        "StudentGrade",
+        backref="student",
+        uselist=True,
+        lazy="joined"
+        )
+
     # one : one relationship
     student_avator = db.relationship(
         "AvatorFileUpload",
@@ -89,6 +97,8 @@ class StudentSchoolRecord(db.Model):
          uselist=False,
          lazy="joined"
         )
+    
+
     
 
 
