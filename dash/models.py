@@ -101,19 +101,14 @@ class StudentAttendance(db.Model):
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
     
-     # relationships
-    student = db.relationship(
-        "StudentSchoolRecord",
-        backref="student_attendances",
-        lazy="joined"
-        )
-
     # fk
-    student_id = db.Column(
+    student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey('student.id'),
+        db.ForeignKey('student_school_record.id'),
         nullable=False
         )
+    
+    
    
 
 # ==================== STUDENT GRADE MODEL ============================= 
@@ -127,20 +122,15 @@ class StudentGrade(db.Model):
     student_grade = db.Column(db.String(5),nullable=False) 
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
-    # relationships
-    student = db.relationship(
-        "StudentSchoolRecord",
-        backref="student_grade",
-        lazy="joined"
-        )
-    
+
     # fk
-    student_id = db.Column(
+    student_school_record_id = db.Column(
         db.Integer,
         db.ForeignKey('student_school_record.id'),
         nullable=False
         )
-   
+    
+  
 
 
 # ==================== STUDENT ASSIGNMENT MODEL ============================= 
@@ -155,11 +145,7 @@ class ClassAssignment(db.Model):
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
 
     # relationships
-    classroom = db.relationship(
-        "Classroom", 
-        backref="class_assignments",
-        lazy="joined"
-        )
+    
     assignment_file_uploads = db.relationship(
         "AssignmentFileUpload",
         backref="class_assignment",

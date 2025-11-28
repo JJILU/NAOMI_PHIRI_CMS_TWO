@@ -83,9 +83,17 @@ class StudentSchoolRecord(db.Model):
     )
 
     # one : many relationship
-    grades = db.relationship(
+    student_grades = db.relationship(
         "StudentGrade",
-        backref="student",
+        backref="student_record",
+        uselist=True,
+        lazy="joined"
+        )
+    
+     # one : many relationship
+    student_attendances = db.relationship(
+        "StudentAttendance",
+        backref="student_record",
         uselist=True,
         lazy="joined"
         )
