@@ -2,6 +2,7 @@ from extensions import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_login import UserMixin
+from dash.models import teacherschoolrecord_compulsarysubject,teacherschoolrecord_optionalsubject
 # from uuid import uuid4
 
 
@@ -27,14 +28,14 @@ class TeacherSchoolRecord(db.Model):
     # many : many relationship
     compulsarysubject = db.relationship(
         "CompulsarySubject",
-        secondary="teacherschoolrecord_classroom",
+        secondary=teacherschoolrecord_compulsarysubject,
         overlaps="teacherschoolrecords",
         lazy="joined"
         )
     
     optionalsubject = db.relationship(
         "OptionalSubject",
-        secondary="teacherschoolrecord_optionalsubject",
+        secondary=teacherschoolrecord_optionalsubject,
         overlaps="teacherschoolrecords",
         lazy="joined"
         )

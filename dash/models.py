@@ -34,7 +34,7 @@ class CompulsarySubject(db.Model):
     teacherschoolrecords = db.relationship(
         "TeacherSchoolRecord",
         secondary="teacherschoolrecord_compulsarysubject",
-        # overlaps="",
+        overlaps="compulsarysubject",
         lazy="joined"
         )
 
@@ -56,7 +56,7 @@ class OptionalSubject(db.Model):
     teacherschoolrecords = db.relationship(
         "TeacherSchoolRecord",
         secondary="teacherschoolrecord_optionalsubject",
-        # overlaps="classrooms",
+        overlaps="optionalsubject",
         lazy="joined"
         )
 
@@ -85,7 +85,11 @@ class Classroom(db.Model):
     )
 
     # one-to-many
-    optional_subjects = db.relationship("OptionalSubject", backref="classroom", lazy="joined")
+    optional_subjects = db.relationship(
+        "OptionalSubject", 
+        backref="classroom", 
+        lazy="joined"
+        )
 
   
     # one-to-many: StudentSchoolRecord.classroom_id must exist (added in auth.models)
