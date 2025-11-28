@@ -175,6 +175,10 @@ class AssignmentFileUpload(db.Model):
         db.Integer,
         db.ForeignKey('class_assignment.id'),
         nullable=False)
+    
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}: {self.filename}"
 
 
         
