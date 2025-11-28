@@ -10,7 +10,7 @@ def create_teacher_school_records():
         new_teacher = TeacherSchoolRecord(
             first_name=faker.first_name(),
             last_name=faker.last_name(),
-            card_id=faker.teacher_id()
+            card_id=faker.generate_teacher_id()
         )
         db.session.add(new_teacher)
     db.session.commit()   
@@ -26,8 +26,9 @@ with flask_app.app_context():
     # db.create_all()
     try:
         # create students school records
-        create_teacher_school_records()
-        print(f"Teachers created successfully")
+        # create_teacher_school_records()
+        # print(f"Teachers created successfully")
+        get_classes()
     except Exception as e:
         print(f"Failed to create teachers & students error occured {str(e)}")
         

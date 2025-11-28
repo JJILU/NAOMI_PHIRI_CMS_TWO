@@ -21,7 +21,7 @@ def create_student_school_records():
         new_student = StudentSchoolRecord(
             first_name=faker.first_name(),
             last_name=faker.last_name(),
-            card_id=faker.student_id(),
+            card_id=faker.generate_student_id(),
             is_admin=is_admin
         )
         db.session.add(new_student)

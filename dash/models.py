@@ -48,7 +48,7 @@ class OptionalSubject(db.Model):
 
 
 
-    # ==================== CLASSROOM =============================
+# ==================== CLASSROOM MODEL ============================= 
 
 class Classroom(db.Model):
     __tablename__ = "classroom"
@@ -80,9 +80,71 @@ class Classroom(db.Model):
         "StudentSchoolRecord", 
         backref="classroom", 
         lazy="joined")
-
-    # class_assignments = db.relationship("ClassAssignment", backref="classroom", lazy="joined")
+    
+    class_assignments = db.relationship("ClassAssignment", backref="classroom", lazy="joined")
 
     def __init__(self, classroom_name) -> None:
         self.classroom_name = classroom_name
+
+
+# ==================== STUDENT ATTENDANCE MODEL ============================= 
+class StudentAttendance(db.Model):
+    __tablename__ = "student_attendance"
+
+    id = db.Column(db.Integer,primary_key=True) 
+    is_present = db.Column(db.Boolean,nullable=False,default=False)
+    created_at = db.Column(db.DateTime,default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+    # fk
+    student_id = db.Column(db.Integer,db.ForeignKey('student.id'))
+    # relationships
+    student = db.relationship("Student",backref="student_attendances",uselist=False,lazy="joined")
+
+# ==================== STUDENT GRADE MODEL ============================= 
+class StudentGrade(db.Model):
+    __tablename__ = "student_grade"
+    id = db.Column(db.Integer,primary_key=True) 
+    exam_name = db.Column(db.String(50),nullable=False)
+    exam_code = db.Column(db.String(50),nullable=False)
+    exam_subject_Name = db.Column(db.String(50),nullable=False)
+    student_score = db.Column(db.Integer,nullable=False) 
+    student_grade = db.Column(db.String(5),nullable=False) 
+    created_at = db.Column(db.DateTime,default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+    # fk
+    student_id = db.Column(db.Integer,db.ForeignKey('student.id'))
+    # relationships
+    student = db.relationship("Student",backref="student_grade",uselist=False,lazy="joined")
+
+
+# ==================== STUDENT ASSIGNMENT MODEL ============================= 
+class ClassAssignment(db.Model):
+    __tablename__ = "class_assignment"
+
+    id = db.Column(db.Integer,primary_key=True) 
+    assignment_name = db.Column(db.String(50),nullable=False)
+    assignment_subject_Name = db.Column(db.String(50),nullable=False)
+    assignment_subject_code = db.Column(db.String(50),nullable=False)
+    created_at = db.Column(db.DateTime,default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+    # fk
+    classroom_id = db.Column(db.Integer,db.ForeignKey('classroom.id'))
+    # relationships
+    classroom = db.relationship("Classroom", backref="class_assignments",lazy="joined")
+    assignment_file_uploads = db.relationship("AssignmentFileUpload",backref="class_assignment",uselist=True,lazy="joined")
+
+
+# ==================== STUDENT ASSIGNMENT MODEL ============================= 
+
+class AssignmentFileUpload(db.Model):
+    __tablename__ = "assignment_fileupload"
+    # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
+    id = db.Column(db.Integer,primary_key=True)   
+    original_name = db.Column(db.String(500),nullable=False) 
+    filename = db.Column(db.String(500),nullable=False) 
+    filepath = db.Column(db.String(500),nullable=False) 
+    # fk
+    class_assignment_id = db.Column(db.Integer,db.ForeignKey('class_assignment.id'), nullable=False)
+
+
         

@@ -16,7 +16,7 @@ class TeacherSchoolRecord(db.Model):
     card_id = db.Column(db.String(50),nullable=False) 
     
       
-    # one:one relationship
+    # one : one relationship
     teacher = db.relationship(
         "Teacher",
         backref="teacherschoolrecord",
@@ -24,11 +24,22 @@ class TeacherSchoolRecord(db.Model):
         lazy="joined"
         )
 
+    # many : many relationship
     classrooms = db.relationship(
         "Classroom",
         secondary="teacherschoolrecord_classroom",
         overlaps="teacherschoolrecords",
         lazy="joined")
+    
+    # one : one relationship
+    teacher_avator = db.relationship(
+        "AvatorFileUpload",
+         backref="teacher_school_record",
+         uselist=False,
+         lazy="joined"
+        )
+    
+
 
     def __init__(self,first_name,last_name,card_id):
         self.first_name = first_name
@@ -50,7 +61,7 @@ class StudentSchoolRecord(db.Model):
     card_id = db.Column(db.String(50),nullable=False) 
     is_admin = db.Column(db.Boolean,default=False)
     
-    # one:one relationship
+    # one : one relationship
     student = db.relationship(
         "Student",
         backref="student",
@@ -63,12 +74,21 @@ class StudentSchoolRecord(db.Model):
         uselist=False,
         lazy="joined"
         )
-    # one:many relationship
-    class_id = db.Column(
+    
+    # one : many relationship
+    classroom_id = db.Column(
         db.Integer,
         db.ForeignKey('classroom.id'),
         nullable=False
     )
+
+    # one : one relationship
+    student_avator = db.relationship(
+        "AvatorFileUpload",
+         backref="student_school_record",
+         uselist=False,
+         lazy="joined"
+        )
     
 
 
@@ -84,7 +104,34 @@ class StudentSchoolRecord(db.Model):
     def get_student_by_card_id(cls,card_id):
         return StudentSchoolRecord.query.filter_by(card_id=card_id).first()     
 
+# ======================= Avator Model ======================
+class AvatorFileUpload(db.Model):
+    __tablename__ = "avator_fileupload"
+    # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
+    id = db.Column(db.Integer,primary_key=True)   
+    original_name = db.Column(db.String(500),nullable=False) 
+    filename = db.Column(db.String(500),nullable=False) 
+    filepath = db.Column(db.String(500),nullable=False) 
 
+
+
+    # fk
+    student_school_record_id = db.Column(
+        db.Integer,
+        db.ForeignKey('student_school_record.id'), nullable=False
+        )
+    
+    teacher_school_record_id = db.Column(
+        db.Integer,
+        db.ForeignKey('teacher_school_record.id'), 
+        nullable=False,
+        unique=True
+        )
+    
+    def __init__(self,original_name,filename,filepath):
+        self.original_name = original_name
+        self.filename = filename
+        self.filepath = filepath
 
         
 # ========================= Classroom Management Users ==========================
