@@ -20,5 +20,5 @@ python -m seed.create_subjects_classes
 python -m seed.create_custom_faker_id_generator
 python -m seed.create_students_school_records
 python -m seed.create_teacher_school_records
-python -m seed.associate_teachers_to_classes
+python -m seed.associate_teachers_to_subjects
 python -m seed.associate_students_to_classes

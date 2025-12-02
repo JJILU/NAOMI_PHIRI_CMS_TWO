@@ -28,23 +28,23 @@ with app.app_context():
 
         # ========== GRADE 10 Compulsory Subjects ==========
         cs1 = CompulsarySubject(
-            subject_name="Mathematics", 
+            subject_name="Junior Mathematics 10", 
             subject_code="MAT10"
             )
         cs2 = CompulsarySubject(
-            subject_name="English Language",
+            subject_name="English Language 10",
             subject_code="ENG10"
             )
         cs3 = CompulsarySubject(
-            subject_name="Science (Integrated)", 
+            subject_name="Science (Integrated) 10", 
             subject_code="SCI10"
             )
         cs4 = CompulsarySubject(
-            subject_name="Social Studies", 
+            subject_name="Social Studies 10", 
             subject_code="SOC10"
             )
         cs5 = CompulsarySubject(
-            subject_name="Religious Education", 
+            subject_name="Religious Education 10", 
             subject_code="REL10"
             )
 
@@ -61,23 +61,23 @@ with app.app_context():
 
         # ========== GRADE 11 Compulsory Subjects ==========
         cs6 = CompulsarySubject(
-            subject_name="Mathematics", 
+            subject_name="Basic Mathematics 11", 
             subject_code="MAT11"
             )
         cs7 = CompulsarySubject(
-            subject_name="English Language",
+            subject_name="English Language 11",
             subject_code="ENG11"
             )
         cs8 = CompulsarySubject(
-            subject_name="Science", 
+            subject_name="Science 11", 
             subject_code="SCI11"
             )
         cs9 = CompulsarySubject(
-            subject_name="Social Studies", 
-            subject_code="SOC10"
+            subject_name="Social Studies 11", 
+            subject_code="SOC11"
             )
         cs10 = CompulsarySubject(
-            subject_name="Biolog", 
+            subject_name="Biolog 11", 
             subject_code="BIO11"
             )
 
@@ -93,24 +93,24 @@ with app.app_context():
 
         # ========== GRADE 12 Compulsory Subjects ==========
         cs11 = CompulsarySubject(
-            subject_name="Mathematics", 
+            subject_name="Advanced Mathematics 12", 
             subject_code="MAT12"
             )
         cs12 = CompulsarySubject(
-            subject_name="English Language",
-            subject_code="ENG11"
+            subject_name="English Language 12",
+            subject_code="ENG12"
             )
         cs13 = CompulsarySubject(
-            subject_name="Science", 
-            subject_code="SCI11"
+            subject_name="Science 12", 
+            subject_code="SCI12"
             )
         cs14 = CompulsarySubject(
-            subject_name="Social Studies", 
-            subject_code="SOC10"
+            subject_name="Social Studies 12", 
+            subject_code="SOC12"
             )
         cs15 = CompulsarySubject(
-            subject_name="Biolog", 
-            subject_code="BIO11"
+            subject_name="Biolog 12", 
+            subject_code="BIO12"
             )
 
         db.session.add_all([cs11, cs12, cs13, cs14, cs15])
@@ -125,32 +125,32 @@ with app.app_context():
 
         # ========== GRADE 10 Optional Subjects ==========
         ops1 = OptionalSubject(
-            subject_name="French", 
+            subject_name="French 10", 
             subject_code="FRE10", 
             classroom_id=c1.id
             )
         ops2 = OptionalSubject(
-            subject_name="Agriculture", 
+            subject_name="Agriculture 10", 
             subject_code="AGR10", 
             classroom_id=c1.id
             )
         ops3 = OptionalSubject(
-            subject_name="Business Studies", 
+            subject_name="Business Studies 10", 
             subject_code="BUS10", 
             classroom_id=c2.id
             )
         ops4 = OptionalSubject(
-            subject_name="Computer Studies", 
+            subject_name="Computer Studies 10", 
             subject_code="COM10", 
             classroom_id=c2.id
             )
         ops5 = OptionalSubject(
-            subject_name="CIVIC", 
+            subject_name="CIVIC 10", 
             subject_code="CVC10", 
             classroom_id=c3.id
             )
         ops6 = OptionalSubject(
-            subject_name="Geography",
+            subject_name="Geography 10",
             subject_code="GEO10", classroom_id=c3.id)
 
         db.session.add_all([ops1, ops2, ops3, ops4, ops5, ops6])
@@ -204,7 +204,7 @@ with app.app_context():
             )
         ops15 = OptionalSubject(
             subject_name="HISTORY 12", 
-            subject_code="HIS1", 
+            subject_code="HIS12", 
             classroom_id=c8.id
             )
         ops16 = OptionalSubject(

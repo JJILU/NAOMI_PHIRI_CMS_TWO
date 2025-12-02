@@ -1,5 +1,7 @@
 from flask import Flask,render_template
 from extensions import db,migrate
+from datetime import timedelta
+import os
 
 
 def create_app():
@@ -24,6 +26,13 @@ def create_app():
     # app configurations
     app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///classroom.sqlite3'
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(),"uploads")
+
+    os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok=True)
+
+    # enforce 5 day login 
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=5)
+    app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=5)
 
     # init extensions
     db.init_app(app)
