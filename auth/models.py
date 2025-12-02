@@ -115,6 +115,14 @@ class StudentSchoolRecord(db.Model):
          lazy="joined"
         )
     
+    # one : many
+    student_assignment_submission = db.relationship(
+        "StudentAssignmentSubmission",
+        backref="student_school_record",
+        uselist=True,
+        lazy="joined"
+        )
+    
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}:School-ID = {self.card_id},First-Name = {self.first_name}, Is_Admin = {self.is_admin}"
 

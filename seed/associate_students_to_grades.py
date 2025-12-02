@@ -17,7 +17,7 @@ with app.app_context():
         for student in all_students:
             is_present = choices([True,False],weights=[50,50])[0]
             new_attendance = StudentGrade(
-                is_present=is_present,
+                
                 student_school_record_id=student.id
             )
 

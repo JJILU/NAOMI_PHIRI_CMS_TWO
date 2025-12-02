@@ -151,6 +151,16 @@ class StudentGrade(db.Model):
         nullable=False
         )
     
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}: Student-Score = {self.student_score}, Student-FK = {self.student_school_record_id}"
+    
+    def __init__(self,exam_name,exam_code,exam_subject_name,student_score,student_grade) -> None:
+        self.exam_name = exam_name
+        self.exam_code = exam_code
+        self.exam_subject_name = exam_subject_name
+        self.student_score = student_score
+        self.student_grade = student_grade
+    
   
 
 
@@ -202,4 +212,54 @@ class AssignmentFileUpload(db.Model):
         return f"{self.__class__.__name__}: {self.filename}"
 
 
-        
+# ==================== STUDENT ASSIGNMENT SUBMISSION MODEL ============================= 
+class StudentAssignmentSubmission(db.Model):
+    __tablename__ = "student_assignment_submission"
+
+    id = db.Column(db.Integer,primary_key=True) 
+    assignment_name = db.Column(db.String(50),nullable=False)
+    assignment_subject_Name = db.Column(db.String(50),nullable=False)
+    assignment_subject_code = db.Column(db.String(50),nullable=False)
+    created_at = db.Column(db.DateTime,default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
+
+    # relationships
+    
+    # one : many
+    assignment_submisssion_file_uploads = db.relationship(
+        "AssignmentFileUpload",
+        backref="student_assignment_submission",
+        uselist=True,
+        lazy="joined"
+        )
+    
+    # fk
+    student_school_record_id = db.Column(
+        db.Integer,
+        db.ForeignKey("student_school_record.id")
+    )
+    
+    
+
+
+# ==================== STUDENT ASSIGNMENT SUBMISSION MODEL ============================= 
+
+class AssignmentSubmisssionFileUpload(db.Model):
+    __tablename__ = " assignment_submisssion_file_upload"
+    # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
+    id = db.Column(db.Integer,primary_key=True)   
+    original_name = db.Column(db.String(500),nullable=False) 
+    filename = db.Column(db.String(500),nullable=False) 
+    filepath = db.Column(db.String(500),nullable=False) 
+    # fk
+    class_assignment_id = db.Column(
+        db.Integer,
+        db.ForeignKey('class_assignment.id'),
+        nullable=False)
+    
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}: {self.filename}"
+
+
+                
