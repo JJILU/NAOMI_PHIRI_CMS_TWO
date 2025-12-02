@@ -141,7 +141,7 @@ class StudentGrade(db.Model):
     id = db.Column(db.Integer,primary_key=True) 
     exam_name = db.Column(db.String(50),nullable=False)
     exam_code = db.Column(db.String(50),nullable=False)
-    exam_subject_Name = db.Column(db.String(50),nullable=False)
+    exam_subject_name = db.Column(db.String(50),nullable=False)
     student_score = db.Column(db.Integer,nullable=False) 
     student_grade = db.Column(db.String(5),nullable=False) 
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
@@ -157,12 +157,13 @@ class StudentGrade(db.Model):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}: Student-Score = {self.student_score}, Student-FK = {self.student_school_record_id}"
     
-    def __init__(self,exam_name,exam_code,exam_subject_name,student_score,student_grade) -> None:
+    def __init__(self,exam_name,exam_code,exam_subject_name,student_score,student_grade,student_school_record_id) -> None:
         self.exam_name = exam_name
         self.exam_code = exam_code
         self.exam_subject_name = exam_subject_name
         self.student_score = student_score
         self.student_grade = student_grade
+        self.student_school_record_id = student_school_record_id
     
   
 

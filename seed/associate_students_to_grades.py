@@ -43,3 +43,30 @@ with app.app_context():
         print("Exam Subject Selected:", exam_subject.subject_name)
         print("----")
 
+        for _ in range(10):
+            score = choices([45,22,78,98], weights=[5,10,60,25])[0]
+
+            if score > 90:
+                grade = "A+"
+            elif score > 60:
+                grade = "B+"
+            elif score > 40:
+                grade = "C"
+            elif score > 20:
+                grade = "D"
+            else:
+                grade = "F"
+
+            new_grade = StudentGrade(
+                exam_name=f"{exam_subject.subject_name} Exam",
+                exam_code=exam_subject.subject_code,
+                exam_subject_name=exam_subject.subject_name,
+                student_grade=grade,
+                student_score=score,
+                student_school_record_id=student.id
+            )
+
+            db.session.add(new_grade)
+
+        db.session.commit()
+

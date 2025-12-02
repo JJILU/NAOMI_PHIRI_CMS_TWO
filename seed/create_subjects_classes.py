@@ -223,7 +223,7 @@ with app.app_context():
             classroom_id=c9.id
             )
 
-        db.session.add_all([ops7, ops8, ops9, ops10, ops11, ops12])
+        db.session.add_all([ops13, ops14, ops15, ops16, ops17, ops18])
         db.session.commit()
 
 
