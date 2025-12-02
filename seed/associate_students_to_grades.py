@@ -13,9 +13,8 @@ with app.app_context():
 
     for student in all_students:
 
-        # the correct classroom
-        student_classroom = student.classroom  
-
+        student_classroom = student.classroom  # correct way
+        
         if not student_classroom:
             print("Student has no classroom. Skipping…")
             continue
@@ -23,15 +22,24 @@ with app.app_context():
         cs_list = student_classroom.compulsary_subjects
         op_list = student_classroom.optional_subjects
 
-        # skip empty lists
+        # both lists must have at least 1 subject
         if not cs_list or not op_list:
-            print("Subjects missing. Skipping...")
+            print("Student classroom has no subjects. Skipping…")
             continue
 
+        # generate equal weights
         com_weights = [1] * len(cs_list)
         op_weights = [1] * len(op_list)
 
+        # pick one compulsory & one optional
         com_subject = choices(cs_list, weights=com_weights, k=1)[0]
         optional = choices(op_list, weights=op_weights, k=1)[0]
 
-        print(com_subject, optional)
+        # now select from the two picked subjects
+        exam_subject = choices([com_subject, optional], weights=[50, 50], k=1)[0]
+
+        print("Compulsory:", com_subject.subject_name)
+        print("Optional:", optional.subject_name)
+        print("Exam Subject Selected:", exam_subject.subject_name)
+        print("----")
+
