@@ -37,6 +37,9 @@ class CompulsarySubject(db.Model):
         overlaps="compulsarysubject",
         lazy="joined"
         )
+    
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}: Compulsary-Subject-Name = {self.subject_name},Compulsary-Subject-Name = {self.subject_code}"
 
     def __init__(self,subject_name,subject_code) -> None:
         self.subject_name = subject_name
@@ -176,9 +179,16 @@ class ClassAssignment(db.Model):
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
 
     # relationships
-    
+    # one : many
     assignment_file_uploads = db.relationship(
         "AssignmentFileUpload",
+        backref="class_assignment",
+        uselist=True,
+        lazy="joined"
+        )
+    
+    assignment_submisssion_file_uploads = db.relationship(
+        "StudentAssignmentSubmission",
         backref="class_assignment",
         uselist=True,
         lazy="joined"
@@ -189,6 +199,12 @@ class ClassAssignment(db.Model):
         db.Integer,
         db.ForeignKey('classroom.id'),
         )
+    
+    def __init__(self,assignment_name,assignment_subject_Name,assignment_subject_code,classroom_id) -> None:
+        self.assignment_name = assignment_name
+        self.assignment_subject_Name = assignment_subject_Name
+        self.assignment_subject_code = assignment_subject_code
+        self.classroom_id= classroom_id
     
 
 
@@ -210,6 +226,12 @@ class AssignmentFileUpload(db.Model):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}: {self.filename}"
+    
+    def __init__(self,original_name,filename,filepath) -> None:
+        self.original_name = original_name
+        self.filename = filename
+        self.filepath = filepath
+        
 
 
 # ==================== STUDENT ASSIGNMENT SUBMISSION MODEL ============================= 
@@ -223,11 +245,12 @@ class StudentAssignmentSubmission(db.Model):
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
 
+
     # relationships
     
-    # one : many
+    # one : many 
     assignment_submisssion_file_uploads = db.relationship(
-        "AssignmentFileUpload",
+        "AssignmentSubmisssionFileUpload",
         backref="student_assignment_submission",
         uselist=True,
         lazy="joined"
@@ -236,30 +259,48 @@ class StudentAssignmentSubmission(db.Model):
     # fk
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey("student_school_record.id")
+        db.ForeignKey("student_school_record.id"),
+        nullable=False
+    )
+
+    class_assignment_id = db.Column(
+        db.Integer,
+        db.ForeignKey("class_assignment.id"),
+        nullable=False
     )
     
+    def __init__(self,assignment_name,assignment_subject_Name,assignment_subject_code,student_school_record_id) -> None:
+        self.assignment_name = assignment_name
+        self.assignment_subject_Name = assignment_subject_Name
+        self.assignment_subject_code = assignment_subject_code
+        self.student_school_record_id = student_school_record_id
     
 
 
 # ==================== STUDENT ASSIGNMENT SUBMISSION MODEL ============================= 
 
 class AssignmentSubmisssionFileUpload(db.Model):
-    __tablename__ = " assignment_submisssion_file_upload"
+    __tablename__ = "assignment_submisssion_file_upload"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
     id = db.Column(db.Integer,primary_key=True)   
     original_name = db.Column(db.String(500),nullable=False) 
     filename = db.Column(db.String(500),nullable=False) 
     filepath = db.Column(db.String(500),nullable=False) 
     # fk
-    class_assignment_id = db.Column(
+    student_assignment_submission_id = db.Column(
         db.Integer,
-        db.ForeignKey('class_assignment.id'),
-        nullable=False)
+        db.ForeignKey('student_assignment_submission.id'),
+        nullable=False
+        )
     
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}: {self.filename}"
+    
+    def __init__(self,original_name,filename,filepath) -> None:
+        self.original_name = original_name
+        self.filename = filename
+        self.filepath = filepath
 
 
                 

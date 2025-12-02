@@ -18,7 +18,7 @@ def create_teacher_school_records():
 
 with flask_app.app_context():
     try:
-        # create_teacher_school_records()
+        create_teacher_school_records()
         print("created teacher records successfully")
     except Exception as e:
         db.session.rollback()

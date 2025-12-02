@@ -21,17 +21,27 @@ def get_all_teachers() -> list:
     return all_teachers
 
 with app.app_context():
-  # for cs in get_all_compulsary_subjects():
-  #     teacher = choice(get_all_teachers())
-  #     cs.teacherschoolrecords.append(teacher)
+  try:
+    for cs in get_all_compulsary_subjects():
+      teacher = choice(get_all_teachers())
+      cs.teacherschoolrecords.append(teacher)
 
 
-  # for os in get_all_options_subjects():
-  #     teacher = choice(get_all_teachers())
-  #     os.teacherschoolrecords.append(teacher)  
+    for os in get_all_options_subjects():
+        teacher = choice(get_all_teachers())
+        os.teacherschoolrecords.append(teacher)  
 
-  # db.session.commit()      
+    db.session.commit()    
+    print("successfully associated teacher teachers to subjects")  
+  except Exception as e:
+     db.session.rollback()
+     print(f"Falied to associated teacher teachers to subjects: {str(e)}")  
+
+     
+
 
 
   teacher = TeacherSchoolRecord.query.get(9)
-  print(teacher.)
+  if teacher:
+    print(teacher.compulsarysubject)
+    print(teacher.optionalsubject)
