@@ -125,6 +125,10 @@ class StudentAttendance(db.Model):
         nullable=False
         )
     
+    def __init__(self, is_present,student_school_record_id):
+        self.is_present = is_present
+        self.student_school_record_id = student_school_record_id
+         
     
    
 

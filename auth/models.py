@@ -116,7 +116,7 @@ class StudentSchoolRecord(db.Model):
         )
     
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}:School ID = {self.card_id},First Name = {self.first_name}, {self.is_admin}"
+        return f"{self.__class__.__name__}:School-ID = {self.card_id},First-Name = {self.first_name}, Is_Admin = {self.is_admin}"
 
     def __init__(self,first_name,last_name,card_id,is_admin,classroom_id):
         self.first_name = first_name
