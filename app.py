@@ -30,7 +30,7 @@ def create_app():
 
     os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok=True)
 
-    # enforce 5 day login 
+    # enforce max 5 day login 
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=5)
     app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=5)
 

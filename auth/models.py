@@ -115,21 +115,21 @@ class StudentSchoolRecord(db.Model):
          lazy="joined"
         )
     
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}:School ID = {self.card_id},First Name = {self.first_name}, {self.is_admin}"
 
-    
-
-
-
-    def __init__(self,first_name,last_name,card_id,is_admin):
+    def __init__(self,first_name,last_name,card_id,is_admin,classroom_id):
         self.first_name = first_name
         self.last_name = last_name
         self.card_id = card_id
         self.is_admin = is_admin
+        self.classroom_id = classroom_id
 
         # check if teacher id is in school records, before creating one
     @classmethod
     def get_student_by_card_id(cls,card_id):
         return StudentSchoolRecord.query.filter_by(card_id=card_id).first()     
+
 
 # ======================= Avator Model ======================
 class AvatorFileUpload(db.Model):

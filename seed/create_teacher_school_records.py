@@ -1,5 +1,5 @@
 from extensions import db,faker
-from auth.models import TeacherSchoolRecord,Teacher
+from auth.models import TeacherSchoolRecord
 from app import create_app
 
 
@@ -16,20 +16,12 @@ def create_teacher_school_records():
     db.session.commit()   
 
 
-# get all classes
-def get_classes():
-    all_teachers = TeacherSchoolRecord.query.all()
-    print(all_teachers)
-
-
 with flask_app.app_context():
-    # db.create_all()
     try:
-        # create students school records
         # create_teacher_school_records()
-        # print(f"Teachers created successfully")
-        get_classes()
+        print("created teacher records successfully")
     except Exception as e:
+        db.session.rollback()
         print(f"Failed to create teachers & students error occured {str(e)}")
         
             
