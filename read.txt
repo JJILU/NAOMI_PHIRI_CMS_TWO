@@ -1,0 +1,74 @@
+Here is the cleanest and simplest way to configure Flask so you can save each file type to its own folder:
+
+✅ Folder Structure You Want
+uploads/
+    assignments_uploads/
+    profile_photo/
+    assignment_student_submission_files/
+
+✅ 1. Create the folders automatically
+
+Put this after app = Flask(__name__):
+
+import os
+
+BASE_UPLOAD = os.path.join(os.getcwd(), "uploads")
+ASSIGNMENT_UPLOAD = os.path.join(BASE_UPLOAD, "assignments_uploads")
+PROFILE_PHOTO_UPLOAD = os.path.join(BASE_UPLOAD, "profile_photo")
+STUDENT_SUBMISSION_UPLOAD = os.path.join(BASE_UPLOAD, "assignment_student_submission_files")
+
+# Create folders if not exist
+for folder in [BASE_UPLOAD, ASSIGNMENT_UPLOAD, PROFILE_PHOTO_UPLOAD, STUDENT_SUBMISSION_UPLOAD]:
+    os.makedirs(folder, exist_ok=True)
+
+✅ 2. Add to Flask config
+app.config["BASE_UPLOAD"] = BASE_UPLOAD
+app.config["ASSIGNMENT_UPLOAD"] = ASSIGNMENT_UPLOAD
+app.config["PROFILE_PHOTO_UPLOAD"] = PROFILE_PHOTO_UPLOAD
+app.config["STUDENT_SUBMISSION_UPLOAD"] = STUDENT_SUBMISSION_UPLOAD
+
+✅ 3. Saving files (example routes)
+🎓 Save Assignment Files
+@app.route('/upload/assignment', methods=['POST'])
+def upload_assignment():
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config["ASSIGNMENT_UPLOAD"], filename))
+    return "Assignment uploaded"
+
+🧑‍🏫 Save Profile Photo
+@app.route('/upload/profile', methods=['POST'])
+def upload_profile():
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config["PROFILE_PHOTO_UPLOAD"], filename))
+    return "Profile photo uploaded"
+
+📝 Save Student Assignment Submission
+@app.route('/upload/submission', methods=['POST'])
+def upload_submission():
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config["STUDENT_SUBMISSION_UPLOAD"], filename))
+    return "Submission uploaded"
+
+✅ 4. How to store in DB
+
+Example for your model:
+
+new_file = AssignmentFileUpload(
+    original_name=file.filename,
+    filename=filename,
+    filepath=os.path.join(app.config["ASSIGNMENT_UPLOAD"], filename)
+)
+db.session.add(new_file)
+db.session.commit()
+
+💬 If You Want I Can:
+
+✔ Create download route
+✔ Add file validation (PDF/images only)
+✔ Add unique filename generator
+✔ Integrate with your Assignment model
+
+Just tell me “show full working code” — and I’ll write everything perfectly structured.
