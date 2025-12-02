@@ -26,5 +26,6 @@ python -m seed.associate_teachers_to_subjects
 
 python -m seed.associate_students_to_attendances
 python -m seed.associate_students_to_grades
+python -m seed.create_assignments_associate_fileupload
 python -m seed.associate_student_to_assignment_submission
 python -m seed.associate_assignments_to_assignment_submission
