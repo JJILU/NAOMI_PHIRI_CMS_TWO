@@ -138,6 +138,51 @@ def delete_assignment(id):
     return render_template("assignment/delete_assignment.html")
 
 
+# ------------------ Assignment Submission End-Points ------------------------
+@dash_bp.route("/create_assignment_submission", methods=["GET", "POST"])
+def create_assignment_submission():
+    # students = Student.query.all()
+    # if request.method == "POST":
+    #     title = request.form.get("title")
+    #     student_id = request.form.get("student_id")
+    #     due_date = request.form.get("due_date")
+
+    #     if not all([title, student_id, due_date]):
+    #         flash("All fields are required.", "danger")
+    #         return redirect(url_for("dash.create_assignment"))
+
+    #     assignment = Assignment(title=title, student_id=student_id, due_date=due_date)
+    #     db.session.add(assignment)
+    #     db.session.commit()
+    #     flash("Assignment created successfully!", "success")
+    #     return redirect(url_for("dash.create_assignment"))
+
+    # return render_template("create_assignment.html", students=students)
+
+    return render_template("student_assignment_submission/create_student_assigment_submission.html")
+
+
+@dash_bp.route("/view_assignment_submissions", methods=["GET", "POST"])
+def view_assignment_submissions():
+    return render_template("student_assignment_submission/view_student_assigment_submission.html")
+
+
+@dash_bp.route("/view_one_assignment_submission/<int:id>", methods=["GET", "POST"])
+def view_one_assignment_submission(id):
+    return render_template("student_assignment_submission/view_one_student_assigment_submission_detail.html")
+
+
+@dash_bp.route("/update_assigment_submission/<int:id>", methods=["GET", "POST"])
+def update_assigment_submission(id):
+    return render_template("student_assignment_submission/update_student_assigment_submission.html")
+
+
+@dash_bp.route("/delete_assigment_submission/<int:id>", methods=["GET", "POST"])
+def delete_assigment_submission(id):
+    return render_template("student_assignment_submission/delete_student_assigment_submission.html")
+
+
+
 # ------------------ Attendance End-Points ------------------------
 @dash_bp.route("/create_attendance", methods=["GET", "POST"])
 def create_attendance():

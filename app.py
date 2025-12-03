@@ -26,9 +26,22 @@ def create_app():
     # app configurations
     app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///classroom.sqlite3'
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(),"uploads")
+    
+    # app configurations file uploads
+    BASE_UPLOAD = os.path.join(os.getcwd(), "uploads")
+    ASSIGNMENT_UPLOAD = os.path.join(BASE_UPLOAD, "assignments_uploads")
+    PROFILE_PHOTO_UPLOAD = os.path.join(BASE_UPLOAD, "profile_photo")
+    STUDENT_SUBMISSION_UPLOAD = os.path.join(BASE_UPLOAD, "assignment_student_submission_files")
 
-    os.makedirs(app.config["UPLOAD_FOLDER"],exist_ok=True)
+    # Create folders if not exist
+    for folder in [BASE_UPLOAD, ASSIGNMENT_UPLOAD, PROFILE_PHOTO_UPLOAD, STUDENT_SUBMISSION_UPLOAD]:
+        os.makedirs(folder, exist_ok=True)
+
+    # Add to Flask config
+    app.config["BASE_UPLOAD"] = BASE_UPLOAD
+    app.config["ASSIGNMENT_UPLOAD"] = ASSIGNMENT_UPLOAD
+    app.config["PROFILE_PHOTO_UPLOAD"] = PROFILE_PHOTO_UPLOAD
+    app.config["STUDENT_SUBMISSION_UPLOAD"] = STUDENT_SUBMISSION_UPLOAD    
 
     # enforce max 5 day login 
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=5)

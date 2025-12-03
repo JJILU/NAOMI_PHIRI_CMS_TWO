@@ -355,6 +355,34 @@
                             </ul>
                         </li>
 
+                        <!-- Students Assignment Submission -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow"
+                            href="javascript:void(0)" aria-expanded="false">
+                                <i class="me-3 fa fa-upload"></i>
+                                <span class="hide-menu">Assignment Submission</span>
+                            </a>
+
+                            <ul class="collapse first-level" aria-expanded="false">
+
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_assignment_submissions') }}" class="sidebar-link">
+                                        <i class="fa fa-eye me-2"></i>
+                                        <span class="hide-menu">View Assignment Submission</span>
+                                    </a>
+                                </li>
+
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_assignment_submission') }}" class="sidebar-link">
+                                        <i class="fa fa-plus me-2"></i>
+                                        <span class="hide-menu">Create Assignment Submission</span>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
+
                          <!-- Admin Management -->
                          <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
