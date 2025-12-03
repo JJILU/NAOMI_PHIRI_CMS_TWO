@@ -1,6 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for,request
+from flask import  render_template, redirect, url_for,request
 
-from auth.models import StudentSchoolRecord
 from . import dash_bp
 
 
@@ -78,6 +77,7 @@ def create_student():
 
 @dash_bp.route("/view_students", methods=["GET", "POST"])
 def view_students():
+    from auth.models import StudentSchoolRecord
     students = StudentSchoolRecord.query.all()
     return render_template("student_management/view_students.html", students=students)
 

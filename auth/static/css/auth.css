@@ -473,3 +473,14 @@ input[type="checkbox"] {
 .link.active {
   border-bottom: 2px solid #fff;
 } */
+
+
+/* flashed message */
+.flash-messages p.success {
+  color: lightgreen;
+  text-align: center;
+}
+.flash-messages p.error {
+  color: red;
+  text-align: center;
+}

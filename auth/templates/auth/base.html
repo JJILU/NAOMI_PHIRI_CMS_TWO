@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}CLASSROOM MANAGEMENT SYSTEM | Login & Registration {% endblock title %}</title>
+  <title>{% block title %}CLASSROOM MANAGEMENT SYSTEM | Login & Registration{% endblock %}</title>
   <!-- boxicons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <!-- images -->
+  <!-- favicon -->
   <link rel="icon" href="{{ url_for('static', filename='assets/favicon/learning.png') }}" type="image/png">
   <!-- css -->
   <link rel="stylesheet" href="{{ url_for('auth.static', filename='css/auth.css') }}">
@@ -35,13 +35,14 @@
     </div>
   </nav>
 
+  <!-- Flash Messages (AJAX messages will appear here) -->
+  <div class="flash-messages" id="flashMessages"></div>
+
   {% block content %}
-    
+  <!-- Login / Register Forms go here -->
   {% endblock content %}
 </div>  
 
- 
-
-  <script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
+<script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
 </body>
 </html>

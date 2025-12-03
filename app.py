@@ -1,73 +1,106 @@
-from flask import Flask,render_template
-from extensions import db,migrate
+from flask import Flask, render_template, redirect, url_for
+from extensions import db, migrate, login_manager
 from datetime import timedelta
 import os
+from typing import cast
 
+from auth.models import Teacher, Admin, Student
 
 def create_app():
-    app = Flask(__name__,template_folder="templates",static_folder="static")
+    app = Flask(__name__, template_folder="templates", static_folder="static")
 
-    # 404 error handler
+    # ----------------------
+    # Error handlers
+    # ----------------------
     @app.errorhandler(404)
     def resource_not_found(error):
-        return render_template('errors/not_found_error.html')
+        return render_template('errors/not_found_error.html'), 404
     
-    # 500 error handler
     @app.errorhandler(500)
     def internal_server_error(error):
-        return render_template('errors/internal_server_error.html')
+        return render_template('errors/internal_server_error.html'), 500
     
-    # raise a 500 error
     @app.route("/cause500")
     def cause500():
         raise Exception("This is a forced 500 error!")
 
-
-    # app configurations
-    app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///classroom.sqlite3'
+    # ----------------------
+    # DB Configurations
+    # ----------------------
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///classroom.sqlite3"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    
-    # app configurations file uploads
+
+    # ----------------------
+    # File Uploads
+    # ----------------------
     BASE_UPLOAD = os.path.join(os.getcwd(), "uploads")
     ASSIGNMENT_UPLOAD = os.path.join(BASE_UPLOAD, "assignments_uploads")
     PROFILE_PHOTO_UPLOAD = os.path.join(BASE_UPLOAD, "profile_photo")
     STUDENT_SUBMISSION_UPLOAD = os.path.join(BASE_UPLOAD, "assignment_student_submission_files")
 
-    # Create folders if not exist
     for folder in [BASE_UPLOAD, ASSIGNMENT_UPLOAD, PROFILE_PHOTO_UPLOAD, STUDENT_SUBMISSION_UPLOAD]:
         os.makedirs(folder, exist_ok=True)
 
-    # Add to Flask config
     app.config["BASE_UPLOAD"] = BASE_UPLOAD
     app.config["ASSIGNMENT_UPLOAD"] = ASSIGNMENT_UPLOAD
     app.config["PROFILE_PHOTO_UPLOAD"] = PROFILE_PHOTO_UPLOAD
-    app.config["STUDENT_SUBMISSION_UPLOAD"] = STUDENT_SUBMISSION_UPLOAD    
+    app.config["STUDENT_SUBMISSION_UPLOAD"] = STUDENT_SUBMISSION_UPLOAD
 
-    # enforce max 5 day login 
+    # ----------------------
+    # Remember Me / Sessions
+    # ----------------------
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=5)
     app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=5)
 
-    # init extensions
+    # ----------------------
+    # Init Extensions
+    # ----------------------
     db.init_app(app)
-    migrate.init_app(app,db)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
 
-    # REGISTER MODELS IN CORRECT ORDER
-    # import auth.models
+    # Redirect unauthenticated users
+    login_manager.login_view = cast(str, "login")
+    login_manager.login_message = None  # disable flashing text
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return redirect(url_for("login"))
+
+    # ----------------------
+    # Multi-model user loader
+    # ----------------------
+    @login_manager.user_loader
+    def load_user(user_id):
+        try:
+            model_name, pk = user_id.split(":", 1)
+            pk = int(pk)
+        except Exception:
+            return None
+
+        if model_name == "Teacher":
+            return Teacher.query.get(pk)
+        if model_name == "Admin":
+            return Admin.query.get(pk)
+        if model_name == "Student":
+            return Student.query.get(pk)
+
+        return None
+
+    # ----------------------
+    # Register Models
+    # ----------------------
     import dash.models
 
-
-    # import and register blueprints
+    # ----------------------
+    # Register Blueprints
+    # ----------------------
     from auth.views import auth_bp
     from dash.views import dash_bp
     from legal.views import legal_bp
-    
 
-    app.register_blueprint(auth_bp,url_prefix="/")
-    app.register_blueprint(dash_bp,url_prefix="/dash")
-    app.register_blueprint(legal_bp,url_prefix="/legal")
+    app.register_blueprint(auth_bp, url_prefix="/")
+    app.register_blueprint(dash_bp, url_prefix="/dash")
+    app.register_blueprint(legal_bp, url_prefix="/legal")
 
     return app
-
-
-
-

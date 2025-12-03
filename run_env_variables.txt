@@ -29,3 +29,8 @@ python -m seed.associate_students_to_grades
 python -m seed.create_assignments_associate_fileupload
 python -m seed.associate_student_to_assignment_submission
 python -m seed.associate_assignments_to_assignment_submission
+
+git remote -v
+output
+------
+https://github.com/JJILU/NAOMI_PHIRI_CMS_TWO.git 

@@ -195,10 +195,11 @@ class Teacher(db.Model,UserMixin):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: teacher card id {self.user_card_id}>"
     
-    def __init__(self, user_card_id, password,role) -> None:
+    def __init__(self, user_card_id, password,role,teacher_school_record_id) -> None:
         self.user_card_id = user_card_id
         self.hashed_password = self.set_hashed_password(password)
         self.role = role
+        self.teacher_school_record_id = teacher_school_record_id
 
     # used to load current user
     def get_id(self):
@@ -253,10 +254,11 @@ class Admin(db.Model,UserMixin):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: admin card id {self.user_card_id}>"
     
-    def __init__(self, user_card_id, password,role) -> None:
+    def __init__(self, user_card_id, password,role,student_school_record_id) -> None:
         self.user_card_id = user_card_id
         self.hashed_password= self.set_hashed_password(password)
         self.role = role
+        self.student_school_record_id = student_school_record_id
 
     # used to load current user
     def get_id(self):
@@ -306,17 +308,17 @@ class Student(db.Model,UserMixin):
         unique=True,
         nullable=False
         )
-    # one:many relationship
-    # student_attendance = db.relationship("StudentAttendance",backref="student",uselist=True,lazy="joined")
+    
 
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: student card id {self.user_card_id}>"
     
-    def __init__(self, user_card_id, password,role) -> None:
+    def __init__(self, user_card_id, password,role,student_school_record_id) -> None:
         self.user_card_id = user_card_id
         self.hashed_password = self.set_hashed_password(password)
         self.role = role
+        self.student_school_record_id = student_school_record_id
 
     # used to load current user
     def get_id(self):
