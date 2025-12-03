@@ -121,7 +121,9 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return jsonify({"success": True, "message": "Logged out successfully", "redirect": "/"}), 200
+    return jsonify({
+        "success": True, "message": "Logged out successfully", 
+        "redirect": "/"}), 200
 
 
 # ---------------------------

@@ -101,6 +101,31 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
+  // ----------- LOGOUT -------------
+  const logoutLink = document.getElementById("logoutLink");
+ console.log("print")
+  if (logoutLink) {
+    logoutLink.addEventListener("click", async (e) => {
+      e.preventDefault(); // prevent default navigation
+
+      try {
+        const response = await fetch("/logout", { method: "GET" });
+        const result = await response.json();
+
+        if (result.success) {
+          alert(result.message);             // show alert
+          window.location.href = result.redirect; // redirect to login
+        } else {
+          alert("Failed to logout. Try again.");
+        }
+      } catch (err) {
+        console.error("Logout error:", err);
+        alert("Server error. Try again later.");
+      }
+    });
+  }
+
   // ---------- NAV LINK ACTIVE STATE ----------
   const navLinks = document.querySelectorAll(".nav-menu .link");
   navLinks.forEach(link => {

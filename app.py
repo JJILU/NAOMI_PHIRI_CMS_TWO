@@ -3,8 +3,8 @@ from extensions import db, migrate, login_manager
 from datetime import timedelta
 import os
 from typing import cast
-
 from auth.models import Teacher, Admin, Student
+from config import Config
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -29,6 +29,7 @@ def create_app():
     # ----------------------
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///classroom.sqlite3"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = Config.SECRET_KEY
 
     # ----------------------
     # File Uploads
@@ -65,7 +66,7 @@ def create_app():
 
     @login_manager.unauthorized_handler
     def unauthorized():
-        return redirect(url_for("login"))
+        return redirect(url_for("auth.login"))
 
     # ----------------------
     # Multi-model user loader
