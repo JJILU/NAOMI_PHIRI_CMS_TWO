@@ -33,15 +33,25 @@ function register() {
 }
 
 // =======================
+// TOAST FUNCTION
+// =======================
+function showToast(message, type = "info", duration = 3000) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.className = `toast show ${type}`;
+
+  setTimeout(() => {
+    toast.className = "toast";
+  }, duration);
+}
+
+// =======================
 // AUTH FORM SUBMISSION
 // =======================
 document.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.getElementById("loginForm");
-  const registerForm = document.getElementById("registerForm");
-
-  const showMessage = (msg) => alert(msg); // optional: replace with inline flash messages
 
   // ---------- LOGIN ----------
+  const loginForm = document.getElementById("loginForm");
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -61,17 +71,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const result = await response.json();
-        showMessage(result.message);
-        if (result.success && result.redirect) window.location.href = result.redirect;
+        if (result.success) {
+          showToast(result.message, "success");
+          if (result.redirect) {
+            setTimeout(() => {
+              window.location.href = result.redirect;
+            }, 1500);
+          }
+        } else {
+          showToast(result.message || "Login failed. Try again.", "error");
+        }
 
       } catch (err) {
         console.error(err);
-        showMessage("Server error. Try again later.");
+        showToast("Server error. Try again later.", "error");
       }
     });
   }
 
   // ---------- REGISTER ----------
+  const registerForm = document.getElementById("registerForm");
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -91,40 +110,83 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const result = await response.json();
-        showMessage(result.message);
-        if (result.success && result.redirect) window.location.href = result.redirect;
+        if (result.success) {
+          showToast(result.message, "success");
+          if (result.redirect) {
+            setTimeout(() => {
+              window.location.href = result.redirect;
+            }, 1500);
+          }
+        } else {
+          showToast(result.message || "Registration failed. Try again.", "error");
+        }
 
       } catch (err) {
         console.error(err);
-        showMessage("Server error. Try again later.");
+        showToast("Server error. Try again later.", "error");
       }
     });
   }
 
+  // ---------- LOGOUT ----------
+//   // ---------- LOGOUT ----------
+// const logoutLink = document.getElementById("logoutLink");
+// if (logoutLink) {
+//   logoutLink.addEventListener("click", async (e) => {
+//     e.preventDefault();
 
-  // ----------- LOGOUT -------------
-  const logoutLink = document.getElementById("logoutLink");
- console.log("print")
+//     // disable the link temporarily to prevent double clicks
+//     logoutLink.style.pointerEvents = "none";
+
+//     try {
+//       const response = await fetch("/logout", { method: "GET" });
+//       const result = await response.json();
+
+//       if (result.success) {
+//         showToast(result.message, "success");
+//         setTimeout(() => {
+//           window.location.href = result.redirect;
+//         }, 1500);
+//       } else {
+//         showToast(result.message || "Failed to logout. Try again.", "error");
+//       }
+
+//     } catch (err) {
+//       console.error("Logout error:", err);
+//       showToast("Server error. Try again later.", "error");
+//     } finally {
+//       // re-enable link after 2 seconds
+//       setTimeout(() => {
+//         logoutLink.style.pointerEvents = "auto";
+//       }, 2000);
+//     }
+//   });
+// }
+
+["logoutDropdown", "logoutSidebar"].forEach(id => {
+  const logoutLink = document.getElementById(id);
   if (logoutLink) {
     logoutLink.addEventListener("click", async (e) => {
-      e.preventDefault(); // prevent default navigation
-
+      e.preventDefault();
       try {
         const response = await fetch("/logout", { method: "GET" });
         const result = await response.json();
-
         if (result.success) {
-          alert(result.message);             // show alert
-          window.location.href = result.redirect; // redirect to login
+          showToast(result.message, "success");
+          setTimeout(() => {
+            window.location.href = result.redirect;
+          }, 1500);
         } else {
-          alert("Failed to logout. Try again.");
+          showToast("Failed to logout. Try again.", "error");
         }
       } catch (err) {
         console.error("Logout error:", err);
-        alert("Server error. Try again later.");
+        showToast("Server error. Try again later.", "error");
       }
     });
   }
+});
+
 
   // ---------- NAV LINK ACTIVE STATE ----------
   const navLinks = document.querySelectorAll(".nav-menu .link");
@@ -134,4 +196,5 @@ document.addEventListener("DOMContentLoaded", () => {
       this.classList.add("active");
     });
   });
+
 });

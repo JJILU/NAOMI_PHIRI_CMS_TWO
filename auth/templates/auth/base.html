@@ -38,6 +38,12 @@
   <!-- Flash Messages (AJAX messages will appear here) -->
   <div class="flash-messages" id="flashMessages"></div>
 
+  <!-- TOAST -->
+  <div id="toast">
+    <span id="toast-message"></span>
+    <span class="close-toast" onclick="hideToast()">&times;</span>
+  </div>
+
   {% block content %}
   <!-- Login / Register Forms go here -->
   {% endblock content %}

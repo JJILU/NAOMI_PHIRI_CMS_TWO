@@ -1,5 +1,5 @@
-from flask import request, jsonify, session,render_template
-from flask_login import login_user, logout_user, login_required
+from flask import request, jsonify, session,render_template,url_for
+from flask_login import login_user, logout_user, login_required,current_user
 from extensions import db
 from auth.models import TeacherSchoolRecord, StudentSchoolRecord, Teacher, Student, Admin
 from . import auth_bp
@@ -117,13 +117,21 @@ def login():
 # ---------------------------
 # LOGOUT
 # ---------------------------
-@auth_bp.route("/logout")
-@login_required
+@auth_bp.route("/logout", methods=["GET"])
 def logout():
-    logout_user()
-    return jsonify({
-        "success": True, "message": "Logged out successfully", 
-        "redirect": "/"}), 200
+    if current_user.is_authenticated:
+        logout_user()
+        return jsonify({
+            "success": True,
+            "message": "Logged out successfully",
+            "redirect": url_for("auth.login")
+        }), 200
+    else:
+        return jsonify({
+            "success": False,
+            "message": "You are already logged out",
+            "redirect": url_for("auth.login")
+        }), 200
 
 
 # ---------------------------
