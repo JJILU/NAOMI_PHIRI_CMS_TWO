@@ -14,7 +14,11 @@ def create_app():
     # ----------------------
     @app.errorhandler(404)
     def resource_not_found(error):
-        return render_template('errors/not_found_error.html'), 404
+        return render_template('errors/not_found_error.html'), 403
+    
+    @app.errorhandler(403)
+    def resource_not_found(error):
+        return render_template('errors/forbidden_action.html'), 404
     
     @app.errorhandler(500)
     def internal_server_error(error):

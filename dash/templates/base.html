@@ -281,6 +281,7 @@
                 <!-- Sidebar navigation-->
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
                         <!-- Dashboard -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url_for('dash.index') }}" aria-expanded="false">
@@ -288,7 +289,9 @@
                                 <span class="hide-menu">Dashboard</span>
                             </a>
                         </li>
+                        {% endif %}
                 
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
                         <!-- Attendance -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="attendance.html" aria-expanded="false">
@@ -308,7 +311,9 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
                 
+                        {% if  current_user.is_authenticated and current_user.role == "teacher" %}
                         <!-- Grades -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
@@ -324,7 +329,9 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
                 
+                        {% if  current_user.is_authenticated and current_user.role == "teacher" %}
                         <!-- Assignments -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
@@ -340,7 +347,9 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
                 
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
                         <!-- Students Management -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
@@ -356,7 +365,9 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
 
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "student"] %}
                         <!-- Students Assignment Submission -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow"
@@ -383,8 +394,9 @@
 
                             </ul>
                         </li>
+                        {% endif %}
 
-
+                        {% if  current_user.is_authenticated and current_user.role == "teacher" %}
                          <!-- Admin Management -->
                          <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
@@ -400,8 +412,10 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
 
-                        <!-- Students Only -->
+                        {% if  current_user.is_authenticated and current_user.role == "student" %}
+                            <!-- Students Only -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
                                 <i class="fa fa-user-circle me-3"></i>
@@ -419,8 +433,10 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
+                        
                 
-                
+                        {% if current_user.is_authenticated %}
                         <!-- Profile -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url_for('dash.view_profile') }}" aria-expanded="false">
@@ -428,22 +444,29 @@
                                 <span class="hide-menu">Profile</span>
                             </a>
                         </li>
+                            
+                        {% endif %}
+                        
                 
-                        <!-- Settings -->
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
+                            <!-- Settings -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url_for('dash.settings') }}" aria-expanded="false">
                                 <i class="me-3 fa fa-cog" aria-hidden="true"></i>
                                 <span class="hide-menu">Settings</span>
                             </a>
                         </li>
+                        {% endif %}
                 
-                        <!-- Logout -->
+                        {% if current_user.is_authenticated %}
+                            <!-- Logout -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link"  id="logoutSidebar" aria-expanded="false">
                                 <i class="me-3 fa fa-sign-out-alt" aria-hidden="true"></i>
                                 <span class="hide-menu">Logout</span>
                             </a>
                         </li>
+                        {% endif %}
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->

@@ -1,34 +1,53 @@
-from flask import  render_template, redirect, url_for,request
-from flask_login import login_required,current_user
+from flask import render_template, redirect, url_for, request, abort
+from flask_login import login_required, current_user
+from functools import wraps
 
 from . import dash_bp
 
-
-
-# --------------- Use Here Only ----------------------------------
-
-from flask import redirect, url_for
-from flask_login import current_user
-from . import dash_bp
 
 
 @dash_bp.before_request
 def require_login():
-    # Allow access to static files
+    # Allow static files
     if request.endpoint and request.endpoint.startswith("static"):
         return
 
-    # Only allow logged-in users
+    # Block ALL views unless user logged in
     if not current_user.is_authenticated:
-        return redirect(url_for("auth.login"))  # change to your login route
+        return redirect(url_for("auth.login"))
+
+    # Example: allow certain views without restriction
+    # (use real endpoint names)
+    # if request.endpoint in ["dash_bp.index"]:
+    #     return
+
     
-    if request.endpoint in ["dash_bp.index"]:
-        return  # allow login page or home page
+def role_required(*roles):
+    """
+    Usage:
+        @role_required("Admin", "Teacher")
+    """
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            # Must be logged in
+            if not current_user.is_authenticated:
+                return redirect(url_for("auth.login"))
+
+            # User logged in but wrong role → Forbidden
+            if current_user.role not in roles:
+                return abort(403)
+
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
 
 
 
 
 @dash_bp.route("/")
+@role_required("teacher","admin")
 def index():
     return render_template("index.html")
 
@@ -36,7 +55,10 @@ def index():
 
 # ------------------ Admin Management End-Points ------------------------
 @dash_bp.route("/create_admin", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def create_admin():
+    # restrict access to endpoint based on role
+
     # classes = Class.query.all()
     # if request.method == "POST":
     #     name = request.form.get("name")
@@ -55,21 +77,25 @@ def create_admin():
 
 
 @dash_bp.route("/view_admins", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def view_admins():
     return render_template("admin_management/view_admins.html")
 
 
 @dash_bp.route("/view_one_admin/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def view_one_admin(id):
     return render_template("admin_management/view_one_admin.html")
 
 
 @dash_bp.route("/update_admin/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def update_admin(id):
     return render_template("admin_management/update_admin.html")
 
 
 @dash_bp.route("/delete_admin/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def delete_admin(id):
     return render_template("student_management/delete_admin.html")
 
@@ -78,6 +104,7 @@ def delete_admin(id):
 
 # ------------------ Student Management End-Points ------------------------
 @dash_bp.route("/create_student", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def create_student():
     # classes = Class.query.all()
     # if request.method == "POST":
@@ -97,6 +124,7 @@ def create_student():
 
 
 @dash_bp.route("/view_students", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def view_students():
     from auth.models import StudentSchoolRecord
     students = StudentSchoolRecord.query.all()
@@ -104,22 +132,26 @@ def view_students():
 
 
 @dash_bp.route("/view_one_student/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def view_one_student(id):
     return render_template("student_management/view_one_student.html")
 
 
 @dash_bp.route("/update_student/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def update_student(id):
     return render_template("student_management/update_student.html")
 
 
 @dash_bp.route("/delete_student/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def delete_student(id):
     return render_template("student_management/delete_student.html")
 
 
 # ------------------ Assignments End-Points ------------------------
 @dash_bp.route("/create_assignment", methods=["GET", "POST"])
+@role_required("teacher")
 def create_assignment():
     # students = Student.query.all()
     # if request.method == "POST":
@@ -143,16 +175,19 @@ def create_assignment():
 
 
 @dash_bp.route("/view_assignments", methods=["GET", "POST"])
+@role_required("teacher","admin","student")
 def view_assignment():
     return render_template("assignment/view_assignments.html")
 
 
 @dash_bp.route("/view_one_assignment/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def view_one_assignment(id):
     return render_template("student_management/view_one_assignment.html")
 
 
 @dash_bp.route("/update_assignment/<int:id>", methods=["GET", "POST"])
+@role_required("teacher","admin")
 def update_assignment(id):
     return render_template("assignment/update_assignment.html")
 
