@@ -1,10 +1,31 @@
 from flask import  render_template, redirect, url_for,request
+from flask_login import login_required,current_user
 
 from . import dash_bp
 
 
 
 # --------------- Use Here Only ----------------------------------
+
+from flask import redirect, url_for
+from flask_login import current_user
+from . import dash_bp
+
+
+@dash_bp.before_request
+def require_login():
+    # Allow access to static files
+    if request.endpoint and request.endpoint.startswith("static"):
+        return
+
+    # Only allow logged-in users
+    if not current_user.is_authenticated:
+        return redirect(url_for("auth.login"))  # change to your login route
+    
+    if request.endpoint in ["dash_bp.index"]:
+        return  # allow login page or home page
+
+
 
 
 @dash_bp.route("/")
