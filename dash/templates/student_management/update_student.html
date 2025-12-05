@@ -59,10 +59,13 @@
       </div>
 
       <div class="d-flex">
-        <button class="btn btn-success me-2">Update Student</button>
-        <a href="{{ url_for('dash.delete_student', id=student.id) }}" class="btn btn-danger"
-           onclick="return confirm('Are you sure you want to delete this student?');">
+        <button class="btn btn-success me-2">
+          Update Student
+          <i class="fa fa-edit"></i> 
+        </button>
+        <a href="{{ url_for('dash.delete_student', id=student.id) }}" class="btn btn-danger">
           Delete Student
+          <i class="fa fa-trash"></i>
         </a>
       </div>
 
