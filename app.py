@@ -91,6 +91,10 @@ def create_app():
             return Student.query.get(pk)
 
         return None
+    
+    # @app.route('/favicon.ico')
+    # def favicon():
+    #     return redirect(url_for('static', filename='assets/favicon/learning.png'))
 
     # ----------------------
     # Register Models

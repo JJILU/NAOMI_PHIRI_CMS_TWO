@@ -11,6 +11,9 @@ def require_login():
     # Allow static files
     if request.endpoint and request.endpoint.startswith("static"):
         return
+    # Allow browser favicon request
+    if request.path == "/favicon.ico":
+        return
 
     # Block ALL views unless user logged in
     if not current_user.is_authenticated:
