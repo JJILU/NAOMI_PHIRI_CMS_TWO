@@ -5,15 +5,17 @@ import os
 from typing import cast
 from auth.models import Teacher, Admin, Student
 from config import Config
+from sqlalchemy import text
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
-
+    
+    
     # ----------------------
     # Error handlers
     # ----------------------
-    @app.errorhandler(404)
-    def resource_not_found(error):
+    @app.errorhandler(403)
+    def action_forbidden_found(error):
         return render_template('errors/not_found_error.html'), 403
     
     @app.errorhandler(403)
@@ -63,6 +65,17 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+
+    # ----------------------
+    # Automatic DB check on startup
+    # ----------------------
+    with app.app_context():
+        try:
+            db.session.execute(text("SELECT 1"))
+            print("DATABASE CONNECTED")
+        except Exception as e:
+            print(f"DB ERROR: {e}")
+            raise RuntimeError("Database connection failed") from e
 
     # Redirect unauthenticated users
     login_manager.login_view = cast(str, "login")
