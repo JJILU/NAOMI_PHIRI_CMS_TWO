@@ -154,7 +154,7 @@ def create_student():
 
 
 
-
+# prepopulated  students records 
 @dash_bp.route("/view_students")
 @role_required("teacher", "admin")
 def view_students():
@@ -170,6 +170,27 @@ def view_students():
 
     return render_template(
         "student_management/view_students_records.html",
+        students=students_paginated.items,
+        pagination=students_paginated,
+        per_page=per_page
+    )
+
+# omi classroom students 
+@dash_bp.route("/view_class_students")
+@role_required("teacher", "admin")
+def view_class_students():
+    from auth.models import Student
+
+    # Pagination params
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    students_paginated = Student.query.order_by(
+        Student.id.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template(
+        "student_management/view_class_students.html",
         students=students_paginated.items,
         pagination=students_paginated,
         per_page=per_page
