@@ -169,7 +169,7 @@ def view_students():
     ).paginate(page=page, per_page=per_page, error_out=False)
 
     return render_template(
-        "student_management/view_students.html",
+        "student_management/view_students_records.html",
         students=students_paginated.items,
         pagination=students_paginated,
         per_page=per_page
