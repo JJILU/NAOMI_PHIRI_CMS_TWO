@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, request, abort
 from flask_login import login_required, current_user
 from functools import wraps
-from sqlalchemy import desc,asc,text
+from sqlalchemy import desc,asc
 from extensions import db
 
 from . import dash_bp
@@ -96,36 +96,137 @@ def delete_admin(id):
 
 # ------------------ Student Management End-Points ------------------------
 @dash_bp.route("/create_student", methods=["GET", "POST"])
-@role_required("teacher","admin")
 def create_student():
-    
-    return render_template("student_management/create_student.html")
+    from auth.models import StudentSchoolRecord,Student
+    # fetch available school IDs (Card IDs)
+    available_cards = StudentSchoolRecord.query.order_by(StudentSchoolRecord.card_id.asc()).all()
+
+    if request.method == "POST":
+        card_id = request.form.get("card_id")
+        password = request.form.get("password")
+        confirm = request.form.get("confirm_password")
+
+        if not card_id or not password:
+            return render_template(
+                "student_management/create_one_student.html",
+                error="All fields are required!",
+                card_ids=available_cards
+            )
+
+        if password != confirm:
+            return render_template(
+                "student_management/create_one_student.html",
+                error="Passwords do not match!",
+                card_ids=available_cards
+            )
+
+        # check card exists
+        school_record = StudentSchoolRecord.query.filter_by(card_id=card_id).first()
+        if not school_record:
+            return render_template(
+                "student_management/create_one_student.html",
+                error="Invalid Card ID selected!",
+                card_ids=available_cards
+            )
+
+        # prevent duplicate users
+        if Student.query.filter_by(user_card_id=card_id).first():
+            return render_template(
+                "student_management/create_one_student.html",
+                error="A student account for this Card ID already exists!",
+                card_ids=available_cards
+            )
+
+        # Create user
+        new_user = Student(
+            user_card_id=card_id,
+            password=password,
+            role="student",
+            student_school_record_id=school_record.id
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(url_for("dash.view_students"))
+
+    return render_template("student_management/create_one_student.html", card_ids=available_cards)
 
 
-@dash_bp.route("/view_students", methods=["GET", "POST"])
-@role_required("teacher","admin")
+
+
+@dash_bp.route("/view_students")
+@role_required("teacher", "admin")
 def view_students():
     from auth.models import StudentSchoolRecord
-    students = StudentSchoolRecord.query.all()
-    return render_template("student_management/view_students.html", students=students)
+
+    # Pagination params
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    students_paginated = StudentSchoolRecord.query.order_by(
+        StudentSchoolRecord.id.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template(
+        "student_management/view_students.html",
+        students=students_paginated.items,
+        pagination=students_paginated,
+        per_page=per_page
+    )
 
 
-@dash_bp.route("/view_one_student/<int:id>", methods=["GET", "POST"])
+
+@dash_bp.route("/view_one_student/<int:id>")
 @role_required("teacher","admin")
 def view_one_student(id):
-    return render_template("student_management/view_one_student.html")
+    from auth.models import StudentSchoolRecord
+    student = StudentSchoolRecord.query.get_or_404(id)
+    return render_template("student_management/view_one_student_detail.html", student=student)
+
 
 
 @dash_bp.route("/update_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher","admin")
 def update_student(id):
-    return render_template("student_management/update_student.html")
+    from auth.models import StudentSchoolRecord
+    student = StudentSchoolRecord.query.get_or_404(id)
+    from dash.models import Classroom
+    classrooms = Classroom.query.all()
+
+    if request.method == "POST":
+        student.first_name = request.form.get("first_name")
+        student.last_name = request.form.get("last_name")
+        student.classroom_id = request.form.get("classroom_id")
+        db.session.commit()
+        return redirect(url_for("dash.view_students"))
+
+    return render_template(
+        "student_management/update_student.html",
+        student=student,
+        classrooms=classrooms
+    )
+
 
 
 @dash_bp.route("/delete_student/<int:id>", methods=["GET", "POST"])
-@role_required("teacher","admin")
+@role_required("teacher", "admin")
 def delete_student(id):
-    return render_template("student_management/delete_student.html")
+    from auth.models import StudentSchoolRecord
+    student = StudentSchoolRecord.query.get_or_404(id)
+
+    if request.method == "POST":
+        # User confirmed deletion
+        db.session.delete(student)
+        db.session.commit()
+        return redirect(url_for("dash.view_students"))
+
+    # Render confirmation page
+    return render_template(
+        "student_management/delete_student.html",
+        student=student
+    )
+
 
 
 # ------------------ Assignments End-Points ------------------------ [Teacher & Admin]

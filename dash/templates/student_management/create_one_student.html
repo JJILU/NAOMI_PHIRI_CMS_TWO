@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-breadcrumb">
+    <div class="row align-items-center">
+        <div class="col-md-6 col-8 align-self-center">
+            <h3 class="page-title mb-0 p-0">Create Student</h3>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+                    <li class="breadcrumb-item">Students Management</li>
+                    <li class="breadcrumb-item active" aria-current="page">Create Student</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+
+      <!-- Select existing Student Card ID -->
+      <div class="mb-3">
+        <label class="form-label">Select Student Card ID</label>
+        <select name="card_id" class="form-control" required>
+          <option value="">-- Select Card ID --</option>
+
+          {% for s in card_ids %}
+          <option value="{{ s.card_id }}">
+            {{ s.card_id }} — {{ s.first_name }} {{ s.last_name }}
+          </option>
+          {% endfor %}
+
+        </select>
+      </div>
+
+      <!-- Password -->
+      <div class="mb-3 position-relative">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+            <input type="password" id="password" name="password" class="form-control" required>
+
+            <span class="input-group-text" onclick="togglePassword('password', 'eye1')"
+                  style="cursor:pointer;">
+                <i id="eye1" class="fa fa-eye"></i>
+            </span>
+        </div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="mb-3 position-relative">
+        <label class="form-label">Confirm Password</label>
+        <div class="input-group">
+            <input type="password" id="confirm_password" name="confirm_password"
+                   class="form-control" required>
+
+            <span class="input-group-text" onclick="togglePassword('confirm_password', 'eye2')"
+                  style="cursor:pointer;">
+                <i id="eye2" class="fa fa-eye"></i>
+            </span>
+        </div>
+      </div>
+
+      <button class="btn btn-success">Create Account</button>
+
+    </form>
+
+  </div>
+</div>
+
+<script>
+function togglePassword(inputId, eyeId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(eyeId);
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+</script>
+
+{% endblock content %}
