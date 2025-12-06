@@ -290,7 +290,7 @@ class Admin(db.Model,UserMixin):
        
 
 
-# --------------- 3: Student ClassFlow Model --------------------
+# --------------- 3: Student Class Room Management Model --------------------
 
 class Student(db.Model,UserMixin):
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
@@ -312,7 +312,7 @@ class Student(db.Model,UserMixin):
 
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}: student card id {self.user_card_id}>"
+        return f"<{self.__class__.__name__}: student card id {self.user_card_id}>, student fk {self.student_school_record_id}"
     
     def __init__(self, user_card_id, password,role,student_school_record_id) -> None:
         self.user_card_id = user_card_id

@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from functools import wraps
 from sqlalchemy import desc, asc
 from extensions import db
+from random import choice
 
 from . import dash_bp
 
@@ -45,6 +46,16 @@ def role_required(*roles):
             return f(*args, **kwargs)
         return wrapper
     return decorator
+
+
+chat_bot_responses = {
+    "greeting":["😊 Hello, what question do have","🖐 Hi what how can i help","Hi 😎","🤗Hi there"],
+    "attendance":"",
+    "assignments":"",
+    "assignments":"",
+    "grading":"",
+    "update profile":"",
+}
 
 
 @dash_bp.route("/")
@@ -146,7 +157,7 @@ def create_student():
     return render_template("student_management/create_one_student.html", card_ids=available_cards)
 
 
-# prepopulated  students records
+# prepopulated students records
 @dash_bp.route("/view_students")
 @role_required("teacher", "admin")
 def view_students():
@@ -162,29 +173,6 @@ def view_students():
 
     return render_template(
         "student_management/view_students_records.html",
-        students=students_paginated.items,
-        pagination=students_paginated,
-        per_page=per_page
-    )
-
-# omi classroom students
-
-
-@dash_bp.route("/view_class_students")
-@role_required("teacher", "admin")
-def view_class_students():
-    from auth.models import Student
-
-    # Pagination params
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-
-    students_paginated = Student.query.order_by(
-        Student.id.desc()
-    ).paginate(page=page, per_page=per_page, error_out=False)
-
-    return render_template(
-        "student_management/view_class_students.html",
         students=students_paginated.items,
         pagination=students_paginated,
         per_page=per_page
@@ -240,6 +228,133 @@ def delete_student(id):
     )
 
 
+# ------------------ Student CMS Management ------------------------ 
+@dash_bp.route("/create_cms_student", methods=["GET", "POST"])
+def create_cms_student():
+    from auth.models import StudentSchoolRecord, Student
+    # fetch available school IDs (Card IDs)
+    available_cards = StudentSchoolRecord.query.order_by(
+        StudentSchoolRecord.card_id.asc()).all()
+
+    if request.method == "POST":
+        card_id = request.form.get("card_id")
+        password = request.form.get("password")
+        confirm = request.form.get("confirm_password")
+
+        if not confirm or not password:
+            return render_template(
+                "student_management/create_one_student.html",
+                error="password and confirmation password are required fields!",
+                card_ids=available_cards
+            )
+
+        if password != confirm:
+            return render_template(
+                "student_management/create_one_student.html",
+                error="Passwords do not match!",
+                card_ids=available_cards
+            )
+
+        # check card exists
+        school_record = StudentSchoolRecord.query.filter_by(
+            card_id=card_id).first()
+        if not school_record:
+            return render_template(
+                "student_management/create_one_student.html",
+                error="Invalid Card ID selected!",
+                card_ids=available_cards
+            )
+
+        # prevent duplicate users
+        if Student.query.filter_by(user_card_id=card_id).first():
+            return render_template(
+                "student_management/create_one_student.html",
+                error="A student account for this Card ID already exists!",
+                card_ids=available_cards
+            )
+
+        # Create user
+        new_user = Student(
+            user_card_id=card_id,
+            password=password,
+            role="student",
+            student_school_record_id=school_record.id
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return redirect(url_for("dash.view_cms_students"))
+
+    return render_template("student_management/create_one_student.html", card_ids=available_cards)
+
+
+@dash_bp.route("/view_cms_students")
+@role_required("teacher", "admin")
+def view_cms_students():
+    from auth.models import Student,StudentSchoolRecord
+
+    # Pagination params
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    students_paginated = Student.query.order_by(
+        Student.id.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
+
+
+    return render_template(
+        "student_management/view_cms_students.html",
+        students=students_paginated.items,
+        pagination=students_paginated,
+        per_page=per_page
+    )
+
+@dash_bp.route("/view_one_student/<int:id>")
+@role_required("teacher", "admin")
+def view_one_cms_student(id):
+    from auth.models import Student
+    student = Student.query.get_or_404(id)
+    return render_template("student_management/view_one_cms_student_detail.html", student=student)
+
+
+@dash_bp.route("/update_student/<int:id>", methods=["GET", "POST"])
+@role_required("teacher", "admin")
+def update_cms_student(id):
+    from auth.models import Student
+    student = Student.query.get_or_404(id)
+    if request.method == "POST":
+        student.hashed_password = request.form.get("updated_password")
+        db.session.commit()
+        return redirect(url_for("dash.view_cms_students"))
+
+    return render_template(
+        "student_management/update_student.html",
+        student=student
+    )
+
+
+@dash_bp.route("/delete_cms_student/<int:id>", methods=["GET", "POST"])
+@role_required("teacher", "admin")
+def delete_cms_student(id):
+    from auth.models import Student
+    student = Student.query.get_or_404(id)
+
+    if request.method == "POST":
+        # User confirmed deletion
+        db.session.delete(student)
+        db.session.commit()
+        return redirect(url_for("dash.view_cms_students"))
+
+    # Render confirmation page
+    return render_template(
+        "student_management/delete_cms_student.html",
+        student=student
+    )
+
+
+
+
 # ------------------ Assignments End-Points ------------------------ [Teacher & Admin]
 @dash_bp.route("/create_assignment", methods=["GET", "POST"])
 @role_required("teacher")
@@ -272,10 +387,8 @@ def delete_assignment(id):
     return render_template("assignment/delete_assignment.html")
 
 # ------------------------------- Assignment Submission [Teacher] ----------------------
-
-
 @dash_bp.route("/view_assignment_submissions", methods=["GET", "POST"])
-@role_required("teacher")
+@role_required("teacher","admin")
 def teacher_view_assignment_submissions():
     return render_template("student_assignment_submission/view_student_assigment_submission.html")
 
@@ -437,8 +550,12 @@ def view_student_attendances_details(id):
 def chatbot():
     req = request.get_json()
     msg = req.get('message')
+
+    if any(word in msg for word in ["Hello","Hi"]):
+        return choice(chat_bot_responses["greeting"])
+
     # compute response...
-    return jsonify(reply="Your reply")
+    return jsonify(reply="Hi there how can i help")
 
 
 # ------------------ Profile ------------------------

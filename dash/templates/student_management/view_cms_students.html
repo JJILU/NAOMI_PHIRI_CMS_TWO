@@ -70,38 +70,40 @@
                                 <!-- Round initial -->
                                 <td style="width:50px;">
                                     <span class="round round-primary">
-                                        {{ s.first_name[0]|upper }}
+                                        {{ s.student.first_name[0]|upper }}
                                     </span>
                                 </td>
 
                                 <!-- Name -->
                                 <td class="align-middle">
-                                    <h6>{{ s.first_name }} {{ s.last_name }}</h6>
-                                    <small class="text-muted">Student</small>
+                                    <h6>{{ s.student.first_name }} {{ s.student.last_name }}</h6>
+                                    <small class="text-muted">
+                                        Admin
+                                    </small>
                                 </td>
 
                                 <!-- School ID -->
                                 <td class="align-middle">
-                                    {{ s.card_id }}
+                                    {{ s.user_card_id }}
                                 </td>
 
                                 <!-- Action Buttons -->
                                 <td class="align-middle text-center">
 
                                     <!-- View -->
-                                    <a href="{{ url_for('dash.view_one_student', id=s.id) }}"
+                                    <a href="{{ url_for('dash.view_one_cms_student', id=s.id) }}"
                                        class="btn btn-info btn-sm">
                                         <i class="fa fa-eye"></i>
                                     </a>
 
                                     <!-- Edit -->
-                                    <a href="{{ url_for('dash.update_student', id=s.id) }}"
+                                    <a href="{{ url_for('dash.update_cms_student', id=s.id) }}"
                                        class="btn btn-warning btn-sm">
                                         <i class="fa fa-edit"></i>
                                     </a>
 
                                     <!-- Delete -->
-                                    <a href="{{ url_for('dash.delete_student', id=s.id) }}"
+                                    <a href="{{ url_for('dash.delete_cms_student', id=s.id) }}"
                                        class="btn btn-danger btn-sm">
                                        <i class="fa fa-trash"></i> 
                                     </a>
