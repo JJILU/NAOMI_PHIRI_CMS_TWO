@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for
 from extensions import db, migrate, login_manager
-from datetime import timedelta
+from datetime import timedelta,datetime
 import os
 from typing import cast
 from auth.models import Teacher, Admin, Student
@@ -10,6 +10,10 @@ from sqlalchemy import text
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
     
+     # Register your context processor here
+    @app.context_processor
+    def inject_year():
+        return {"current_year": datetime.now().year}
     
     # ----------------------
     # Error handlers
@@ -78,8 +82,8 @@ def create_app():
             raise RuntimeError("Database connection failed") from e
 
     # Redirect unauthenticated users
-    login_manager.login_view = cast(str, "login")
-    login_manager.login_message = None  # disable flashing text
+    login_manager.login_view = cast(str, "login") # type: ignore
+    login_manager.login_message = None  # type: ignore # disable flashing text
 
     @login_manager.unauthorized_handler
     def unauthorized():
