@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Grades for {{ student.first_name }} {{ student.last_name }}</h3>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.view_grades') }}">Grades Management</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Student Grades</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="{{ url_for('dash.create_grade', student_id=student.id) }}" class="btn btn-success mb-3">Add Grade</a>
+
+{% if grades|length > 0 %}
+<div class="table-responsive">
+  <table class="table stylish-table no-wrap">
+    <thead>
+      <tr>
+        <th>Exam Name</th>
+        <th>Exam Code</th>
+        <th>Subject</th>
+        <th>Score</th>
+        <th>Grade</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in grades %}
+      <tr>
+        <td>{{ g.exam_name }}</td>
+        <td>{{ g.exam_code }}</td>
+        <td>{{ g.exam_subject_name }}</td>
+        <td>{{ g.student_score }}</td>
+        <td>{{ g.student_grade }}</td>
+        <td class="text-center">
+          <a href="{{ url_for('dash.view_one_grade', id=g.id) }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
+          <a href="{{ url_for('dash.update_grade', id=g.id) }}" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
+          <a href="{{ url_for('dash.delete_grade', id=g.id) }}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-warning">No grades found for this student.</div>
+{% endif %}
+
+{% endblock content %}

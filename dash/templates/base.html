@@ -474,8 +474,8 @@
                             </ul>
                         </li>
                         {% endif %}
-                
-                        {% if  current_user.is_authenticated and current_user.role == "teacher" %}
+
+                        {% if current_user.is_authenticated and current_user.role == "teacher" %}
                         <!-- Grades -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
@@ -483,16 +483,18 @@
                                 <span class="hide-menu">Grades</span>
                             </a>
                             <ul class="collapse first-level" aria-expanded="false">
+                                <!-- NOTE: Create Grade is now student-specific, so link goes to student list first -->
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.create_grade') }}" class="sidebar-link"><span class="hide-menu">Create Grade</span></a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_grades') }}" class="sidebar-link"><span class="hide-menu">View All Grades</span></a>
+                                    <a href="{{ url_for('dash.view_grades') }}" class="sidebar-link">
+                                        <span class="hide-menu">Add / View Grades</span>
+                                    </a>
                                 </li>
                             </ul>
                         </li>
                         {% endif %}
+
                 
+                        
                         {% if  current_user.is_authenticated and current_user.role == "teacher" %}
                         <!-- Assignments -->
                         <li class="sidebar-item">

@@ -1,27 +1,31 @@
 {% extends 'base.html' %}
-
-
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
+
 <div class="page-breadcrumb">
   <div class="row align-items-center">
-      <div class="col-md-6 col-8 align-self-center">
-          <h3 class="page-title mb-0 p-0">Grade Details</h3>
-          <div class="d-flex align-items-center">
-              <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                      <li class="breadcrumb-item">Grades</li>
-                      <li class="breadcrumb-item active" aria-current="page">View One</li>
-                  </ol>
-              </nav>
-          </div>
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Grade Details</h3>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.view_grades') }}">Grades Management</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Grade Details</li>
+          </ol>
+        </nav>
       </div>
+    </div>
   </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
+
+<p><strong>Student:</strong> {{ grade.student_record.first_name }} {{ grade.student_record.last_name }}</p>
+<p><strong>Exam Name:</strong> {{ grade.exam_name }}</p>
+<p><strong>Exam Code:</strong> {{ grade.exam_code }}</p>
+<p><strong>Subject:</strong> {{ grade.exam_subject_name }}</p>
+<p><strong>Score:</strong> {{ grade.student_score }}</p>
+<p><strong>Grade:</strong> {{ grade.student_grade }}</p>
+
+<a href="{{ url_for('dash.update_grade', id=grade.id) }}" class="btn btn-warning">Update</a>
+<a href="{{ url_for('dash.delete_grade', id=grade.id) }}" class="btn btn-danger">Delete</a>
+
 {% endblock content %}

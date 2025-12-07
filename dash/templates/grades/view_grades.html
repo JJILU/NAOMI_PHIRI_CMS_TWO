@@ -1,26 +1,35 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
+
 <div class="page-breadcrumb">
-    <div class="row align-items-center">
-        <div class="col-md-6 col-8 align-self-center">
-            <h3 class="page-title mb-0 p-0">View Grades</h3>
-            <div class="d-flex align-items-center">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                        <li class="breadcrumb-item">Grades</li>
-                        <li class="breadcrumb-item active" aria-current="page">View All</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">View Student Grades</h3>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+            <li class="breadcrumb-item">Grades Management</li>
+            <li class="breadcrumb-item active" aria-current="page">View Students</li>
+          </ol>
+        </nav>
+      </div>
     </div>
+  </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->  
+
+<div class="row">
+  {% for s in students %}
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ s.first_name }} {{ s.last_name }}</h5>
+          <p class="card-text">Card ID: {{ s.card_id }}</p>
+          <a href="{{ url_for('dash.view_student_grades', student_id=s.id) }}" class="btn btn-info btn-sm">View Grades</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
 {% endblock content %}

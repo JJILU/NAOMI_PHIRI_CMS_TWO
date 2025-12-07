@@ -1,26 +1,49 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
+
 <div class="page-breadcrumb">
   <div class="row align-items-center">
-      <div class="col-md-6 col-8 align-self-center">
-          <h3 class="page-title mb-0 p-0">Update Grade</h3>
-          <div class="d-flex align-items-center">
-              <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                      <li class="breadcrumb-item">Grades</li>
-                      <li class="breadcrumb-item active" aria-current="page">Update</li>
-                  </ol>
-              </nav>
-          </div>
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Update Grade</h3>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.view_grades') }}">Grades Management</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Update Grade</li>
+          </ol>
+        </nav>
       </div>
+    </div>
   </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->  
+
+{% if success %}
+<div class="alert alert-success">{{ success }}</div>
+{% endif %}
+
+<form method="POST">
+  <div class="mb-3">
+    <label>Exam Name</label>
+    <input type="text" name="exam_name" class="form-control" value="{{ grade.exam_name }}" required>
+  </div>
+  <div class="mb-3">
+    <label>Exam Code</label>
+    <input type="text" name="exam_code" class="form-control" value="{{ grade.exam_code }}" required>
+  </div>
+  <div class="mb-3">
+    <label>Subject Name</label>
+    <input type="text" name="exam_subject_name" class="form-control" value="{{ grade.exam_subject_name }}" required>
+  </div>
+  <div class="mb-3">
+    <label>Score</label>
+    <input type="number" name="student_score" class="form-control" value="{{ grade.student_score }}" required>
+  </div>
+  <div class="mb-3">
+    <label>Grade</label>
+    <input type="text" name="student_grade" class="form-control" value="{{ grade.student_grade }}" required>
+  </div>
+  <button type="submit" class="btn btn-warning">Update Grade</button>
+</form>
+
 {% endblock content %}

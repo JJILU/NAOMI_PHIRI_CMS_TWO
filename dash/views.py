@@ -143,7 +143,7 @@ def create_student_school_record():
 
         # --- SAVE AVATAR FILE ---
         if avatar_file and avatar_file.filename != "":
-            filename = secure_filename(avatar_file.filename)
+            filename = secure_filename(avatar_file.filename) # type: ignore
             upload_path = os.path.join(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
             avatar_file.save(upload_path)
 
@@ -219,7 +219,7 @@ def update_student(id):
 
         # --- Update avatar if new file uploaded ---
         if avatar_file and avatar_file.filename != "":
-            filename = secure_filename(avatar_file.filename)
+            filename = secure_filename(avatar_file.filename) # type: ignore
             upload_path = os.path.join(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
             avatar_file.save(upload_path)
 
@@ -542,36 +542,102 @@ def delete_attendance(id):
 
 
 # ------------------ Grade End-Points ------------------------
-@dash_bp.route("/create_grade", methods=["GET", "POST"])
-@role_required("teacher")
-def create_grade():
-
-    return render_template("grades/create_grade.html")
-
-
-@dash_bp.route("/view_grades", methods=["GET", "POST"])
+# ----------------- List all students to view grades -------------------
+@dash_bp.route("/view_grades", methods=["GET"])
 @role_required("teacher")
 def view_grades():
-    return render_template("grades/view_grades.html")
+    from auth.models import StudentSchoolRecord
+
+    students = StudentSchoolRecord.query.all()  # optionally filter by teacher's classes
+    return render_template("grades/view_grades.html", students=students)
 
 
-@dash_bp.route("/view_one_grade/<int:id>", methods=["GET", "POST"])
+# ----------------- View all grades for one student -------------------
+@dash_bp.route("/view_student_grades/<int:student_id>", methods=["GET"])
+@role_required("teacher")
+def view_student_grades(student_id):
+    from auth.models import StudentSchoolRecord
+
+    student = StudentSchoolRecord.query.get_or_404(student_id)
+    grades = student.student_grades  # relationship from StudentSchoolRecord -> StudentGrade
+    return render_template("grades/view_student_grades.html", student=student, grades=grades)
+
+
+# ----------------- Create grade for a specific student -------------------
+@dash_bp.route("/create_grade/<int:student_id>", methods=["GET", "POST"])
+@role_required("teacher")
+def create_grade(student_id):
+    from dash.models import StudentGrade
+    from auth.models import StudentSchoolRecord
+    from flask import request
+
+    student = StudentSchoolRecord.query.get_or_404(student_id)
+
+    if request.method == "POST":
+        exam_name = request.form.get("exam_name")
+        exam_code = request.form.get("exam_code")
+        exam_subject_name = request.form.get("exam_subject_name")
+        student_score = request.form.get("student_score", type=int)
+        student_grade = request.form.get("student_grade")
+
+        # save to DB
+        new_grade = StudentGrade(
+            exam_name=exam_name,
+            exam_code=exam_code,
+            exam_subject_name=exam_subject_name,
+            student_score=student_score,
+            student_grade=student_grade,
+            student_school_record_id=student.id
+        )
+        db.session.add(new_grade)
+        db.session.commit()
+
+        # pass success message to template
+        return render_template("grades/create_grade.html", student=student, success="Grade added successfully.")
+
+    return render_template("grades/create_grade.html", student=student)
+
+
+# ----------------- View one grade -------------------
+@dash_bp.route("/view_one_grade/<int:id>", methods=["GET"])
 @role_required("teacher")
 def view_one_grade(id):
-    return render_template("grades/view_one_grade.html")
+    from dash.models import StudentGrade
+    grade = StudentGrade.query.get_or_404(id)
+    return render_template("grades/view_one_grade.html", grade=grade)
 
 
+# ----------------- Update grade -------------------
 @dash_bp.route("/update_grade/<int:id>", methods=["GET", "POST"])
 @role_required("teacher")
 def update_grade(id):
-    return render_template("grades/update_grade.html")
+    from dash.models import StudentGrade
+    from flask import request
+
+    grade = StudentGrade.query.get_or_404(id)
+
+    if request.method == "POST":
+        grade.exam_name = request.form.get("exam_name")
+        grade.exam_code = request.form.get("exam_code")
+        grade.exam_subject_name = request.form.get("exam_subject_name")
+        grade.student_score = request.form.get("student_score", type=int)
+        grade.student_grade = request.form.get("student_grade")
+        db.session.commit()
+        return render_template("grades/update_grade.html", grade=grade, success="Grade updated successfully.")
+
+    return render_template("grades/update_grade.html", grade=grade)
 
 
+# ----------------- Delete grade -------------------
 @dash_bp.route("/delete_grade/<int:id>", methods=["GET", "POST"])
 @role_required("teacher")
 def delete_grade(id):
-    return render_template("grades/delete_grade.html")
-
+    from dash.models import StudentGrade
+    grade = StudentGrade.query.get_or_404(id)
+    student_id = grade.student_school_record_id
+    db.session.delete(grade)
+    db.session.commit()
+    return render_template("grades/delete_grade.html", success="Grade deleted successfully.", student_id=student_id)
 
 # ------------------ Student Only------------------------
 @dash_bp.route("/view_student_assignments", methods=["GET"])
@@ -586,18 +652,18 @@ def view_student_assignment_detail(id):
     return render_template("student_only/view_student_assignment_detail.html")
 
 
-@dash_bp.route("/view_student_grades", methods=["GET"])
+@dash_bp.route("/student_grades", methods=["GET"])
 @role_required("admin", "student")
-def view_student_grades():
-    return render_template("student_only/view_student_grades.html")
+def student_grades():
+    return render_template("student_only/student_grades.html")
 
 
-@dash_bp.route("/view_student_grade_details/<int:id>", methods=["GET"])
+@dash_bp.route("/student_grade_details/<int:id>", methods=["GET"])
 @role_required("admin", "student")
-def view_student_grade_details(id):
-    return render_template("student_only/view_student_grade_detail.html")
+def student_grade_details(id):
+    return render_template("student_only/student_grade_detail.html")
 
-
+# -------------------------- Student Attentance --------------------------------
 @dash_bp.route("/view_student_attendances", methods=["GET"])
 @role_required("admin", "student")
 def view_student_attendances():
