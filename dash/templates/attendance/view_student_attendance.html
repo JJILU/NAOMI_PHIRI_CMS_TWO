@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-breadcrumb">
+  <h3 class="page-title">Attendance for {{ student.first_name }} {{ student.last_name }}</h3>
+</div>
+
+<a href="{{ url_for('dash.create_attendance', id=student.id) }}" 
+   class="btn btn-success mb-3">Mark Attendance</a>
+
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title">Attendance Records</h4>
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for a in attendances %}
+        <tr>
+          <td>{{ a.attendance_date }}</td>
+          <td>
+            {% if a.status == "Present" %}
+              <span class="badge bg-success">Present</span>
+            {% else %}
+              <span class="badge bg-danger">Absent</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('dash.view_student_attendance', id=a.id) }}" class="btn btn-info btn-sm">View</a>
+            <a href="{{ url_for('dash.update_attendance', id=a.id) }}" class="btn btn-warning btn-sm">Update</a>
+            <a href="{{ url_for('dash.delete_attendance', id=a.id) }}" class="btn btn-danger btn-sm">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+{% endblock %}

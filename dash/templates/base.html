@@ -399,7 +399,7 @@
                                  
                                  />
                       
-                            <span>Bwalya Chanda</span>
+                            <span></span>
                           </a>
                       
                           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -452,28 +452,28 @@
                             </a>
                         </li>
                         {% endif %}
-                
+                        
                         {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
-                        <!-- Attendance -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="attendance.html" aria-expanded="false">
-                                <i class="me-3 fa fa-check-square" aria-hidden="true"></i>
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" 
+                              href="javascript:void(0)" aria-expanded="false">
+                                <i class="me-3 fa fa-check-square"></i>
                                 <span class="hide-menu">Attendance</span>
                             </a>
-                            <ul class="collapse first-level" aria-expanded="false">
+                            <ul class="collapse first-level">
+
+                                <!-- See all students to view their attendance -->
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.create_attendance') }}" class="sidebar-link">
-                                        <span class="hide-menu">Create Attendance</span>
+                                    <a href="{{ url_for('dash.view_attendance_students') }}" class="sidebar-link">
+                                        <span class="hide-menu">View Students Attendance</span>
                                     </a>
                                 </li>
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_attendances') }}" class="sidebar-link">
-                                        <span class="hide-menu">View All Attendance</span>
-                                    </a>
-                                </li>
+
                             </ul>
                         </li>
                         {% endif %}
+
+
 
                         {% if current_user.is_authenticated and current_user.role == "teacher" %}
                         <!-- Grades -->

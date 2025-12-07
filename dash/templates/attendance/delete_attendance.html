@@ -1,26 +1,13 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
+
 <div class="page-breadcrumb">
-  <div class="row align-items-center">
-      <div class="col-md-6 col-8 align-self-center">
-          <h3 class="page-title mb-0 p-0">Delete Attendance</h3>
-          <div class="d-flex align-items-center">
-              <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                      <li class="breadcrumb-item">Attendance</li>
-                      <li class="breadcrumb-item active" aria-current="page">Delete</li>
-                  </ol>
-              </nav>
-          </div>
-      </div>
-  </div>
+  <h3 class="page-title">Attendance Deleted</h3>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->  
-{% endblock content %}
+
+<div class="alert alert-success">{{ success }}</div>
+
+<a href="{{ url_for('dash.view_attendance_students') }}" 
+   class="btn btn-primary">Back to Attendance</a>
+
+{% endblock %}

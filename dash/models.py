@@ -116,23 +116,29 @@ class Classroom(db.Model):
 class StudentAttendance(db.Model):
     __tablename__ = "student_attendance"
 
-    id = db.Column(db.Integer,primary_key=True) 
-    is_present = db.Column(db.Boolean,nullable=False,default=False)
-    created_at = db.Column(db.DateTime,default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
-    
-    # fk
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Updated to match routes (Present / Absent)
+    status = db.Column(db.String(20), nullable=False)
+
+    # Needed because your endpoints use attendance_date=today
+    attendance_date = db.Column(db.Date, nullable=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Keep FK unchanged
     student_school_record_id = db.Column(
         db.Integer,
         db.ForeignKey('student_school_record.id'),
         nullable=False
-        )
-    
-    def __init__(self, is_present,student_school_record_id):
-        self.is_present = is_present
+    )
+
+    def __init__(self, status, attendance_date, student_school_record_id):
+        self.status = status
+        self.attendance_date = attendance_date
         self.student_school_record_id = student_school_record_id
-         
-    
+
    
 
 # ==================== STUDENT GRADE MODEL ============================= 

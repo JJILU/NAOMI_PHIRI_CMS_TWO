@@ -1,26 +1,28 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
+
 <div class="page-breadcrumb">
-  <div class="row align-items-center">
-      <div class="col-md-6 col-8 align-self-center">
-          <h3 class="page-title mb-0 p-0">Update Attendance</h3>
-          <div class="d-flex align-items-center">
-              <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                      <li class="breadcrumb-item">Attendance</li>
-                      <li class="breadcrumb-item active" aria-current="page">Update</li>
-                  </ol>
-              </nav>
-          </div>
-      </div>
+  <h3 class="page-title">Update Attendance</h3>
+</div>
+
+{% if success %}
+<div class="alert alert-success">{{ success }}</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-body">
+    <p><strong>Date:</strong> {{ attendance.attendance_date }}</p>
+
+    <form method="POST">
+      <label>Status</label>
+      <select name="status" class="form-control">
+        <option {% if attendance.status == 'Present' %}selected{% endif %}>Present</option>
+        <option {% if attendance.status == 'Absent' %}selected{% endif %}>Absent</option>
+      </select>
+
+      <button class="btn btn-primary mt-3">Update</button>
+    </form>
   </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->  
-{% endblock content %}
+
+{% endblock %}

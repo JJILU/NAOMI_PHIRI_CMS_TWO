@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-breadcrumb">
+  <h3 class="page-title">Students Attendance</h3>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title">Select Student</h4>
+
+    <form method="get" class="mb-3">
+      <label>Entries per page:</label>
+      <select name="per_page" onchange="this.form.submit()" class="form-select w-auto d-inline-block">
+        {% for n in [5,10,20,50,100] %}
+          <option value="{{ n }}" {% if students.per_page == n %}selected{% endif %}>{{ n }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Card ID</th>
+            <th>Classroom</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students.items %}
+          <tr>
+            <td>{{ s.first_name }} {{ s.last_name }}</td>
+            <td>{{ s.card_id }}</td>
+            <td>{{ s.classroom.classroom_name if s.classroom else 'N/A' }}</td>
+            <td>
+              <a href="{{ url_for('dash.view_student_attendance', id=s.id) }}" 
+                 class="btn btn-primary btn-sm">View Attendance</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination controls -->
+    <nav>
+      <ul class="pagination">
+        {% if students.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('dash.view_attendance_students', page=students.prev_num, per_page=students.per_page) }}">Previous</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        {% for p in range(1, students.pages + 1) %}
+          <li class="page-item {% if students.page == p %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('dash.view_attendance_students', page=p, per_page=students.per_page) }}">{{ p }}</a>
+          </li>
+        {% endfor %}
+
+        {% if students.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('dash.view_attendance_students', page=students.next_num, per_page=students.per_page) }}">Next</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+
+  </div>
+</div>
+
+{% endblock %}

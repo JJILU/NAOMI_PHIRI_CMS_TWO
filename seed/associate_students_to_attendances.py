@@ -3,34 +3,34 @@ from dash.models import StudentAttendance
 from extensions import db
 from app import create_app
 from random import choices
-
+from datetime import date, timedelta
+import random
 
 app = create_app()
-
 
 with app.app_context():
     # get all students 
     all_students = StudentSchoolRecord.query.all()
-    print(all_students)
+    print(f"Found {len(all_students)} students.")
 
     try:
         for student in all_students:
-            is_present = choices([True,False],weights=[50,50])[0]
-            new_attendance = StudentAttendance(
-                is_present=is_present,
-                student_school_record_id=student.id
-            )
+            # create multiple attendance records per student (optional)
+            for i in range(5):  # e.g., last 5 days
+                att_date = date.today() - timedelta(days=i)
+                status = choices(["Present", "Absent"], weights=[50, 50])[0]
 
-            db.session.add(new_attendance)
+                new_attendance = StudentAttendance(
+                    status=status,
+                    attendance_date=att_date,
+                    student_school_record_id=student.id
+                )
 
-        db.session.commit()  
+                db.session.add(new_attendance)
+
+        db.session.commit()
+        print("Student attendances seeded successfully!")
+
     except Exception as e:
         db.session.rollback()
-        print(f"failed to create student attendances : {str(e)}")
-
-
-    
-
-        
-
-
+        print(f"Failed to create student attendances: {str(e)}")

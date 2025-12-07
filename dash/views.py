@@ -509,37 +509,6 @@ def delete_assigment_submission(id):
     return render_template("student_assignment_submission/delete_student_assigment_submission.html")
 
 
-# ------------------ Attendance End-Points ------------------------
-@dash_bp.route("/create_attendance", methods=["GET", "POST"])
-@role_required("teacher", "admin")
-def create_attendance():
-
-    return render_template("attendance/create_attendance.html")
-
-
-@dash_bp.route("/view_attendances", methods=["GET", "POST"])
-@role_required("teacher", "admin")
-def view_attendances():
-    return render_template("attendance/view_attendances.html")
-
-
-@dash_bp.route("/view_one_attendance/<int:id>", methods=["GET", "POST"])
-@role_required("teacher", "admin")
-def view_one_attendance(id):
-    return render_template("attendance/view_one_attendance.html")
-
-
-@dash_bp.route("/update_attendance/<int:id>", methods=["GET", "POST"])
-@role_required("teacher", "admin")
-def update_attendance(id):
-    return render_template("attendance/update_attendance.html")
-
-
-@dash_bp.route("/delete_attendance/<int:id>", methods=["GET", "POST"])
-@role_required("teacher", "admin")
-def delete_attendance(id):
-    return render_template("attendance/delete_attendance.html")
-
 
 # ------------------ Grade End-Points ------------------------
 # ----------------- List all students to view grades -------------------
@@ -664,16 +633,107 @@ def student_grade_details(id):
     return render_template("student_only/student_grade_detail.html")
 
 # -------------------------- Student Attentance --------------------------------
-@dash_bp.route("/view_student_attendances", methods=["GET"])
-@role_required("admin", "student")
-def view_student_attendances():
-    return render_template("student_only/view_student_attendances.html")
+from flask import request
+
+@dash_bp.route("/attendance/students", methods=["GET"])
+@role_required("teacher", "admin")
+def view_attendance_students():
+    from auth.models import StudentSchoolRecord
+
+    # Get current page and per_page from query params
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)  # default 10 entries per page
+
+    students_paginated = StudentSchoolRecord.query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template(
+        "attendance/view_attendance_students.html", 
+        students=students_paginated
+    )
 
 
-@dash_bp.route("/view_student_attendance_details/<int:id>", methods=["GET"])
-@role_required("admin", "student")
-def view_student_attendances_details(id):
-    return render_template("student_only/view_student_attendance_detail.html")
+
+@dash_bp.route("/attendance/student/<int:id>", methods=["GET"])
+@role_required("teacher", "admin")
+def view_student_attendance(id):
+    from auth.models import StudentSchoolRecord
+
+    student = StudentSchoolRecord.query.get_or_404(id)
+    attendances = student.student_attendances
+    return render_template("attendance/view_student_attendance.html",
+                           student=student, attendances=attendances)
+
+@dash_bp.route("/attendance/create/<int:id>", methods=["GET", "POST"])
+@role_required("teacher", "admin")
+def create_attendance(id):
+    from dash.models import StudentAttendance
+    from auth.models import StudentSchoolRecord
+    from flask import request
+    from datetime import date
+
+    student = StudentSchoolRecord.query.get_or_404(id)
+
+    if request.method == "POST":
+        status = request.form.get("status")  # Present / Absent
+        today = date.today()
+
+        # Prevent duplicate attendance for the same date
+        existing = StudentAttendance.query.filter_by(
+            student_school_record_id=student.id,
+            attendance_date=today
+        ).first()
+
+        if existing:
+            return render_template("attendance/create_attendance.html",
+                                   student=student,
+                                   error="Attendance for today already exists!")
+
+        new_att = StudentAttendance(
+            status=status,
+            attendance_date=today,
+            student_school_record_id=student.id
+        )
+        db.session.add(new_att)
+        db.session.commit()
+
+        return render_template("attendance/create_attendance.html",
+                               student=student,
+                               success="Attendance recorded successfully!")
+
+    return render_template("attendance/create_attendance.html", student=student)
+
+
+@dash_bp.route("/attendance/update/<int:id>", methods=["GET", "POST"])
+@role_required("teacher", "admin")
+def update_attendance(id):
+    from dash.models import StudentAttendance
+    from flask import request
+
+    attendance = StudentAttendance.query.get_or_404(id)
+
+    if request.method == "POST":
+        attendance.status = request.form.get("status")
+        db.session.commit()
+        return render_template("attendance/update_attendance.html",
+                               attendance=attendance,
+                               success="Attendance updated successfully!")
+
+    return render_template("attendance/update_attendance.html", attendance=attendance)
+
+@dash_bp.route("/attendance/delete/<int:id>", methods=["GET"])
+@role_required("teacher", "admin")
+def delete_attendance(id):
+    from dash.models import StudentAttendance
+
+    attendance = StudentAttendance.query.get_or_404(id)
+    student_id = attendance.student_school_record_id
+
+    db.session.delete(attendance)
+    db.session.commit()
+
+    return render_template("attendance/delete_attendance.html",
+                           success="Attendance deleted successfully!",
+                           student_id=student_id)
 
 
 # ------------------------------- CHAT BOT --------------------------
