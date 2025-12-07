@@ -495,7 +495,7 @@
 
                 
                         
-                        {% if  current_user.is_authenticated and current_user.role == "teacher" %}
+                        {% if current_user.is_authenticated and current_user.role == "teacher" %}
                         <!-- Assignments -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
@@ -504,14 +504,19 @@
                             </a>
                             <ul class="collapse first-level" aria-expanded="false">
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.create_assignment') }}" class="sidebar-link"><span class="hide-menu">Create Assignment</span></a>
+                                    <a href="{{ url_for('dash.create_assignment') }}" class="sidebar-link">
+                                        <span class="hide-menu">Create Assignment</span>
+                                    </a>
                                 </li>
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_assignment') }}" class="sidebar-link"><span class="hide-menu">View All Assignments</span></a>
+                                    <a href="{{ url_for('dash.list_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu">View All Assignments</span>
+                                    </a>
                                 </li>
                             </ul>
                         </li>
                         {% endif %}
+
                 
                         {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
                         <!-- Students Management -->

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>{{ assignment.assignment_name }}</h3>
+<p><strong>Subject:</strong> {{ assignment.assignment_subject_Name }}</p>
+<p><strong>Classroom:</strong> {{ assignment.classroom.classroom_name }}</p>
+
+<h4>Files</h4>
+<ul>
+    {% for f in assignment.assignment_file_uploads %}
+    <li>
+        <a href="{{ url_for('dash.download_file', file_id=f.id) }}">{{ f.original_name }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('dash.update_assignment', id=assignment.id) }}" class="btn btn-warning">Edit</a>
+{% endblock %}

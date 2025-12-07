@@ -1,27 +1,18 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
-<div class="page-breadcrumb">
-  <div class="row align-items-center">
-      <div class="col-md-6 col-8 align-self-center">
-          <h3 class="page-title mb-0 p-0">Update Assignment</h3>
-          <div class="d-flex align-items-center">
-              <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                      <li class="breadcrumb-item">Assignments</li>
-                      <li class="breadcrumb-item active" aria-current="page">Update</li>
-                  </ol>
-              </nav>
-          </div>
-      </div>
-  </div>
-</div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
-  
-{% endblock content %}
+<h3>Update Assignment</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label>Assignment Title</label>
+        <input type="text" name="assignment_name" value="{{ assignment.assignment_name }}" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Add More Files</label>
+        <input type="file" name="files" multiple class="form-control">
+    </div>
+
+    <button class="btn btn-success">Save</button>
+</form>
+{% endblock %}
