@@ -13,10 +13,10 @@ faker = Faker()
 
 class CustomIDGenerator(BaseProvider):
     def generate_teacher_id(self):
-        return f"{randint(1000,9999)}"
+        return f"T{randint(1000,9999)}"
 
     def generate_student_id(self):
-        return f"{randint(1000,9999)}"
+        return f"S{randint(1000,9999)}"
 
 # Register provider
 faker.add_provider(CustomIDGenerator)

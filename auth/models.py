@@ -153,20 +153,25 @@ class AvatorFileUpload(db.Model):
     # fk
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey('student_school_record.id'), nullable=False
+        db.ForeignKey('student_school_record.id'),
+        nullable=True,
+        unique=True
         )
     
     teacher_school_record_id = db.Column(
         db.Integer,
         db.ForeignKey('teacher_school_record.id'), 
-        nullable=False,
+        nullable=True,
         unique=True
         )
     
-    def __init__(self,original_name,filename,filepath):
+    def __init__(self, original_name, filename, filepath, student_school_record_id=None, teacher_school_record_id=None):
         self.original_name = original_name
         self.filename = filename
         self.filepath = filepath
+        self.student_school_record_id = student_school_record_id
+        self.teacher_school_record_id = teacher_school_record_id
+
 
         
 # ========================= Classroom Management Users ==========================

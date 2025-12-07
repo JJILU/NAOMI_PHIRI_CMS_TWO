@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+      <div class="col-md-6 col-8 align-self-center">
+          <h3 class="page-title mb-0 p-0">Add Student School Record</h3>
+          <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+                  <li class="breadcrumb-item">Students Management</li>
+                  <li class="breadcrumb-item active" aria-current="page">Add School Record</li>
+              </ol>
+          </nav>
+      </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+
+    <div class="card">
+        <div class="card-body">
+
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <div class="mb-3">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="first_name" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="last_name" class="form-control" required>
+                </div>
+
+                <!-- Card ID (generated in backend, shown after submit only) -->
+                <div class="mb-3">
+                    <label class="form-label">Card ID (auto-generated)</label>
+                    <input type="text" class="form-control" value="Generated on save" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Classroom</label>
+                    <select name="classroom_id" class="form-control" required>
+                        <option disabled selected>-- Select Classroom --</option>
+                        {% for c in classrooms %}
+                        <option value="{{ c.id }}">{{ c.classroom_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Avatar (Optional)</label>
+                    <input type="file" name="avatar_file" class="form-control">
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="is_admin" id="is_admin">
+                    <label class="form-check-label" for="is_admin">
+                        Is Admin?
+                    </label>
+                </div>
+
+                <button class="btn btn-primary">Create School Record</button>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}

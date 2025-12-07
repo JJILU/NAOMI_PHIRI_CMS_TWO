@@ -1,36 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
 <div class="page-breadcrumb">
   <div class="row align-items-center">
       <div class="col-md-6 col-8 align-self-center">
           <h3 class="page-title mb-0 p-0">View Students</h3>
-          <div class="d-flex align-items-center">
-              <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                      <li class="breadcrumb-item">Students Management</li>
-                      <li class="breadcrumb-item active" aria-current="page">View Students</li>
-                  </ol>
-              </nav>
-          </div>
+          <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+                  <li class="breadcrumb-item">Students Management</li>
+                  <li class="breadcrumb-item active" aria-current="page">View Students</li>
+              </ol>
+          </nav>
       </div>
   </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== --> 
-
 
 {% if students and students|length > 0 %}
 <div class="row">
     <div class="col-sm-12">
         <div class="card">
             <div class="card-body">
-                
+
 <div class="mb-3 d-flex justify-content-between align-items-center">
     <div>
         <label>Show
@@ -43,116 +34,77 @@
         entries</label>
     </div>
     <div>
-        <a href="{{ url_for('dash.create_student') }}" class="btn btn-success">Create Student</a>
+        <a href="{{ url_for('dash.create_student_school_record') }}" class="btn btn-success">Create Student</a>
     </div>
 </div>
 
-                <div class="d-md-flex">
-                    <h4 class="card-title col-md-10 mb-md-0 mb-3 align-self-center">
-                        Students List
-                    </h4>
-                </div>
+<div class="table-responsive mt-4">
+    <table class="table stylish-table no-wrap">
+        <thead>
+            <tr>
+                <th class="border-top-0">Avatar</th>
+                <th class="border-top-0">Name</th>
+                <th class="border-top-0">School ID</th>
+                <th class="border-top-0 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>
+                    {% if s.student_avator %}
+                    <img src="{{ url_for('dash.uploaded_profile_photo', filename=s.student_avator.filename) }}"
+                    class="rounded-circle" width="40" height="40">
+                    {% else %}
+                    <span class="round round-primary">{{ s.first_name[0]|upper }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ s.first_name }} {{ s.last_name }}</td>
+                <td>{{ s.card_id }}</td>
+                <td class="text-center">
+                    <a href="{{ url_for('dash.view_one_student', id=s.id) }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
+                    <a href="{{ url_for('dash.update_student', id=s.id) }}" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
+                    <a href="{{ url_for('dash.delete_student', id=s.id) }}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-                <div class="table-responsive mt-5">
-                    <table class="table stylish-table no-wrap">
-                        <thead>
-                            <tr>
-                                <th class="border-top-0" colspan="2">Student</th>
-                                <th class="border-top-0">School ID</th>
-                                <th class="border-top-0 text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+<!-- Pagination -->
+<div class="mt-3 d-flex justify-content-center">
+    <ul class="pagination">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('dash.view_students', page=pagination.prev_num, per_page=per_page) }}">Previous</a>
+        </li>
+        {% endif %}
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('dash.view_students', page=p, per_page=per_page) }}">{{ p }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('dash.view_students', page=pagination.next_num, per_page=per_page) }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
 
-                            {% for s in students %}
-                            <tr>
-
-                                <!-- Round initial -->
-                                <td style="width:50px;">
-                                    <span class="round round-primary">
-                                        {{ s.first_name[0]|upper }}
-                                    </span>
-                                </td>
-
-                                <!-- Name -->
-                                <td class="align-middle">
-                                    <h6>{{ s.first_name }} {{ s.last_name }}</h6>
-                                    <small class="text-muted">Student</small>
-                                </td>
-
-                                <!-- School ID -->
-                                <td class="align-middle">
-                                    {{ s.card_id }}
-                                </td>
-
-                                <!-- Action Buttons -->
-                                <td class="align-middle text-center">
-
-                                    <!-- View -->
-                                    <a href="{{ url_for('dash.view_one_student', id=s.id) }}"
-                                       class="btn btn-info btn-sm">
-                                        <i class="fa fa-eye"></i>
-                                    </a>
-
-                                    <!-- Edit -->
-                                    <a href="{{ url_for('dash.update_student', id=s.id) }}"
-                                       class="btn btn-warning btn-sm">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-
-                                    <!-- Delete -->
-                                    <a href="{{ url_for('dash.delete_student', id=s.id) }}"
-                                       class="btn btn-danger btn-sm">
-                                       <i class="fa fa-trash"></i> 
-                                    </a>
-                                       
-                                        
-                                    
-
-                                </td>
-
-                            </tr>
-                            {% endfor %}
-
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="mt-3 d-flex justify-content-center">
-                    <ul class="pagination">
-                        {% if pagination.has_prev %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ url_for('dash.view_students', page=pagination.prev_num, per_page=per_page) }}">Previous</a>
-                        </li>
-                        {% endif %}
-
-                        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-                            {% if p %}
-                                <li class="page-item {% if p == pagination.page %}active{% endif %}">
-                                    <a class="page-link" href="{{ url_for('dash.view_students', page=p, per_page=per_page) }}">{{ p }}</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled"><span class="page-link">…</span></li>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if pagination.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ url_for('dash.view_students', page=pagination.next_num, per_page=per_page) }}">Next</a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </div>
-
-            </div>
-        </div>
-    </div>
+</div>
+</div>
+</div>
 </div>
 
 {% else %}
-<div class="container-fluid">
-    <div class="alert alert-warning mt-4">
+<div class="container-fluid mt-4">
+    <div class="alert alert-warning">
         <i class="fa fa-info-circle"></i> No students found.
     </div>
 </div>
@@ -164,5 +116,4 @@ function changePerPage() {
     window.location.href = "{{ url_for('dash.view_students') }}?per_page=" + perPage;
 }
 </script>
-
-{% endblock content %}
+{% endblock %}

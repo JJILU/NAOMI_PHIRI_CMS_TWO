@@ -1,9 +1,12 @@
-from flask import render_template, redirect, url_for, request, abort, jsonify
+from flask import render_template, redirect, url_for, request, abort, jsonify, current_app,send_from_directory
 from flask_login import login_required, current_user
 from functools import wraps
 from sqlalchemy import desc, asc
-from extensions import db
+from extensions import db,faker
 from random import choice
+import os
+from werkzeug.utils import secure_filename
+
 
 from . import dash_bp
 
@@ -97,73 +100,77 @@ def delete_admin(id):
 
 
 # ------------------ Student Management End-Points ------------------------
-@dash_bp.route("/create_student", methods=["GET", "POST"])
-def create_student():
-    from auth.models import StudentSchoolRecord, Student
-    # fetch available school IDs (Card IDs)
-    available_cards = StudentSchoolRecord.query.order_by(
-        StudentSchoolRecord.card_id.asc()).all()
+@dash_bp.route("/create_student_school_record", methods=["GET", "POST"])
+@role_required("teacher", "admin")
+def create_student_school_record():
+    from auth.models import StudentSchoolRecord, AvatorFileUpload
+    from dash.models import Classroom
+    classrooms = Classroom.query.all()
+    error = None
 
     if request.method == "POST":
-        card_id = request.form.get("card_id")
-        password = request.form.get("password")
-        confirm = request.form.get("confirm_password")
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        classroom_id = request.form.get("classroom_id")
+        is_admin = True if request.form.get("is_admin") else False
+        avatar_file = request.files.get("avatar_file")
 
-        if not card_id or not password:
+        if not first_name or not last_name or not classroom_id:
+            error = "All fields are required."
             return render_template(
-                "student_management/create_one_student.html",
-                error="All fields are required!",
-                card_ids=available_cards
+                "student_management/create_student_school_record.html",
+                classrooms=classrooms,
+                error=error
             )
 
-        if password != confirm:
-            return render_template(
-                "student_management/create_one_student.html",
-                error="Passwords do not match!",
-                card_ids=available_cards
-            )
+        # --- GENERATE UNIQUE STUDENT ID ---
+        while True:
+            generated_id = faker.generate_student_id()
+            exists = StudentSchoolRecord.query.filter_by(card_id=generated_id).first()
+            if not exists:
+                break
 
-        # check card exists
-        school_record = StudentSchoolRecord.query.filter_by(
-            card_id=card_id).first()
-        if not school_record:
-            return render_template(
-                "student_management/create_one_student.html",
-                error="Invalid Card ID selected!",
-                card_ids=available_cards
-            )
-
-        # prevent duplicate users
-        if Student.query.filter_by(user_card_id=card_id).first():
-            return render_template(
-                "student_management/create_one_student.html",
-                error="A student account for this Card ID already exists!",
-                card_ids=available_cards
-            )
-
-        # Create user
-        new_user = Student(
-            user_card_id=card_id,
-            password=password,
-            role="student",
-            student_school_record_id=school_record.id
+        # --- SAVE STUDENT RECORD ---
+        new_student = StudentSchoolRecord(
+            first_name=first_name,
+            last_name=last_name,
+            card_id=generated_id,
+            is_admin=is_admin,
+            classroom_id=classroom_id
         )
-
-        db.session.add(new_user)
+        db.session.add(new_student)
         db.session.commit()
+
+        # --- SAVE AVATAR FILE ---
+        if avatar_file and avatar_file.filename != "":
+            filename = secure_filename(avatar_file.filename)
+            upload_path = os.path.join(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
+            avatar_file.save(upload_path)
+
+            avatar_record = AvatorFileUpload(
+                original_name=avatar_file.filename,
+                filename=filename,
+                filepath=upload_path,
+                student_school_record_id=new_student.id,
+            )
+            db.session.add(avatar_record)
+            db.session.commit()
 
         return redirect(url_for("dash.view_students"))
 
-    return render_template("student_management/create_one_student.html", card_ids=available_cards)
+    return render_template(
+        "student_management/create_student_school_record.html",
+        classrooms=classrooms,
+        error=error
+    )
 
-
-# prepopulated students records
+# -------------------------
+# VIEW STUDENTS
+# -------------------------
 @dash_bp.route("/view_students")
 @role_required("teacher", "admin")
 def view_students():
     from auth.models import StudentSchoolRecord
-
-    # Pagination params
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
@@ -178,7 +185,9 @@ def view_students():
         per_page=per_page
     )
 
-
+# -------------------------
+# VIEW ONE STUDENT
+# -------------------------
 @dash_bp.route("/view_one_student/<int:id>")
 @role_required("teacher", "admin")
 def view_one_student(id):
@@ -186,20 +195,54 @@ def view_one_student(id):
     student = StudentSchoolRecord.query.get_or_404(id)
     return render_template("student_management/view_one_student_detail.html", student=student)
 
-
+# -------------------------
+# UPDATE STUDENT
+# -------------------------
 @dash_bp.route("/update_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def update_student(id):
-    from auth.models import StudentSchoolRecord
-    student = StudentSchoolRecord.query.get_or_404(id)
+    from auth.models import StudentSchoolRecord, AvatorFileUpload
     from dash.models import Classroom
+
+    student = StudentSchoolRecord.query.get_or_404(id)
     classrooms = Classroom.query.all()
 
     if request.method == "POST":
         student.first_name = request.form.get("first_name")
         student.last_name = request.form.get("last_name")
         student.classroom_id = request.form.get("classroom_id")
+        # Handle admin checkbox
+        student.is_admin = True if request.form.get("is_admin") else False
+
+        avatar_file = request.files.get("avatar_file")
         db.session.commit()
+
+        # --- Update avatar if new file uploaded ---
+        if avatar_file and avatar_file.filename != "":
+            filename = secure_filename(avatar_file.filename)
+            upload_path = os.path.join(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
+            avatar_file.save(upload_path)
+
+            if student.student_avator:
+                # Remove old file if exists
+                try:
+                    os.remove(student.student_avator.filepath)
+                except Exception:
+                    pass
+                student.student_avator.filename = filename
+                student.student_avator.filepath = upload_path
+                student.student_avator.original_name = avatar_file.filename
+            else:
+                new_avatar = AvatorFileUpload(
+                    original_name=avatar_file.filename,
+                    filename=filename,
+                    filepath=upload_path,
+                    student_school_record_id=student.id,
+                    teacher_school_record_id=None
+                )
+                db.session.add(new_avatar)
+            db.session.commit()
+
         return redirect(url_for("dash.view_students"))
 
     return render_template(
@@ -209,79 +252,97 @@ def update_student(id):
     )
 
 
+# -------------------------
+# DELETE STUDENT
+# -------------------------
 @dash_bp.route("/delete_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def delete_student(id):
     from auth.models import StudentSchoolRecord
+
     student = StudentSchoolRecord.query.get_or_404(id)
 
     if request.method == "POST":
-        # User confirmed deletion
+        # --- Delete avatar file from disk ---
+        if student.student_avator:
+            avatar_path = student.student_avator.filepath
+            if os.path.exists(avatar_path):
+                try:
+                    os.remove(avatar_path)
+                except Exception as e:
+                    current_app.logger.warning(f"Failed to delete avatar: {e}")
+
+            db.session.delete(student.student_avator)
+
+        # --- Delete student record ---
         db.session.delete(student)
         db.session.commit()
+
         return redirect(url_for("dash.view_students"))
 
-    # Render confirmation page
-    return render_template(
-        "student_management/delete_student.html",
-        student=student
-    )
+    return render_template("student_management/delete_student.html", student=student)
 
+
+# serve profile avator
+@dash_bp.route("/uploads/profile_photo/<filename>")
+def uploaded_profile_photo(filename):
+    """Serve uploaded profile photo files."""
+    return send_from_directory(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
 
 # ------------------ Student CMS Management ------------------------ 
 @dash_bp.route("/create_cms_student", methods=["GET", "POST"])
 def create_cms_student():
     from auth.models import StudentSchoolRecord, Student
-    # fetch available school IDs (Card IDs)
+
     available_cards = StudentSchoolRecord.query.order_by(
         StudentSchoolRecord.card_id.asc()).all()
 
     if request.method == "POST":
         card_id = request.form.get("card_id")
         password = request.form.get("password")
-        confirm = request.form.get("confirm_password")
+        confirm_password = request.form.get("confirm_password")
 
-        if not confirm or not password:
+        # Required checks
+        if not password or not confirm_password:
             return render_template(
                 "student_management/create_one_student.html",
-                error="password and confirmation password are required fields!",
+                error="Password and confirmation are required!",
                 card_ids=available_cards
             )
 
-        if password != confirm:
+        if password != confirm_password:
             return render_template(
                 "student_management/create_one_student.html",
                 error="Passwords do not match!",
                 card_ids=available_cards
             )
 
-        # check card exists
-        school_record = StudentSchoolRecord.query.filter_by(
-            card_id=card_id).first()
+        # Ensure card ID exists in School Records
+        school_record = StudentSchoolRecord.query.filter_by(card_id=card_id).first()
         if not school_record:
             return render_template(
                 "student_management/create_one_student.html",
-                error="Invalid Card ID selected!",
+                error="Invalid student Card ID selected!",
                 card_ids=available_cards
             )
 
-        # prevent duplicate users
-        if Student.query.filter_by(user_card_id=card_id).first():
+        # Prevent duplicate CMS Accounts
+        if Student.get_user_card_id(card_id):
             return render_template(
                 "student_management/create_one_student.html",
-                error="A student account for this Card ID already exists!",
+                error="A CMS account for this student already exists!",
                 card_ids=available_cards
             )
 
-        # Create user
-        new_user = Student(
+        # Create CMS Student
+        new_student = Student(
             user_card_id=card_id,
             password=password,
             role="student",
             student_school_record_id=school_record.id
         )
 
-        db.session.add(new_user)
+        db.session.add(new_student)
         db.session.commit()
 
         return redirect(url_for("dash.view_cms_students"))
@@ -289,19 +350,21 @@ def create_cms_student():
     return render_template("student_management/create_one_student.html", card_ids=available_cards)
 
 
+
+
+
+
 @dash_bp.route("/view_cms_students")
 @role_required("teacher", "admin")
 def view_cms_students():
-    from auth.models import Student,StudentSchoolRecord
+    from auth.models import Student
 
-    # Pagination params
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
 
     students_paginated = Student.query.order_by(
         Student.id.desc()
     ).paginate(page=page, per_page=per_page, error_out=False)
-
 
     return render_template(
         "student_management/view_cms_students.html",
@@ -310,29 +373,36 @@ def view_cms_students():
         per_page=per_page
     )
 
-@dash_bp.route("/view_one_student/<int:id>")
+
+@dash_bp.route("/view_one_cms_student/<int:id>")
 @role_required("teacher", "admin")
 def view_one_cms_student(id):
     from auth.models import Student
     student = Student.query.get_or_404(id)
     return render_template("student_management/view_one_cms_student_detail.html", student=student)
 
-
-@dash_bp.route("/update_student/<int:id>", methods=["GET", "POST"])
+@dash_bp.route("/update_cms_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def update_cms_student(id):
     from auth.models import Student
     student = Student.query.get_or_404(id)
+
     if request.method == "POST":
-        student.hashed_password = request.form.get("updated_password")
+        new_password = request.form.get("updated_password")
+
+        if not new_password:
+            return render_template(
+                "student_management/update_cms_student.html",
+                student=student,
+                error="Password cannot be empty!"
+            )
+
+        student.hashed_password = student.set_hashed_password(new_password)
         db.session.commit()
+
         return redirect(url_for("dash.view_cms_students"))
 
-    return render_template(
-        "student_management/update_student.html",
-        student=student
-    )
-
+    return render_template("student_management/update_cms_student.html", student=student)
 
 @dash_bp.route("/delete_cms_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
@@ -341,16 +411,12 @@ def delete_cms_student(id):
     student = Student.query.get_or_404(id)
 
     if request.method == "POST":
-        # User confirmed deletion
         db.session.delete(student)
         db.session.commit()
         return redirect(url_for("dash.view_cms_students"))
 
-    # Render confirmation page
-    return render_template(
-        "student_management/delete_cms_student.html",
-        student=student
-    )
+    return render_template("student_management/delete_cms_student.html", student=student)
+
 
 
 

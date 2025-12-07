@@ -1,66 +1,60 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
 <div class="page-breadcrumb">
   <div class="row align-items-center">
     <div class="col-md-6 col-8 align-self-center">
       <h3 class="page-title mb-0 p-0">Student Details</h3>
-      <div class="d-flex align-items-center">
-        <nav aria-label="breadcrumb">
+      <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-            <li class="breadcrumb-item">Students Management</li>
-            <li class="breadcrumb-item active" aria-current="page">View One</li>
+              <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+              <li class="breadcrumb-item">Students Management</li>
+              <li class="breadcrumb-item active">View One</li>
           </ol>
-        </nav>
-      </div>
+      </nav>
     </div>
   </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
 
 <div class="row">
+  <!-- Student Avatar & Info -->
   <div class="col-lg-4 col-md-5">
       <div class="card">
-          <div class="card-body profile-card">
-              <center class="mt-4">
-                  <span class="round round-primary" style="font-size: 55px;">
-                      {{ student.first_name[0]|upper }}
-                  </span>
-                  <h4 class="card-title mt-2" style="font-size: 1.5rem; font-weight: 600;">{{ student.first_name }} {{ student.last_name }}</h4>
-                  <h6 class="card-subtitle" style="font-size: 1.1rem;">{{ student.card_id }}</h6>
-              </center>
+          <div class="card-body profile-card text-center">
+              {% if student.student_avator %}
+              <img src="{{ url_for('dash.uploaded_profile_photo', filename=student.student_avator.filename) }}" 
+                   class="rounded-circle mb-3 d-block mx-auto" width="120" height="120" alt="Student Avatar">
+              {% else %}
+              <span class="round round-primary d-inline-block mx-auto mb-3" style="font-size: 80px;">
+                  {{ student.first_name[0]|upper }}
+              </span>
+              {% endif %}
+              <h4 class="mt-2">{{ student.first_name }} {{ student.last_name }}</h4>
+              <h6>{{ student.card_id }}</h6>
           </div>
       </div>
   </div>
 
+  <!-- Student Details -->
   <div class="col-lg-8 col-md-7">
       <div class="card">
           <div class="card-body">
-              <h4 class="card-title" style="font-size: 1.4rem; font-weight: 600;">Student Details</h4>
+              <h4 class="card-title">Student Details</h4>
               <hr>
-              <p style="font-size: 1.1rem;"><strong>First Name:</strong> {{ student.first_name }}</p>
-              <p style="font-size: 1.1rem;"><strong>Last Name:</strong> {{ student.last_name }}</p>
-              <p style="font-size: 1.1rem;"><strong>School ID:</strong> {{ student.card_id }}</p>
-              <p style="font-size: 1.1rem;"><strong>Classroom:</strong> {{ student.classroom.classroom_name if student.classroom else 'N/A' }}</p>
-
-              <div class="mt-4">
+              <p><strong>First Name:</strong> {{ student.first_name }}</p>
+              <p><strong>Last Name:</strong> {{ student.last_name }}</p>
+              <p><strong>School ID:</strong> {{ student.card_id }}</p>
+              <p><strong>Classroom:</strong> {{ student.classroom.classroom_name if student.classroom else 'N/A' }}</p>
+              <div class="mt-3">
                   <a href="{{ url_for('dash.update_student', id=student.id) }}" class="btn btn-warning me-2">
-                      Update
-                      <i class="fa fa-edit"></i>
+                      Update <i class="fa fa-edit"></i>
                   </a>
                   <a href="{{ url_for('dash.delete_student', id=student.id) }}" class="btn btn-danger">
-                      Delete
-                      <i class="fa fa-trash"></i> 
+                      Delete <i class="fa fa-trash"></i>
                   </a>
               </div>
           </div>
       </div>
   </div>
 </div>
-{% endblock content %}
+{% endblock %}
