@@ -53,14 +53,7 @@ def role_required(*roles):
     return decorator
 
 
-chat_bot_responses = {
-    "greeting":["😊 Hello, what question do have","🖐 Hi what how can i help","Hi 😎","🤗Hi there"],
-    "attendance":"",
-    "assignments":"",
-    "assignments":"",
-    "grading":"",
-    "update profile":"",
-}
+
 
 
 @dash_bp.route("/",methods=["GET"])
@@ -979,17 +972,56 @@ def delete_attendance(id):
 
 
 # ------------------------------- CHAT BOT --------------------------
+# Chatbot response templates
+chat_bot_responses = {
+    "greeting": [
+        "😊 Hello, what question do you have?",
+        "🖐 Hi, how can I help?",
+        "Hi 😎",
+        "🤗 Hi there!"
+    ],
+    "attendance": [
+        "You can check attendance under the 'Attendance' menu.",
+        "To view attendance, go to the students section and select 'Attendance'."
+    ],
+    "assignments": [
+        "You can create assignments from the 'Assignments' page.",
+        "To submit or view assignments, check the 'Assignments' section."
+    ],
+    "grading": [
+        "Grades are available under the 'Grades' section.",
+        "You can update student grades from the 'Grades' page."
+    ],
+    "update_profile": [
+        "You can update your profile from the 'Profile' page.",
+        "Go to 'Profile' to edit your details."
+    ],
+    "fallback": [
+        "Sorry, I didn't understand that. Can you rephrase?",
+        "🤔 I am not sure about that. Try asking differently."
+    ]
+}
 
 @dash_bp.route('/chatbot', methods=['POST'])
 def chatbot():
     req = request.get_json()
-    msg = req.get('message')
+    msg = req.get('message', '').lower()  # Normalize message
 
-    if any(word in msg for word in ["Hello","Hi"]):
-        return choice(chat_bot_responses["greeting"])
+    # Check for keywords
+    if any(word.lower() in msg for word in ["hello", "hi", "hey"]):
+        reply = choice(chat_bot_responses["greeting"])
+    elif "attendance" in msg:
+        reply = choice(chat_bot_responses["attendance"])
+    elif "assignment" in msg:
+        reply = choice(chat_bot_responses["assignments"])
+    elif "grade" in msg or "grading" in msg:
+        reply = choice(chat_bot_responses["grading"])
+    elif "profile" in msg or "update profile" in msg:
+        reply = choice(chat_bot_responses["update_profile"])
+    else:
+        reply = choice(chat_bot_responses["fallback"])
 
-    # compute response...
-    return jsonify(reply="Hi there how can i help")
+    return jsonify({"reply": reply})
 
 
 # ------------------ Profile ------------------------
