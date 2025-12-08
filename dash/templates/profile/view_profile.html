@@ -1,9 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
 <div class="page-breadcrumb">
   <div class="row align-items-center">
       <div class="col-md-6 col-8 align-self-center">
@@ -19,90 +16,94 @@
       </div>
   </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== --> 
 
-<!-- ============================================================== -->
-          <!-- Start Page Content -->
-          <!-- ============================================================== -->
-          <!-- Row -->
-          <div class="row">
-            <!-- Column -->
-            <div class="col-lg-4 col-xlg-3 col-md-5">
-              <div class="card">
-                <div class="card-body profile-card">
-                  <center class="mt-4">
-                    <img
-                      src="{{ url_for('dash.static', filename="dash_static/assets/images/profile_photos/profile_1.jpg") }}"
-                      class="rounded-circle"
-                      width="150"
-                    />
-                    <h4 class="card-title mt-2">Bwalya Chanda</h4>
-                    <h6 class="card-subtitle">Classroom Name: 10A</h6>
-                    <div class="row justify-content-center">
-                      <div class="col-4">
-                        <a href="javascript:void(0)" class="link">
-                          <i class="icon-eye" aria-hidden="true"></i>
-                          <span class="font-normal">View</span>
-                        </a>
-                      </div>
-                      <div class="col-4">
-                        <a href="javascript:void(0)" class="link">
-                          <i class="icon-picture" aria-hidden="true"></i>
-                          <span class="font-normal">54</span>
-                        </a>
-                      </div>
-                    </div>
-                  </center>
-                </div>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Profile Card -->
+    <div class="col-lg-4 col-xlg-3 col-md-5">
+      <div class="card">
+        <div class="card-body profile-card">
+          <center class="mt-4">
+            {% if profile_record.student_avator %}
+              <img src="{{ url_for('dash.uploaded_avator_photo', filename=profile_record.student_avator.filename) }}"
+                   class="rounded-circle" width="120" height="120">
+            {% else %}
+              <span class="round round-primary" style="font-size: 48px;">
+                {{ profile_record.first_name[0]|upper }}
+              </span>
+            {% endif %}
+            <h4 class="card-title mt-2">{{ profile_record.first_name }} {{ profile_record.last_name }}</h4>
+            {% if profile_record.classroom %}
+            <h6 class="card-subtitle">Classroom: {{ profile_record.classroom.classroom_name }}</h6>
+            {% endif %}
+          </center>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Details -->
+    <div class="col-lg-8 col-xlg-9 col-md-7">
+      <div class="card">
+        <div class="card-body">
+          <form class="form-horizontal form-material mx-2" method="POST">
+            <div class="form-group">
+              <label class="col-md-12 mb-0">School ID</label>
+              <div class="col-md-12">
+                <input type="text" class="form-control ps-0 form-control-line"
+                       value="{{ profile_record.card_id }}" readonly>
               </div>
             </div>
-            <!-- Column -->
-            <!-- Column -->
-            <div class="col-lg-8 col-xlg-9 col-md-7">
-              <div class="card">
-                <div class="card-body">
-                  <form class="form-horizontal form-material mx-2">
-                    <div class="form-group">
-                      <label class="col-md-12 mb-0">School ID</label>
-                      <div class="col-md-12">
-                        <input
-                          type="text"
-                          placeholder="S1458"
-                          class="form-control ps-0 form-control-line"
-                          readonly
-                        />
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="col-md-12 mb-0">Password</label>
-                      <div class="col-md-12">
-                        <input
-                          type="password"
-                          value="password"
-                          class="form-control ps-0 form-control-line"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div class="form-group">
-                      <div class="col-sm-12 d-flex">
-                        <button
-                          class="btn btn-success mx-auto mx-md-0 text-white"
-                        >
-                          Update Profile
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
+
+            <div class="form-group">
+              <label class="col-md-12 mb-0">Role</label>
+              <div class="col-md-12">
+                <input type="text" class="form-control ps-0 form-control-line"
+                       value="{{ user.role|capitalize }}" readonly>
               </div>
             </div>
-            <!-- Column -->
-          </div>
-          <!-- Row -->
-          <!-- ============================================================== -->
-          <!-- End PAge Content -->
-          <!-- ============================================================== -->
+
+            <!-- Update Password -->
+            <div class="form-group position-relative">
+              <label class="col-md-12 mb-0">New Password</label>
+              <div class="col-md-12 input-group">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter new password">
+                <span class="input-group-text" onclick="togglePassword('password', 'eye')" style="cursor:pointer;">
+                  <i id="eye" class="fa fa-eye"></i>
+                </span>
+              </div>
+            </div>
+
+            {% if password_updated %}
+              <p class="text-success">Password updated successfully!</p>
+            {% endif %}
+
+            <div class="form-group">
+              <div class="col-sm-12 d-flex">
+                <button class="btn btn-success mx-auto" type="submit">Update Password</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePassword(inputId, eyeId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(eyeId);
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+</script>
+
 {% endblock content %}

@@ -1109,18 +1109,46 @@ def chatbot():
 
     return jsonify({"reply": reply})
 
-
 # ------------------ Profile ------------------------
-@dash_bp.route("/view_profile", methods=["GET"])
+@dash_bp.route("/view_profile", methods=["GET", "POST"])
 @role_required("teacher", "admin", "student")
 def view_profile():
-    return render_template("profile/view_profile.html")
+    from auth.models import Teacher, Admin, Student
+    from flask_login import current_user
+    from extensions import db
+    from werkzeug.security import generate_password_hash
+
+    user_profile = None
+    profile_record = None
+    password_updated = False
+
+    if current_user.role == "teacher":
+        user_profile = Teacher.query.get_or_404(current_user.id)
+        profile_record = user_profile.teacherschoolrecord
+    elif current_user.role == "admin":
+        user_profile = Admin.query.get_or_404(current_user.id)
+        profile_record = user_profile.admin
+    else:
+        user_profile = Student.query.get_or_404(current_user.id)
+        profile_record = user_profile.student
+
+    if request.method == "POST":
+        new_password = request.form.get("password")
+        if new_password:
+            user_profile.hashed_password = generate_password_hash(new_password)
+            db.session.commit()
+            password_updated = True  # simple flag for template
+
+    return render_template(
+        "profile/view_profile.html",
+        user=user_profile,
+        profile_record=profile_record,
+        password_updated=password_updated
+    )
 
 
-@dash_bp.route("/update_account_password/<int:id>", methods=["POST"])
-@role_required("teacher", "admin", "student")
-def update_account_password(id):
-    return redirect(url_for('view_profile'))
+
+
 
 
 @dash_bp.route("/settings", methods=["GET"])
