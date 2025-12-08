@@ -1,26 +1,40 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
 <div class="page-breadcrumb">
   <div class="row align-items-center">
-    <div class="col-md-6 col-8 align-self-center">
-      <h3 class="page-title mb-0 p-0">Delete Admin</h3>
-      <div class="d-flex align-items-center">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-            <li class="breadcrumb-item">Admins Management</li>
-            <li class="breadcrumb-item active" aria-current="page">Delete Admin</li>
-          </ol>
-        </nav>
+      <div class="col-md-6 col-8 align-self-center">
+          <h3 class="page-title mb-0 p-0">Delete Admin</h3>
+          <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+                  <li class="breadcrumb-item"><a href="{{ url_for('dash.view_admins') }}">Admins</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Delete Admin</li>
+              </ol>
+          </nav>
       </div>
+  </div>
+</div>
+
+<div class="container-fluid mt-3">
+  <div class="card">
+    <div class="card-body">
+
+      {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+      {% if success %}
+      <div class="alert alert-success">{{ success }}</div>
+      {% endif %}
+
+      <p>Are you sure you want to delete admin <strong>{{ admin.student_school_record.first_name }} {{ admin.student_school_record.last_name }}</strong>?</p>
+
+      <form method="POST">
+        <button type="submit" class="btn btn-danger">Yes, Delete Admin</button>
+        <a href="{{ url_for('dash.view_admins') }}" class="btn btn-secondary">Cancel</a>
+      </form>
+
     </div>
   </div>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->  
-{% endblock content %}
+{% endblock %}

@@ -63,36 +63,122 @@ def index():
 
 
 # ------------------ Admin Management End-Points ------------------------
+# -------------------------
+# Serve profile photo
+# -------------------------
+@dash_bp.route("/uploads/profile_photo/<filename>")
+def uploaded_avator_photo(filename):
+    return send_from_directory(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
+
+
+# -------------------------
+# Create admin
+# -------------------------
 @dash_bp.route("/create_admin", methods=["GET", "POST"])
 @role_required("teacher")
 def create_admin():
+    from auth.models import Student, StudentSchoolRecord
+    from werkzeug.security import generate_password_hash
+    error = None
+    success = None
 
-    return render_template("admin_management/create_admin.html")
+    # Fetch students who are marked as admin in school records
+    admin_students = StudentSchoolRecord.query.filter_by(is_admin=True).all()
+
+    if request.method == "POST":
+        student_id = request.form.get("student_id")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+
+        if not password or not confirm_password:
+            error = "Both password fields are required."
+        elif password != confirm_password:
+            error = "Passwords do not match."
+        else:
+            student = Student.query.filter_by(student_school_record_id=student_id).first()
+            if not student:
+                # Create new Student account
+                student = Student(
+                    user_card_id=StudentSchoolRecord.query.get(student_id).card_id,
+                    password=password,
+                    role="admin",
+                    student_school_record_id=student_id
+                )
+                db.session.add(student)
+            else:
+                # Update password only
+                student.hashed_password = generate_password_hash(password)
+
+            db.session.commit()
+            success = "Admin account created/updated successfully."
+            return redirect(url_for("dash.view_admins"))
+
+    return render_template("admin_management/create_admin.html",
+                           card_ids=admin_students,
+                           error=error,
+                           success=success)
 
 
-@dash_bp.route("/view_admins", methods=["GET", "POST"])
+# -------------------------
+# View all admins
+# -------------------------
+@dash_bp.route("/view_admins")
 @role_required("teacher")
 def view_admins():
-    return render_template("admin_management/view_admins.html")
+    from auth.models import Student, StudentSchoolRecord
+    admins = StudentSchoolRecord.query.filter(StudentSchoolRecord.is_admin==True).all()
+    return render_template("admin_management/view_admins.html", admins=admins)
 
 
-@dash_bp.route("/view_one_admin/<int:id>", methods=["GET", "POST"])
-@role_required("teacher")
-def view_one_admin(id):
-    return render_template("admin_management/view_one_admin.html")
-
-
+# -------------------------
+# Update admin password
+# -------------------------
 @dash_bp.route("/update_admin/<int:id>", methods=["GET", "POST"])
 @role_required("teacher")
 def update_admin(id):
-    return render_template("admin_management/update_admin.html")
+    from auth.models import Student, StudentSchoolRecord
+    from werkzeug.security import generate_password_hash
+    error = None
+    success = None
+    admin = Student.query.get_or_404(id)
+
+    if request.method == "POST":
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+        if not password or not confirm_password:
+            error = "Both password fields are required."
+        elif password != confirm_password:
+            error = "Passwords do not match."
+        else:
+            admin.hashed_password = generate_password_hash(password)
+            db.session.commit()
+            success = "Admin password updated successfully."
+            return redirect(url_for("dash.view_admins"))
+
+    return render_template("admin_management/update_admin.html", admin=admin, error=error, success=success)
 
 
+# -------------------------
+# Delete admin
+# -------------------------
 @dash_bp.route("/delete_admin/<int:id>", methods=["GET", "POST"])
 @role_required("teacher")
 def delete_admin(id):
-    return render_template("student_management/delete_admin.html")
+    from auth.models import Student
+    error = None
+    success = None
+    admin = Student.query.get_or_404(id)
 
+    if request.method == "POST":
+        try:
+            db.session.delete(admin)
+            db.session.commit()
+            success = "Admin deleted successfully."
+            return redirect(url_for("dash.view_admins"))
+        except Exception as e:
+            error = str(e)
+
+    return render_template("admin_management/delete_admin.html", admin=admin, error=error, success=success)
 
 # ------------------ Student Management End-Points ------------------------
 @dash_bp.route("/create_student_school_record", methods=["GET", "POST"])
