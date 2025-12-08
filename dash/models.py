@@ -105,7 +105,8 @@ class Classroom(db.Model):
     class_assignments = db.relationship(
         "ClassAssignment", 
         backref="classroom", 
-        lazy="joined"
+        lazy="joined",
+        uselist=True
         )
 
     def __init__(self, classroom_name) -> None:
@@ -178,10 +179,13 @@ class StudentGrade(db.Model):
 class ClassAssignment(db.Model):
     __tablename__ = "class_assignment"
 
-    id = db.Column(db.Integer,primary_key=True) 
+    id = db.Column(db.Integer,primary_key=True)
+    created_by_first_name = db.Column(db.String(50),nullable=False,server_default="Placeholder First Name") 
+    created_by_last_name = db.Column(db.String(50),nullable=False,server_default="Placeholder Last Name")  
     assignment_name = db.Column(db.String(50),nullable=False)
     assignment_subject_Name = db.Column(db.String(50),nullable=False)
     assignment_subject_code = db.Column(db.String(50),nullable=False)
+    due_date = db.Column(db.DateTime,default=datetime.utcnow)
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
 
@@ -247,9 +251,13 @@ class StudentAssignmentSubmission(db.Model):
     __tablename__ = "student_assignment_submission"
 
     id = db.Column(db.Integer,primary_key=True) 
+    submitted_by_first_name = db.Column(db.String(50),nullable=False,server_default="Placeholder First Name") 
+    submitted_by_last_name = db.Column(db.String(50),nullable=False,server_default="Placeholder Last Name") 
     assignment_name = db.Column(db.String(50),nullable=False)
     assignment_subject_Name = db.Column(db.String(50),nullable=False)
     assignment_subject_code = db.Column(db.String(50),nullable=False)
+    student_score = db.Column(db.Integer,nullable=False,default=0) 
+    student_grade = db.Column(db.String(5),nullable=False,default="No Grade") 
     created_at = db.Column(db.DateTime,default=datetime.utcnow)
     updated_at = db.Column(db.DateTime,onupdate=datetime.utcnow)
 

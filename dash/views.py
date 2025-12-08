@@ -578,7 +578,7 @@ def create_assignment():
             due_date = request.form.get("due_date")
 
             created_date = datetime.utcnow().strftime("%Y-%m-%d")
-            if due_date <= created_date:
+            if due_date < created_date:
                 error = "Due date must be greater than today's date."
                 raise ValueError(error)
 
@@ -793,35 +793,147 @@ def teacher_delete_assigment_submission(id):
 
 
 # ------------------ Assignment Submission End-Points ------------------------
-@dash_bp.route("/create_assignment_submission", methods=["GET", "POST"])
-@role_required("admin", "student")
-def create_assignment_submission():
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "docx", "txt"}
 
-    return render_template("student_assignment_submission/create_student_assigment_submission.html")
-
-
-@dash_bp.route("/view_assignment_submissions", methods=["GET", "POST"])
-@role_required("admin", "student")
-def view_assignment_submissions():
-    return render_template("student_assignment_submission/view_student_assigment_submission.html")
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@dash_bp.route("/view_one_assignment_submission/<int:id>", methods=["GET", "POST"])
-@role_required("admin", "student")
-def view_one_assignment_submission(id):
-    return render_template("student_assignment_submission/view_one_student_assigment_submission_detail.html")
+@dash_bp.route("/student/assignments", methods=["GET", "POST"])
+@login_required
+def student_assignments():
+    # Import models here to avoid circular imports
+    from dash.models import ClassAssignment, StudentAssignmentSubmission, AssignmentSubmisssionFileUpload
+    from auth.models import StudentSchoolRecord
+
+    error = None
+    success = None
+
+    # Only students allowed
+    if current_user.role != "student":
+        return redirect(url_for("dash.index"))
+
+    student_record = current_user.student
+    classroom = student_record.classroom
+
+    # Get classroom assignments
+    assignments = ClassAssignment.query.filter_by(classroom_id=classroom.id).all()
+
+    # Handle submission
+    if request.method == "POST":
+        assignment_id = request.form.get("assignment_id")
+        files = request.files.getlist("assignment_files")
+
+        if not assignment_id:
+            error = "Please select an assignment."
+        elif not files or files[0].filename == "":
+            error = "Please upload at least one file."
+        else:
+            try:
+                assignment_id = int(assignment_id)
+                class_assignment = ClassAssignment.query.get(assignment_id)
+
+                # Create submission record
+                submission = StudentAssignmentSubmission(
+                    assignment_name=class_assignment.assignment_name,
+                    assignment_subject_Name=class_assignment.assignment_subject_Name,
+                    assignment_subject_code=class_assignment.assignment_subject_code,
+                    student_school_record_id=student_record.id,
+                    class_assignment_id=assignment_id
+                )
+                db.session.add(submission)
+                db.session.flush()  # to get submission.id
+
+                upload_folder = current_app.config["STUDENT_SUBMISSION_UPLOAD"]
+                os.makedirs(upload_folder, exist_ok=True)
+
+                # Save uploaded files
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        filepath = os.path.join(upload_folder, filename)
+                        file.save(filepath)
+
+                        file_record = AssignmentSubmisssionFileUpload(
+                            original_name=file.filename,
+                            filename=filename,
+                            filepath=filepath,
+                            student_assignment_submission_id=submission.id
+                        )
+                        db.session.add(file_record)
+
+                db.session.commit()
+                success = "Assignment submitted successfully!"
+
+            except Exception as e:
+                print("ERROR:", e)
+                db.session.rollback()
+                error = "Failed to submit assignment."
+
+    # Load previous submissions
+    submissions = StudentAssignmentSubmission.query.filter_by(
+        student_school_record_id=student_record.id
+    ).all()
+
+    return render_template(
+        "student/student_assignments.html",
+        assignments=assignments,
+        submissions=submissions,
+        error=error,
+        success=success
+    )
 
 
-@dash_bp.route("/update_assigment_submission/<int:id>", methods=["GET", "POST"])
-@role_required("admin", "student")
-def update_assigment_submission(id):
-    return render_template("student_assignment_submission/update_student_assigment_submission.html")
 
+# DELETE SUBMISSION
+@dash_bp.route("/student/assignments/<int:submission_id>/delete", methods=["POST"])
+@login_required
+def delete_submission(submission_id):
+    from dash.models import ClassAssignment, StudentAssignmentSubmission
+    from auth.models import StudentSchoolRecord
 
-@dash_bp.route("/delete_assigment_submission/<int:id>", methods=["GET", "POST"])
-@role_required("admin", "student")
-def delete_assigment_submission(id):
-    return render_template("student_assignment_submission/delete_student_assigment_submission.html")
+    # Only students
+    if current_user.role != "student":
+        return redirect(url_for("dash.index"))
+
+    submission = StudentAssignmentSubmission.query.get_or_404(submission_id)
+
+    # Delete files on disk
+    for file in submission.assignment_submisssion_file_uploads:
+        try:
+            if os.path.exists(file.filepath):
+                os.remove(file.filepath)
+        except:
+            pass
+
+    # Delete from DB
+    try:
+        db.session.delete(submission)
+        db.session.commit()
+        success = "Submission deleted successfully!"
+        error = None
+    except Exception:
+        db.session.rollback()
+        error = "Failed to delete submission."
+        success = None
+
+    # Reload content
+    student_record = current_user.student
+    classroom = student_record.classroom
+
+    assignments = ClassAssignment.query.filter_by(classroom_id=classroom.id).all()
+    submissions = StudentAssignmentSubmission.query.filter_by(
+        student_school_record_id=student_record.id
+    ).all()
+
+    return render_template(
+        "student/student_assignments.html",
+        assignments=assignments,
+        submissions=submissions,
+        error=error,
+        success=success
+    )
+
 
 
 
