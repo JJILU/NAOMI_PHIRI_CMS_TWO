@@ -1,40 +1,118 @@
 {% extends 'base.html' %}
 {% block content %}
-<h3>Create Assignment</h3>
 
-<form method="POST" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label>Assignment Title</label>
-        <input type="text" name="assignment_name" class="form-control" required>
+<!-- Breadcrumb -->
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+      <div class="col-md-6 col-8 align-self-center">
+          <h3 class="page-title mb-0 p-0">Create Assignment</h3>
+          <div class="d-flex align-items-center">
+              <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+                      <li class="breadcrumb-item"><a href="{{ url_for('dash.list_assignments') }}">Assignments</a></li>
+                      <li class="breadcrumb-item active" aria-current="page">Create</li>
+                  </ol>
+              </nav>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title mb-4">New Assignment</h4>
+
+          {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endif %}
+          {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+          {% endif %}
+
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="assignment_name" class="form-label">Assignment Name</label>
+              <input type="text" class="form-control" id="assignment_name" name="assignment_name" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Subject Type</label>
+              <select class="form-select" id="subject_type" name="subject_type" required onchange="loadSubjects(this.value)">
+                <option value="">Select Type</option>
+                <option value="compulsary">Compulsary</option>
+                <option value="optional">Optional</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Subject</label>
+              <select class="form-select" id="subject_id" name="subject_id" required onchange="loadClassrooms(this.value)">
+                <option value="">Select Subject</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Classroom</label>
+              <select class="form-select" id="classroom_id" name="classroom_id" required>
+                <option value="">Select Classroom</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Due Date</label>
+              <input type="date" class="form-control" name="due_date" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Upload Files</label>
+              <input type="file" class="form-control" name="files" multiple>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Create Assignment</button>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div class="mb-3">
-        <label>Subject</label>
-        <select name="subject_id" class="form-control" required>
-            {% for s in subjects %}
-            <option value="{{ s.id }}" data-type="{{ s.__tablename__ }}">
-                {{ s.subject_name }} ({{ s.subject_code }})
-            </option>
-            {% endfor %}
-        </select>
-    </div>
+<script>
+// Use JSON-safe data from backend
+const compulsarySubs = {{ compulsary_subs|tojson }};
+const optionalSubs = {{ optional_subs|tojson }};
 
-    <div class="mb-3">
-        <label>Classroom</label>
-        <select name="classroom_id" class="form-control" required>
-            {% for s in subjects %}
-                {% for c in s.classrooms %}
-                <option value="{{ c.id }}">{{ c.classroom_name }} - {{ s.subject_name }}</option>
-                {% endfor %}
-            {% endfor %}
-        </select>
-    </div>
+// Load subjects dropdown based on type
+function loadSubjects(type) {
+    const subjectSelect = document.getElementById("subject_id");
+    subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+    const subjects = type === 'compulsary' ? compulsarySubs : optionalSubs;
+    subjects.forEach(s => {
+        subjectSelect.innerHTML += `<option value="${s.id}">${s.subject_name} (${s.subject_code})</option>`;
+    });
+    // Reset classroom dropdown
+    document.getElementById("classroom_id").innerHTML = '<option value="">Select Classroom</option>';
+}
 
-    <div class="mb-3">
-        <label>Upload Files</label>
-        <input type="file" name="files" multiple class="form-control">
-    </div>
+// Load classrooms for selected subject via AJAX
+function loadClassrooms(subjectId) {
+    const type = document.getElementById("subject_type").value;
+    if (!subjectId || !type) return;
 
-    <button class="btn btn-success">Create Assignment</button>
-</form>
+    fetch(`/dash/subject/${type}/${subjectId}/classrooms`)
+      .then(res => res.json())
+      .then(data => {
+          const classroomSelect = document.getElementById("classroom_id");
+          classroomSelect.innerHTML = '<option value="">Select Classroom</option>';
+          data.forEach(c => {
+              classroomSelect.innerHTML += `<option value="${c.id}">${c.classroom_name}</option>`;
+          });
+      })
+      .catch(err => console.error("Error loading classrooms:", err));
+}
+</script>
+
 {% endblock %}

@@ -1,18 +1,74 @@
 {% extends 'base.html' %}
 {% block content %}
-<h3>Update Assignment</h3>
 
-<form method="POST" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label>Assignment Title</label>
-        <input type="text" name="assignment_name" value="{{ assignment.assignment_name }}" class="form-control" required>
+<!-- ============================================================== -->
+<!-- Breadcrumb -->
+<!-- ============================================================== -->
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+      <div class="col-md-6 col-8 align-self-center">
+          <h3 class="page-title mb-0 p-0">Update Assignment</h3>
+          <div class="d-flex align-items-center">
+              <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+                      <li class="breadcrumb-item"><a href="{{ url_for('dash.list_assignments') }}">Assignments</a></li>
+                      <li class="breadcrumb-item active" aria-current="page">Update</li>
+                  </ol>
+              </nav>
+          </div>
+      </div>
+  </div>
+</div>
+<!-- ============================================================== -->
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Update Assignment</h4>
+
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    {% if success %}
+                        <div class="alert alert-success">{{ success }}</div>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="assignment_name" class="form-label">Assignment Name</label>
+                            <input type="text" class="form-control" id="assignment_name" name="assignment_name"
+                                   value="{{ assignment.assignment_name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Add Files</label>
+                            <input type="file" class="form-control" name="files" multiple>
+                        </div>
+
+                        {% if assignment.assignment_file_uploads %}
+                        <div class="mb-3">
+                            <label class="form-label">Existing Files</label>
+                            <ul>
+                                {% for f in assignment.assignment_file_uploads %}
+                                    <li>
+                                        <a href="{{ url_for('dash.download_file', file_id=f.id) }}" target="_blank">
+                                            {{ f.original_name }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary w-100">Update Assignment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label>Add More Files</label>
-        <input type="file" name="files" multiple class="form-control">
-    </div>
-
-    <button class="btn btn-success">Save</button>
-</form>
 {% endblock %}

@@ -425,6 +425,9 @@ def delete_cms_student(id):
 
 # ------------------ Assignments End-Points ------------------------ [Teacher & Admin]
 
+# ------------------------------
+# ASSIGNMENT MANAGEMENT BACKEND
+# ------------------------------
 
 
 # Allowed extensions
@@ -433,99 +436,189 @@ ALLOWED_EXT = {"pdf", "doc", "docx", "png", "jpg", "jpeg", "gif"}
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
 
-# --------------------
-# 1. List assignments
-# --------------------
+# ----------------------------------------------------
+# 1. LIST ASSIGNMENTS WITH PAGINATION
+# ----------------------------------------------------
 @dash_bp.route("/assignments", methods=["GET"])
 def list_assignments():
     from dash.models import ClassAssignment
-    assignments = ClassAssignment.query.order_by(ClassAssignment.created_at.desc()).all()
-    return render_template("assignment/list_assignments.html", assignments=assignments)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 6, type=int)  # default 6 per page
 
-# --------------------
-# 2. Create assignment
-# --------------------
+    pagination = ClassAssignment.query.order_by(
+        ClassAssignment.created_at.desc()
+    ).paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template("assignment/list_assignments.html",
+                           pagination=pagination,
+                           assignments=pagination.items,
+                           per_page=per_page,
+                           error=None,
+                           success=None)
+
+# ----------------------------------------------------
+# 3. CREATE ASSIGNMENT
+# ----------------------------------------------------
 @dash_bp.route("/assignments/create", methods=["GET", "POST"])
 def create_assignment():
-    from dash.models import ClassAssignment, AssignmentFileUpload, CompulsarySubject, OptionalSubject, Classroom
-    from extensions import db
-
-    # Subjects teacher teaches
-    teacher_subjects = []
-
-    # Example: get subjects by teacher id (adjust according to your Teacher model)
+    from dash.models import (
+        ClassAssignment, AssignmentFileUpload,
+        CompulsarySubject, OptionalSubject
+    )
     from auth.models import TeacherSchoolRecord
-    teacher_record = TeacherSchoolRecord.query.filter_by(card_id=).first()
-    if teacher_record:
-        teacher_subjects = teacher_record.subjects  # list of subjects teacher teaches
+    from extensions import db
+    from flask import current_app, request, render_template
+    import os
+    from werkzeug.utils import secure_filename
+    from datetime import datetime
+    from flask_login import current_user
+
+    # ------------------------------
+    # Get teacher's subjects
+    # ------------------------------
+    teacher_record = TeacherSchoolRecord.query.filter_by(
+        card_id=current_user.teacherschoolrecord.card_id
+    ).first()
+
+    compulsary_subs = teacher_record.compulsarysubject
+    optional_subs = teacher_record.optionalsubject
+
+    # Serialize subjects for JS
+    compulsary_subs_json = [
+        {"id": s.id, "subject_name": s.subject_name, "subject_code": s.subject_code}
+        for s in compulsary_subs
+    ]
+    optional_subs_json = [
+        {"id": s.id, "subject_name": s.subject_name, "subject_code": s.subject_code}
+        for s in optional_subs
+    ]
+
+    error = None
+    success = None
 
     if request.method == "POST":
-        assignment_name = request.form.get("assignment_name").strip()
-        subject_id = int(request.form.get("subject_id")) # type: ignore
-        classroom_id = int(request.form.get("classroom_id")) # type: ignore
+        try:
+            assignment_name = request.form.get("assignment_name").strip()
+            subject_type = request.form.get("subject_type")
+            subject_id = int(request.form.get("subject_id"))
+            classroom_id = int(request.form.get("classroom_id"))
+            due_date = request.form.get("due_date")
 
-        subject_type = request.form.get("subject_type")  # compulsary / optional
+            created_date = datetime.utcnow().strftime("%Y-%m-%d")
+            if due_date <= created_date:
+                error = "Due date must be greater than today's date."
+                raise ValueError(error)
 
-        if subject_type == "compulsary":
-            subject = CompulsarySubject.query.get_or_404(subject_id)
-        else:
-            subject = OptionalSubject.query.get_or_404(subject_id)
+            # Get subject
+            subject_cls = CompulsarySubject if subject_type == "compulsary" else OptionalSubject
+            subject = subject_cls.query.get_or_404(subject_id)
 
-        new_assign = ClassAssignment(
-            assignment_name=assignment_name,
-            assignment_subject_Name=subject.subject_name,
-            assignment_subject_code=subject.subject_code,
-            classroom_id=classroom_id
-        )
-        db.session.add(new_assign)
-        db.session.commit()  # get id for files
+            # Create assignment
+            new_assign = ClassAssignment(
+                assignment_name=assignment_name,
+                assignment_subject_Name=subject.subject_name,
+                assignment_subject_code=subject.subject_code,
+                classroom_id=classroom_id
+            )
+            db.session.add(new_assign)
+            db.session.commit()
+            print(f"[DEBUG] Assignment created: {new_assign.assignment_name}")
 
-        # Handle multiple files
-        files = request.files.getlist("files")
-        upload_folder = current_app.config.get("ASSIGNMENT_UPLOAD", "uploads/assignments")
-        os.makedirs(upload_folder, exist_ok=True)
+            # Upload files
+            files = request.files.getlist("files")
+            upload_folder = current_app.config.get("ASSIGNMENT_UPLOAD", "uploads/assignments")
+            os.makedirs(upload_folder, exist_ok=True)
 
-        for f in files:
-            if f and allowed_file(f.filename):
-                filename = secure_filename(f.filename) # type: ignore
-                dest = os.path.join(upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
-                f.save(dest)
-                file_record = AssignmentFileUpload(
-                    original_name=f.filename,
-                    filename=os.path.basename(dest),
-                    filepath=os.path.relpath(dest, start=os.getcwd()),
-                    class_assignment_id=new_assign.id
-                )
-                db.session.add(file_record)
-        db.session.commit()
-        return redirect(url_for("dash.list_assignments"))
+            for f in files:
+                if f.filename:
+                    filename = secure_filename(f.filename)
+                    dest = os.path.join(upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
+                    f.save(dest)
 
-    return render_template("assignment/create_assignment.html", subjects=teacher_subjects)
+                    file_record = AssignmentFileUpload(
+                        original_name=f.filename,
+                        filename=os.path.basename(dest),
+                        filepath=os.path.relpath(dest, start=os.getcwd()),
+                        class_assignment_id=new_assign.id
+                    )
+                    db.session.add(file_record)
 
-# --------------------
-# 3. Update assignment
-# --------------------
+            db.session.commit()
+            success = "Assignment created successfully."
+            print("[DEBUG] Files uploaded and DB updated")
+
+        except Exception as e:
+            print("[DEBUG] Error creating assignment:", e)
+            if not error:
+                error = str(e)
+
+    return render_template(
+        "assignment/create_assignment.html",
+        compulsary_subs=compulsary_subs_json,
+        optional_subs=optional_subs_json,
+        error=error,
+        success=success
+    )
+
+
+# ----------------------------------------------------
+# AJAX – GET CLASSROOMS FOR SUBJECT
+# ----------------------------------------------------
+@dash_bp.route("/subject/<subject_type>/<int:subject_id>/classrooms", methods=["GET"])
+def get_subject_classrooms(subject_type, subject_id):
+    from dash.models import CompulsarySubject, OptionalSubject
+    from flask import jsonify
+
+    print(f"[DEBUG] Classroom request: subject_type={subject_type}, subject_id={subject_id}")
+
+    subject_cls = CompulsarySubject if subject_type == "compulsary" else OptionalSubject
+    subject = subject_cls.query.get(subject_id)
+    if not subject:
+        print(f"[DEBUG] Subject NOT found for id={subject_id}")
+        return jsonify([])
+
+    if hasattr(subject, "classrooms"):
+        classrooms = subject.classrooms.all() if hasattr(subject.classrooms, "all") else subject.classrooms
+        classrooms_data = [{"id": c.id, "classroom_name": c.classroom_name} for c in classrooms]
+        print(f"[DEBUG] Classrooms loaded: {classrooms_data}")
+    else:
+        classrooms_data = []
+        print("[DEBUG] Subject has no classrooms attribute")
+
+        print("my debug classes", classrooms_data)
+
+    return jsonify(classrooms_data)
+
+
+
+
+
+# ----------------------------------------------------
+# 4. UPDATE ASSIGNMENT
+# ----------------------------------------------------
 @dash_bp.route("/assignments/<int:id>/update", methods=["GET", "POST"])
 def update_assignment(id):
     from dash.models import ClassAssignment, AssignmentFileUpload
     from extensions import db
 
     assignment = ClassAssignment.query.get_or_404(id)
+    error = None
+    success = None
 
     if request.method == "POST":
-        assignment_name = request.form.get("assignment_name").strip()
-        assignment.assignment_name = assignment_name
+        assignment.assignment_name = request.form.get("assignment_name").strip()
         db.session.commit()
 
-        # Add more files
         files = request.files.getlist("files")
         upload_folder = current_app.config.get("ASSIGNMENT_UPLOAD", "uploads/assignments")
         os.makedirs(upload_folder, exist_ok=True)
+
         for f in files:
             if f and allowed_file(f.filename):
-                filename = secure_filename(f.filename) # type: ignore
+                filename = secure_filename(f.filename)
                 dest = os.path.join(upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
                 f.save(dest)
+
                 file_record = AssignmentFileUpload(
                     original_name=f.filename,
                     filename=os.path.basename(dest),
@@ -533,57 +626,72 @@ def update_assignment(id):
                     class_assignment_id=assignment.id
                 )
                 db.session.add(file_record)
+
         db.session.commit()
-        return redirect(url_for("dash.list_assignments"))
+        success = "Assignment updated successfully."
 
-    return render_template("assignment/update_assignment.html", assignment=assignment)
+    return render_template("assignment/update_assignment.html",
+                           assignment=assignment,
+                           error=error,
+                           success=success)
 
-# --------------------
-# 4. Delete assignment
-# --------------------
-@dash_bp.route("/assignments/<int:id>/delete", methods=["POST"])
+# ----------------------------------------------------
+# 5. DELETE ASSIGNMENT
+# ----------------------------------------------------
+# DELETE CONFIRMATION PAGE
+@dash_bp.route("/assignments/<int:id>/delete", methods=["GET", "POST"])
 def delete_assignment(id):
     from dash.models import ClassAssignment, AssignmentFileUpload
     from extensions import db
 
     assignment = ClassAssignment.query.get_or_404(id)
 
-    # Remove files from disk
-    upload_folder = current_app.config.get("ASSIGNMENT_UPLOAD", "uploads/assignments")
-    for f in assignment.assignment_file_uploads:
-        try:
-            path = os.path.join(os.getcwd(), f.filepath)
-            if os.path.exists(path):
-                os.remove(path)
-        except:
-            pass
-        db.session.delete(f)
+    if request.method == "POST":
+        # Delete files
+        for f in assignment.assignment_file_uploads:
+            try:
+                path = os.path.join(os.getcwd(), f.filepath)
+                if os.path.exists(path):
+                    os.remove(path)
+            except:
+                pass
+            db.session.delete(f)
 
-    db.session.delete(assignment)
-    db.session.commit()
-    return redirect(url_for("dash.list_assignments"))
+        db.session.delete(assignment)
+        db.session.commit()
+        return redirect(url_for("dash.list_assignments"))
 
-# --------------------
-# 5. View one assignment
-# --------------------
+    # GET request shows confirmation page
+    return render_template("assignment/delete_assignment.html", assignment=assignment)
+
+
+# ----------------------------------------------------
+# 6. VIEW ONE ASSIGNMENT
+# ----------------------------------------------------
 @dash_bp.route("/assignments/<int:id>", methods=["GET"])
 def view_assignment(id):
     from dash.models import ClassAssignment
     assignment = ClassAssignment.query.get_or_404(id)
-    return render_template("assignment/view_assignment.html", assignment=assignment)
+    return render_template("assignment/view_assignment.html",
+                           assignment=assignment,
+                           error=None,
+                           success=None)
 
-# --------------------
-# 6. Download file
-# --------------------
+# ----------------------------------------------------
+# 7. DOWNLOAD FILE
+# ----------------------------------------------------
 @dash_bp.route("/assignments/file/<int:file_id>/download", methods=["GET"])
 def download_file(file_id):
     from dash.models import AssignmentFileUpload
+
     file_rec = AssignmentFileUpload.query.get_or_404(file_id)
     path = os.path.join(os.getcwd(), file_rec.filepath)
-    directory = os.path.dirname(path)
-    filename = os.path.basename(path)
-    return send_from_directory(directory, filename, as_attachment=True)
 
+    return send_from_directory(
+        os.path.dirname(path),
+        os.path.basename(path),
+        as_attachment=True
+    )
 
 
 # ------------------------------- Assignment Submission [Teacher] ----------------------

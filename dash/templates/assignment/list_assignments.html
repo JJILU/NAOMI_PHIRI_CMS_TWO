@@ -1,34 +1,94 @@
 {% extends 'base.html' %}
 {% block content %}
-<h3>All Assignments</h3>
-<a href="{{ url_for('dash.create_assignment') }}" class="btn btn-success mb-3">New Assignment</a>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Subject</th>
-            <th>Classroom</th>
-            <th>Files</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for a in assignments %}
-        <tr>
-            <td>{{ a.assignment_name }}</td>
-            <td>{{ a.assignment_subject_Name }}</td>
-            <td>{{ a.classroom.classroom_name }}</td>
-            <td>{{ a.assignment_file_uploads|length }}</td>
-            <td>
-                <a href="{{ url_for('dash.view_assignment', id=a.id) }}" class="btn btn-primary btn-sm">View</a>
-                <a href="{{ url_for('dash.update_assignment', id=a.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                <form action="{{ url_for('dash.delete_assignment', id=a.id) }}" method="POST" style="display:inline">
-                    <button class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </td>
-        </tr>
+<!-- ============================================================== -->
+<!-- Breadcrumb -->
+<!-- ============================================================== -->
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+      <div class="col-md-6 col-8 align-self-center">
+          <h3 class="page-title mb-0 p-0">All Assignments</h3>
+          <div class="d-flex align-items-center">
+              <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+                      <li class="breadcrumb-item">Assignments</li>
+                      <li class="breadcrumb-item active" aria-current="page">View All</li>
+                  </ol>
+              </nav>
+          </div>
+      </div>
+  </div>
+</div>
+<!-- ============================================================== -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 mb-2">
+            <label for="per_page_select">Assignments per page:</label>
+            <select id="per_page_select" class="form-select w-auto d-inline" onchange="changePerPage(this.value)">
+                {% for option in [6, 12, 18, 24] %}
+                <option value="{{ option }}" {% if per_page == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        {% for assignment in assignments %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ assignment.assignment_name }}</h5>
+                    <p>Subject: {{ assignment.assignment_subject_Name }}</p>
+                    <p>Classroom: {{ assignment.classroom.classroom_name }}</p>
+                    <p>Created: {{ assignment.created_at.strftime('%d %b %Y') }}</p>
+                    <p>Due: {{ assignment.due_date.strftime('%d %b %Y') if assignment.due_date else 'N/A' }}</p>
+                    <a href="{{ url_for('dash.view_assignment', id=assignment.id) }}" class="btn btn-primary btn-sm">View</a>
+                    <a href="{{ url_for('dash.update_assignment', id=assignment.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                    <form action="{{ url_for('dash.delete_assignment', id=assignment.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endfor %}
-    </tbody>
-</table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="row">
+        <div class="col-12 d-flex justify-content-center mt-3">
+            <nav>
+                <ul class="pagination">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('dash.list_assignments', page=pagination.prev_num, per_page=per_page) }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('dash.list_assignments', page=p, per_page=per_page) }}">{{ p }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('dash.list_assignments', page=pagination.next_num, per_page=per_page) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script>
+function changePerPage(value) {
+    window.location.href = "{{ url_for('dash.list_assignments') }}?per_page=" + value;
+}
+</script>
+
 {% endblock %}
