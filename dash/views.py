@@ -53,7 +53,11 @@ def role_required(*roles):
     return decorator
 
 
+# Allowed extensions
+ALLOWED_EXT = {"pdf", "doc", "docx", "png", "jpg", "jpeg", "gif","jfif"}
 
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
 
 
 
@@ -505,20 +509,9 @@ def delete_cms_student(id):
 
 # ------------------ Assignments End-Points ------------------------ [Teacher & Admin]
 
-# ------------------------------
-# ASSIGNMENT MANAGEMENT BACKEND
-# ------------------------------
 
+# ------------------ LIST ASSIGNMENTS WITH PAGINATION ----------------------
 
-# Allowed extensions
-ALLOWED_EXT = {"pdf", "doc", "docx", "png", "jpg", "jpeg", "gif"}
-
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
-
-# ----------------------------------------------------
-# 1. LIST ASSIGNMENTS WITH PAGINATION
-# ----------------------------------------------------
 @dash_bp.route("/assignments", methods=["GET"])
 def list_assignments():
     from dash.models import ClassAssignment
@@ -1158,43 +1151,6 @@ def chatbot():
 
     return jsonify({"reply": reply})
 # ------------------ Profile ------------------------
-@dash_bp.route("/view_profile", methods=["GET", "POST"])
-@role_required("teacher", "admin", "student")
-def view_profile():
-    from auth.models import Teacher, Admin, Student
-    from flask_login import current_user
-    from extensions import db
-    from werkzeug.security import generate_password_hash
-
-    user_profile = None
-    profile_record = None
-    password_updated = False
-
-    if current_user.role == "teacher": # type: ignore
-        user_profile = Teacher.query.get_or_404(current_user.id) # type: ignore
-        profile_record = user_profile.teacherschoolrecord
-    elif current_user.role == "admin": # type: ignore
-        user_profile = Admin.query.get_or_404(current_user.id) # type: ignore
-        profile_record = user_profile.admin
-    else:
-        user_profile = Student.query.get_or_404(current_user.id) # type: ignore
-        profile_record = user_profile.student
-
-    if request.method == "POST":
-        new_password = request.form.get("password")
-        if new_password:
-            user_profile.hashed_password = generate_password_hash(new_password)
-            db.session.commit()
-            password_updated = True  # simple flag for template
-
-    return render_template(
-        "profile/view_profile.html",
-        user=user_profile,
-        profile_record=profile_record,
-        password_updated=password_updated
-    )
-
-
 
 
 
@@ -1203,3 +1159,86 @@ def view_profile():
 @role_required("teacher", "admin")
 def settings():
     return render_template("profile/settings.html")
+
+# --------------------- Profile End-Point --------------------
+@dash_bp.route("/view_profile", methods=["GET", "POST"])
+@role_required("teacher", "admin", "student")
+def view_profile():
+    from werkzeug.utils import secure_filename
+    from werkzeug.security import generate_password_hash
+    from auth.models import Teacher, Admin, Student, AvatorFileUpload
+
+    user_profile = None
+    profile_record = None
+    password_updated = False
+    upload_error = None
+    upload_success = None
+
+    # Get user and profile record
+    if current_user.role == "teacher":
+        user_profile = Teacher.query.get_or_404(current_user.id)
+        profile_record = user_profile.teacherschoolrecord
+        existing_avatar = profile_record.teacher_avator
+    elif current_user.role == "admin":
+        user_profile = Admin.query.get_or_404(current_user.id)
+        profile_record = user_profile.admin
+        existing_avatar = profile_record.student_avator
+    else:
+        user_profile = Student.query.get_or_404(current_user.id)
+        profile_record = user_profile.student
+        existing_avatar = profile_record.student_avator
+
+    if request.method == "POST":
+        # Update password
+        new_password = request.form.get("password")
+        if new_password:
+            user_profile.hashed_password = generate_password_hash(new_password)
+            db.session.commit()
+            password_updated = True
+
+        # Handle profile picture upload
+        if "profile_photo" in request.files:
+            file = request.files["profile_photo"]
+            if file.filename == "":
+                upload_error = "No file selected."
+            elif file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                upload_folder = current_app.config["PROFILE_PHOTO_UPLOAD"]
+                os.makedirs(upload_folder, exist_ok=True)
+                filepath = os.path.join(upload_folder, filename)
+                file.save(filepath)
+
+                try:
+                    if existing_avatar:
+                        # Update existing avatar record
+                        existing_avatar.original_name = file.filename
+                        existing_avatar.filename = filename
+                        existing_avatar.filepath = filepath
+                    else:
+                        # Create new avatar record
+                        new_avatar = AvatorFileUpload(
+                            original_name=file.filename,
+                            filename=filename,
+                            filepath=filepath,
+                            teacher_school_record_id=profile_record.id if current_user.role == "teacher" else None,
+                            student_school_record_id=profile_record.id if current_user.role != "teacher" else None
+                        )
+                        db.session.add(new_avatar)
+
+                    db.session.commit()
+                    upload_success = "Profile picture updated successfully!"
+                except Exception as e:
+                    db.session.rollback()
+                    upload_error = "Failed to update profile picture."
+
+            else:
+                upload_error = "Invalid file type. Allowed: png, jpg, jpeg, gif."
+
+    return render_template(
+        "profile/view_profile.html",
+        user=user_profile,
+        profile_record=profile_record,
+        password_updated=password_updated,
+        upload_error=upload_error,
+        upload_success=upload_success
+    )

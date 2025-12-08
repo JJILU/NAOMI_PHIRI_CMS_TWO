@@ -26,15 +26,30 @@
           <center class="mt-4">
             {% if profile_record.student_avator %}
               <img src="{{ url_for('dash.uploaded_avator_photo', filename=profile_record.student_avator.filename) }}"
-                   class="rounded-circle" width="120" height="120">
+                   class="rounded-circle mb-2" width="120" height="120">
+            {% elif profile_record.teacher_avator %}
+              <img src="{{ url_for('dash.uploaded_avator_photo', filename=profile_record.teacher_avator.filename) }}"
+                   class="rounded-circle mb-2" width="120" height="120">
             {% else %}
-              <span class="round round-primary" style="font-size: 48px;">
-                {{ profile_record.first_name[0]|upper }}
-              </span>
+              <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
+                   class="rounded-circle mb-2" width="120" height="120">
             {% endif %}
+            
             <h4 class="card-title mt-2">{{ profile_record.first_name }} {{ profile_record.last_name }}</h4>
             {% if profile_record.classroom %}
-            <h6 class="card-subtitle">Classroom: {{ profile_record.classroom.classroom_name }}</h6>
+              <h6 class="card-subtitle">Classroom: {{ profile_record.classroom.classroom_name }}</h6>
+            {% endif %}
+            
+            <!-- Profile Photo Upload -->
+            <form method="POST" enctype="multipart/form-data" class="mt-3">
+              <input type="file" name="profile_photo" class="form-control mb-2" accept="image/*">
+              <button type="submit" class="btn btn-primary btn-sm">Upload Photo</button>
+            </form>
+
+            {% if upload_success %}
+              <p class="text-success mt-2">{{ upload_success }}</p>
+            {% elif upload_error %}
+              <p class="text-danger mt-2">{{ upload_error }}</p>
             {% endif %}
           </center>
         </div>
