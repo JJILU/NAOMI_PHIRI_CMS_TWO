@@ -550,7 +550,7 @@ def create_assignment():
     # Get teacher's subjects
     # ------------------------------
     teacher_record = TeacherSchoolRecord.query.filter_by(
-        card_id=current_user.teacherschoolrecord.card_id
+        card_id=current_user.teacherschoolrecord.card_id # type: ignore
     ).first()
 
     compulsary_subs = teacher_record.compulsarysubject
@@ -768,58 +768,40 @@ def download_file(file_id):
 
 
 # ------------------------------- Assignment Submission [Teacher] ----------------------
-@dash_bp.route("/view_assignment_submissions", methods=["GET", "POST"])
-@role_required("teacher","admin")
-def teacher_view_assignment_submissions():
-    return render_template("student_assignment_submission/view_student_assigment_submission.html")
-
-
-@dash_bp.route("/view_one_assignment_submission/<int:id>", methods=["GET", "POST"])
-@role_required("teacher")
-def teacher_view_one_assignment_submission(id):
-    return render_template("student_assignment_submission/view_one_student_assigment_submission_detail.html")
-
-
-@dash_bp.route("/update_assigment_submission/<int:id>", methods=["GET", "POST"])
-@role_required("teacher")
-def teacher_update_assigment_submission(id):
-    return render_template("student_assignment_submission/update_student_assigment_submission.html")
-
-
-@dash_bp.route("/delete_assigment_submission/<int:id>", methods=["GET", "POST"])
-@role_required("teacher")
-def teacher_delete_assigment_submission(id):
-    return render_template("student_assignment_submission/delete_student_assigment_submission.html")
-
-
-# ------------------ Assignment Submission End-Points ------------------------
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "docx", "txt"}
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# ====================================================================================
+# STUDENT — Submit Assignment
+# ====================================================================================
 @dash_bp.route("/student/assignments", methods=["GET", "POST"])
 @login_required
 def student_assignments():
-    # Import models here to avoid circular imports
-    from dash.models import ClassAssignment, StudentAssignmentSubmission, AssignmentSubmisssionFileUpload
+
+    # SAFE IMPORTS
+    from dash.models import (
+        ClassAssignment,
+        StudentAssignmentSubmission,
+        AssignmentSubmisssionFileUpload
+    )
     from auth.models import StudentSchoolRecord
+    from extensions import db
+
+    if current_user.role != "student":
+        return redirect(url_for("dash.index"))
 
     error = None
     success = None
 
-    # Only students allowed
-    if current_user.role != "student":
-        return redirect(url_for("dash.index"))
-
     student_record = current_user.student
     classroom = student_record.classroom
 
-    # Get classroom assignments
     assignments = ClassAssignment.query.filter_by(classroom_id=classroom.id).all()
 
-    # Handle submission
+    # =============================== SUBMISSION LOGIC ===============================
     if request.method == "POST":
         assignment_id = request.form.get("assignment_id")
         files = request.files.getlist("assignment_files")
@@ -833,8 +815,10 @@ def student_assignments():
                 assignment_id = int(assignment_id)
                 class_assignment = ClassAssignment.query.get(assignment_id)
 
-                # Create submission record
+                # Create submission
                 submission = StudentAssignmentSubmission(
+                    submitted_by_first_name=student_record.first_name,
+                    submitted_by_last_name=student_record.last_name,
                     assignment_name=class_assignment.assignment_name,
                     assignment_subject_Name=class_assignment.assignment_subject_Name,
                     assignment_subject_code=class_assignment.assignment_subject_code,
@@ -842,12 +826,11 @@ def student_assignments():
                     class_assignment_id=assignment_id
                 )
                 db.session.add(submission)
-                db.session.flush()  # to get submission.id
+                db.session.flush()
 
                 upload_folder = current_app.config["STUDENT_SUBMISSION_UPLOAD"]
                 os.makedirs(upload_folder, exist_ok=True)
 
-                # Save uploaded files
                 for file in files:
                     if file and allowed_file(file.filename):
                         filename = secure_filename(file.filename)
@@ -865,74 +848,160 @@ def student_assignments():
                 db.session.commit()
                 success = "Assignment submitted successfully!"
 
-            except Exception as e:
-                print("ERROR:", e)
+            except Exception:
                 db.session.rollback()
                 error = "Failed to submit assignment."
 
-    # Load previous submissions
+    # =============================== PAGINATION ===============================
+    per_page = int(request.args.get("per_page", 5))
+    page = request.args.get("page", 1, type=int)
+
     submissions = StudentAssignmentSubmission.query.filter_by(
         student_school_record_id=student_record.id
-    ).all()
+    ).paginate(page=page, per_page=per_page)
 
     return render_template(
-        "student/student_assignments.html",
+        "assignment_submission/student_assignments.html",
         assignments=assignments,
         submissions=submissions,
+        per_page=per_page,
         error=error,
         success=success
     )
 
 
-
-# DELETE SUBMISSION
 @dash_bp.route("/student/assignments/<int:submission_id>/delete", methods=["POST"])
 @login_required
 def delete_submission(submission_id):
-    from dash.models import ClassAssignment, StudentAssignmentSubmission
-    from auth.models import StudentSchoolRecord
 
-    # Only students
+    from dash.models import StudentAssignmentSubmission
+    from extensions import db
+
     if current_user.role != "student":
         return redirect(url_for("dash.index"))
 
     submission = StudentAssignmentSubmission.query.get_or_404(submission_id)
 
-    # Delete files on disk
+    # Remove file uploads
     for file in submission.assignment_submisssion_file_uploads:
-        try:
-            if os.path.exists(file.filepath):
+        if os.path.exists(file.filepath):
+            try:
                 os.remove(file.filepath)
-        except:
-            pass
+            except:
+                pass
 
-    # Delete from DB
     try:
         db.session.delete(submission)
         db.session.commit()
         success = "Submission deleted successfully!"
         error = None
-    except Exception:
+    except:
         db.session.rollback()
-        error = "Failed to delete submission."
         success = None
+        error = "Failed to delete submission."
 
-    # Reload content
-    student_record = current_user.student
-    classroom = student_record.classroom
+    return redirect(url_for("dash.student_assignments"))
 
-    assignments = ClassAssignment.query.filter_by(classroom_id=classroom.id).all()
-    submissions = StudentAssignmentSubmission.query.filter_by(
-        student_school_record_id=student_record.id
-    ).all()
+
+@dash_bp.route("/teacher/assignments/submissions")
+@login_required
+def teacher_view_submissions():
+
+    if current_user.role != "teacher":
+        return redirect(url_for("dash.index"))
+
+    from dash.models import StudentAssignmentSubmission
+    from auth.models import TeacherSchoolRecord
+
+    teacher_record = current_user.teacher
+
+    # Which subjects teacher teaches (compulsory + optional)
+    taught_subject_codes = [
+        s.subject_code for s in teacher_record.compulsary_subjects
+    ] + [
+        s.subject_code for s in teacher_record.optionalsubjects
+    ]
+
+    # Pagination
+    per_page = int(request.args.get("per_page", 10))
+    page = request.args.get("page", 1, type=int)
+
+    submissions = StudentAssignmentSubmission.query.filter(
+        StudentAssignmentSubmission.assignment_subject_code.in_(taught_subject_codes)
+    ).paginate(page=page, per_page=per_page)
 
     return render_template(
-        "student/student_assignments.html",
-        assignments=assignments,
+        "assignment_submission/view_submissions.html",
         submissions=submissions,
-        error=error,
-        success=success
+        per_page=per_page
     )
+
+
+@dash_bp.route("/teacher/assignments/submission/<int:id>")
+@login_required
+def teacher_view_one_submission(id):
+
+    from dash.models import StudentAssignmentSubmission
+
+    submission = StudentAssignmentSubmission.query.get_or_404(id)
+
+    return render_template(
+        "assignment_submission/view_one_submission.html",
+        submission=submission
+    )
+
+
+@dash_bp.route("/teacher/assignments/submission/<int:id>/grade", methods=["POST"])
+@login_required
+def teacher_grade_submission(id):
+
+    from dash.models import StudentAssignmentSubmission
+    from extensions import db
+
+    submission = StudentAssignmentSubmission.query.get_or_404(id)
+
+    score = int(request.form.get("score"))
+    grade = request.form.get("grade")
+
+    submission.student_score = score
+    submission.student_grade = grade
+
+    db.session.commit()
+
+    return redirect(url_for("dash.teacher_view_one_submission", id=id))
+
+
+@dash_bp.route("/teacher/assignments/submission/<int:id>/update", methods=["POST"])
+@login_required
+def teacher_update_grade(id):
+
+    from dash.models import StudentAssignmentSubmission
+    from extensions import db
+
+    submission = StudentAssignmentSubmission.query.get_or_404(id)
+
+    submission.student_score = int(request.form.get("score")) # type: ignore
+    submission.student_grade = request.form.get("grade")
+
+    db.session.commit()
+
+    return redirect(url_for("dash.teacher_view_one_submission", id=id))
+
+
+@dash_bp.route("/teacher/assignments/submission/<int:id>/delete", methods=["POST"])
+@login_required
+def teacher_delete_submission(id):
+
+    from dash.models import StudentAssignmentSubmission
+    from extensions import db
+
+    submission = StudentAssignmentSubmission.query.get_or_404(id)
+
+    db.session.delete(submission)
+    db.session.commit()
+
+    return redirect(url_for("dash.teacher_view_submissions"))
+
 
 
 
