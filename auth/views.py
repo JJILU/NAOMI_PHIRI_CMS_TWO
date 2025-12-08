@@ -119,7 +119,7 @@ def login():
 # ---------------------------
 @auth_bp.route("/logout", methods=["GET"])
 def logout():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated: # type: ignore
         logout_user()
         return jsonify({
             "success": True,

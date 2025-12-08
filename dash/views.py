@@ -56,6 +56,7 @@ def role_required(*roles):
 
 
 
+
 @dash_bp.route("/",methods=["GET"])
 @role_required("teacher", "admin")
 def index():
@@ -1058,57 +1059,104 @@ def delete_attendance(id):
 
 
 # ------------------------------- CHAT BOT --------------------------
-# Chatbot response templates
-chat_bot_responses = {
-    "greeting": [
-        "😊 Hello, what question do you have?",
-        "🖐 Hi, how can I help?",
-        "Hi 😎",
-        "🤗 Hi there!"
-    ],
-    "attendance": [
-        "You can check attendance under the 'Attendance' menu.",
-        "To view attendance, go to the students section and select 'Attendance'."
-    ],
-    "assignments": [
-        "You can create assignments from the 'Assignments' page.",
-        "To submit or view assignments, check the 'Assignments' section."
-    ],
-    "grading": [
-        "Grades are available under the 'Grades' section.",
-        "You can update student grades from the 'Grades' page."
-    ],
-    "update_profile": [
-        "You can update your profile from the 'Profile' page.",
-        "Go to 'Profile' to edit your details."
-    ],
-    "fallback": [
-        "Sorry, I didn't understand that. Can you rephrase?",
-        "🤔 I am not sure about that. Try asking differently."
-    ]
-}
+from dash.chat_responses import chat_bot_responses
+import re
+
 
 @dash_bp.route('/chatbot', methods=['POST'])
 def chatbot():
     req = request.get_json()
-    msg = req.get('message', '').lower()  # Normalize message
+    msg = req.get('message', '').lower()
 
-    # Check for keywords
-    if any(word.lower() in msg for word in ["hello", "hi", "hey"]):
+    # ========================= MESSAGE MATCHING =========================
+    reply = None
+
+    # BASIC GREETINGS
+    if re.search(r"\b(hello|hi|hey|good morning|good afternoon)\b", msg):
         reply = choice(chat_bot_responses["greeting"])
-    elif "attendance" in msg:
-        reply = choice(chat_bot_responses["attendance"])
-    elif "assignment" in msg:
-        reply = choice(chat_bot_responses["assignments"])
-    elif "grade" in msg or "grading" in msg:
-        reply = choice(chat_bot_responses["grading"])
+
+    # AUTHENTICATION
+    elif "login" in msg or "sign in" in msg:
+        reply = choice(chat_bot_responses["auth"])
+    elif "logout" in msg or "sign out" in msg:
+        reply = choice(chat_bot_responses["logout"])
+
+    # DASHBOARD
+    elif "dashboard" in msg:
+        reply = choice(chat_bot_responses["dashboard"])
+
+    # PROFILE
     elif "profile" in msg or "update profile" in msg:
-        reply = choice(chat_bot_responses["update_profile"])
+        reply = choice(chat_bot_responses["profile"])
+
+    # STUDENT / TEACHER / ADMIN MANAGEMENT
+    elif "student" in msg:
+        reply = choice(chat_bot_responses["student_management"])
+    elif "teacher" in msg:
+        reply = choice(chat_bot_responses["teacher_management"])
+    elif "admin" in msg:
+        reply = choice(chat_bot_responses["admin_management"])
+
+    # ATTENDANCE
+    elif "attendance" in msg:
+        if "student" in msg:
+            reply = choice(chat_bot_responses["student_attendance"])
+        else:
+            reply = choice(chat_bot_responses["attendance_info"])
+
+    # CLASSROOM / SUBJECTS
+    elif "classroom" in msg or "class" in msg:
+        reply = choice(chat_bot_responses["classroom"])
+    elif "subject" in msg:
+        reply = choice(chat_bot_responses["subjects"])
+
+    # ASSIGNMENTS
+    elif "assignment" in msg:
+        if "submit" in msg or "student" in msg:
+            reply = choice(chat_bot_responses["assignments_student"])
+        else:
+            reply = choice(chat_bot_responses["assignments_teacher"])
+
+    # GRADES
+    elif "grade" in msg or "grading" in msg:
+        if "student" in msg:
+            reply = choice(chat_bot_responses["grading_student"])
+        else:
+            reply = choice(chat_bot_responses["grading_teacher"])
+
+    # FILE UPLOADS
+    elif "upload" in msg or "file" in msg or "photo" in msg:
+        reply = choice(chat_bot_responses["file_uploads"])
+
+    # TIMETABLE
+    elif "timetable" in msg or "schedule" in msg:
+        reply = choice(chat_bot_responses["timetable"])
+
+    # ANNOUNCEMENTS
+    elif "announcement" in msg or "notice" in msg:
+        reply = choice(chat_bot_responses["announcements"])
+
+    # EVENTS
+    elif "event" in msg or "holiday" in msg:
+        reply = choice(chat_bot_responses["events"])
+
+    # SETTINGS
+    elif "settings" in msg or "config" in msg:
+        reply = choice(chat_bot_responses["settings"])
+
+    # CMS
+    elif "cms" in msg or "system" in msg:
+        reply = choice(chat_bot_responses["cms_info"])
+
+    # SUPPORT
+    elif "help" in msg or "support" in msg or "issue" in msg:
+        reply = choice(chat_bot_responses["support"])
+
+    # ERROR / FALLBACK
     else:
         reply = choice(chat_bot_responses["fallback"])
 
     return jsonify({"reply": reply})
-
 # ------------------ Profile ------------------------
 @dash_bp.route("/view_profile", methods=["GET", "POST"])
 @role_required("teacher", "admin", "student")
@@ -1122,14 +1170,14 @@ def view_profile():
     profile_record = None
     password_updated = False
 
-    if current_user.role == "teacher":
-        user_profile = Teacher.query.get_or_404(current_user.id)
+    if current_user.role == "teacher": # type: ignore
+        user_profile = Teacher.query.get_or_404(current_user.id) # type: ignore
         profile_record = user_profile.teacherschoolrecord
-    elif current_user.role == "admin":
-        user_profile = Admin.query.get_or_404(current_user.id)
+    elif current_user.role == "admin": # type: ignore
+        user_profile = Admin.query.get_or_404(current_user.id) # type: ignore
         profile_record = user_profile.admin
     else:
-        user_profile = Student.query.get_or_404(current_user.id)
+        user_profile = Student.query.get_or_404(current_user.id) # type: ignore
         profile_record = user_profile.student
 
     if request.method == "POST":

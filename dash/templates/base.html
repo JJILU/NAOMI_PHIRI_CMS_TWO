@@ -165,9 +165,8 @@
 }
 
 
-/* ======================= */
-/* TOAST NOTIFICATIONS TOP CENTER */
-/* ======================= */
+/* ----------- TOAST NOTIFICATIONS CSS  ---------------*/
+
 #toast {
   position: fixed;
   top: 20px;
@@ -216,7 +215,7 @@
 }
 
 
- /* ---------- Chat widget ---------- */
+ /* ---------- Chat widget CSS ---------- */
  .chat-widget-btn {
       position: fixed;
       right: 22px;
@@ -238,7 +237,7 @@
 
     .chat-widget-btn .chat-icon { width: 28px; height: 28px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.12)); }
 
-    /* Chat panel */
+    /* Chat panel  */
     .chat-panel {
       position: fixed;
       right: 22px;
@@ -393,13 +392,60 @@
                              role="button"
                              data-bs-toggle="dropdown"
                              aria-expanded="false">
-                            <img src="{{ url_for('static', filename='assets/images/profile_photos/profile_1.jpg') }}"
-                                 alt="user"
-                                 class="profile-pic me-2"
+                            
                                  
-                                 />
-                      
-                            <span></span>
+                             {# ------------------ TEACHER ------------------ #}
+                             {% if current_user.role == "teacher" %}
+                                 {% set record = current_user.teacherschoolrecord %}
+                 
+                                 {% if record.teacher_avator %}
+                                     <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.teacher_avator.filename) }}"
+                                          class="profile-pic me-2"
+                                          width="40" height="40">
+                                 {% else %}
+                                 <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
+                                 class="profile-pic me-2"
+                                 width="40" height="40">
+                                 {% endif %}
+                 
+                                 <span>{{ record.first_name }} {{ record.last_name }}</span>
+                 
+                 
+                             {# ------------------ ADMIN ------------------ #}
+                             {% elif current_user.role == "admin" %}
+                                 {% set record = current_user.admin %}
+                 
+                                 {% if record.student_avator %}
+                                     <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
+                                          class="rounded-circle me-2"
+                                          width="40" height="40">
+                                 {% else %}
+                                 <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
+                                 class="rounded-circle me-2"
+                                 width="50" height="50">
+                                 {% endif %}
+                 
+                                 <span>{{ record.first_name }} {{ record.last_name }}</span>
+                 
+                 
+                             {# ------------------ STUDENT ------------------ #}
+                             {% elif current_user.role == "student" %}
+                                 {% set record = current_user.student %}
+                 
+                                 {% if record.student_avator %}
+                                     <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
+                                          class="rounded-circle me-2"
+                                          width="40" height="40">
+                                 {% else %}
+                                 <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
+                                 class="rounded-circle me-2"
+                                 width="40" height="40">
+                                     </span>
+                                 {% endif %}
+                 
+                                 <span>{{ record.first_name }} {{ record.last_name }}</span>
+                 
+                             {% endif %}
                           </a>
                       
                           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
