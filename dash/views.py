@@ -765,6 +765,7 @@ def download_file(file_id):
 
 
 # ------------------------------- Assignment Submission [Teacher] ----------------------
+
 # ---------- Student: create/view/update/delete submissions ----------
 @dash_bp.route("/student/assignments", methods=["GET", "POST"])
 @role_required("student","admin")
@@ -777,19 +778,38 @@ def student_submission_assignments():
     error = None
     success = None
 
-    # get student school record (via current_user)
-    student_record = current_user.student  # type: ignore # this returns StudentSchoolRecord via relationship
-    if not student_record:
+    # ----------------------------------------------------
+    # FIXED: Determine student_school_record safely
+    # ----------------------------------------------------
+    if hasattr(current_user, "student") and current_user.student:
+        # logged in user is a Student
+        student_record = current_user.student
+
+    elif hasattr(current_user, "admin") and current_user.admin:
+        # logged in user is an Admin
+        student_record = current_user.admin
+
+    else:
         return redirect(url_for("dash.index"))
 
+    # ----------------------------------------------------
+    # Get classroom from student_record
+    # ----------------------------------------------------
     classroom = getattr(student_record, "classroom", None)
+
     if not classroom:
         assignments = []
     else:
-        # student's class assignments only
-        assignments = ClassAssignment.query.filter_by(classroom_id=classroom.id).order_by(ClassAssignment.created_at.desc()).all()
+        assignments = (
+            ClassAssignment.query
+            .filter_by(classroom_id=classroom.id)
+            .order_by(ClassAssignment.created_at.desc())
+            .all()
+        )
 
-    # handle create submission
+    # ----------------------------------------------------
+    # Handle submission POST
+    # ----------------------------------------------------
     if request.method == "POST":
         assignment_id = request.form.get("assignment_id")
         files = request.files.getlist("assignment_files")
@@ -799,31 +819,31 @@ def student_submission_assignments():
         elif not files or files[0].filename == "":
             error = "Please upload at least one file."
         else:
-            # ensure assignment belongs to student's class
             try:
                 assignment_id = int(assignment_id)
-            except Exception:
+            except:
                 error = "Invalid assignment selected."
                 assignment_id = None
 
             if assignment_id:
                 class_assignment = ClassAssignment.query.get(assignment_id)
+
                 if not class_assignment or class_assignment.classroom_id != classroom.id:
                     error = "You cannot submit to that assignment."
                 else:
                     try:
-                        # create submission
                         submission = StudentAssignmentSubmission(
                             assignment_name=class_assignment.assignment_name,
                             assignment_subject_Name=class_assignment.assignment_subject_Name,
                             assignment_subject_code=class_assignment.assignment_subject_code,
                             student_school_record_id=student_record.id,
                             class_assignment_id=assignment_id,
-                            submitted_by_first_name=student_record.first_name, # type: ignore
-                            submitted_by_last_name=student_record.last_name, # type: ignore
+                            submitted_by_first_name=student_record.first_name,
+                            submitted_by_last_name=student_record.last_name,
                         )
+
                         db.session.add(submission)
-                        db.session.flush()  # get id
+                        db.session.flush()  # get ID before commit
 
                         upload_folder = current_app.config.get("STUDENT_SUBMISSION_UPLOAD")
                         os.makedirs(upload_folder, exist_ok=True)
@@ -831,7 +851,6 @@ def student_submission_assignments():
                         for f in files:
                             if f and allowed_file(f.filename):
                                 filename = secure_filename(f.filename)
-                                # optional: prefix timestamp to avoid collisions
                                 dest = os.path.join(upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}")
                                 f.save(dest)
 
@@ -842,16 +861,26 @@ def student_submission_assignments():
                                     student_assignment_submission_id=submission.id
                                 )
                                 db.session.add(file_record)
+
                         db.session.commit()
                         success = "Assignment submitted successfully!"
+
                     except Exception as e:
                         db.session.rollback()
                         error = "Failed to submit assignment. " + str(e)
 
-    # paginated list of student's own submissions
+    # ----------------------------------------------------
+    # Paginated submissions for current student/admin
+    # ----------------------------------------------------
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
-    submissions_q = StudentAssignmentSubmission.query.filter_by(student_school_record_id=student_record.id).order_by(StudentAssignmentSubmission.created_at.desc())
+
+    submissions_q = (
+        StudentAssignmentSubmission.query
+        .filter_by(student_school_record_id=student_record.id)
+        .order_by(StudentAssignmentSubmission.created_at.desc())
+    )
+
     submissions_paginated = submissions_q.paginate(page=page, per_page=per_page, error_out=False)
 
     return render_template(
@@ -863,6 +892,7 @@ def student_submission_assignments():
         error=error,
         success=success
     )
+
 
 
 @dash_bp.route("/student/assignments/<int:submission_id>/view", methods=["GET"])
@@ -1031,12 +1061,10 @@ def teacher_grade_one_submission(submission_id):
 @login_required
 @role_required("admin")
 def admin_view_class_submissions():
-    from dash.models import StudentAssignmentSubmission,ClassAssignment
-   
+    from dash.models import StudentAssignmentSubmission, ClassAssignment
 
-    # admin is linked to StudentSchoolRecord via Admin.student_school_record_id
-    admin_profile = current_user  # Admin model instance
-    student_record = admin_profile.admin  # this is StudentSchoolRecord via backref 'admin'
+    # Admin model instance → linked to StudentSchoolRecord
+    student_record = current_user.student_school_record_id
 
     if not student_record:
         abort(403)
@@ -1046,26 +1074,35 @@ def admin_view_class_submissions():
         submissions = []
         pagination = None
         per_page = request.args.get("per_page", 10, type=int)
-        return render_template("admin_view_assignments_submission/admin_view_submissions.html",
-                               submissions=submissions, pagination=pagination, per_page=per_page, classroom=None)
+        return render_template(
+            "admin_view_assignments_submission/admin_view_submissions.html",
+            submissions=submissions,
+            pagination=pagination,
+            per_page=per_page,
+            classroom=None
+        )
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    subs_q = StudentAssignmentSubmission.query.join("class_assignment").filter(
-        StudentAssignmentSubmission.class_assignment_id == ClassAssignment.id,
-        ClassAssignment.classroom_id == classroom.id
-    ).order_by(StudentAssignmentSubmission.created_at.desc())
-
-    # Note: If join by attribute name fails on certain SQLA versions, replace with:
-    # subs_q = StudentAssignmentSubmission.query.filter_by().join(ClassAssignment).filter(ClassAssignment.classroom_id==classroom.id)
+    # ✅ FIXED JOIN
+    subs_q = (
+        StudentAssignmentSubmission.query
+        .join(ClassAssignment)  # correct join
+        .filter(ClassAssignment.classroom_id == classroom.id)
+        .order_by(StudentAssignmentSubmission.created_at.desc())
+    )
 
     pagination = subs_q.paginate(page=page, per_page=per_page, error_out=False)
-    return render_template("admin_view_assignments_submission/admin_view_submissions.html",
-                           submissions=pagination.items,
-                           pagination=pagination,
-                           per_page=per_page,
-                           classroom=classroom)
+
+    return render_template(
+        "admin_view_assignments_submission/admin_view_submissions.html",
+        submissions=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        classroom=classroom
+    )
+
 
 
 
@@ -1168,50 +1205,145 @@ def delete_grade(id):
     return render_template("grades/delete_grade.html", success="Grade deleted successfully.", student_id=student_id)
 
 # ------------------ Student Only------------------------
-@dash_bp.route("/view_student_assignments", methods=["GET"])
-@role_required("admin", "student")
-def view_student_assignments():
-    from dash.models import StudentAssignmentSubmission
-    student_record = current_user.student  # type: ignore
 
+# ==============================================================================================================
+
+# ------------------ Student/Admin Only: -------------
+
+
+# -------------------- Grades List --------------------
+@dash_bp.route("/grades", methods=["GET"])
+@role_required("student", "admin")
+def view_grades():
+    from dash.models import StudentGrade
+    student_record = getattr(current_user, "student_school_record", None)
     if not student_record:
-        return redirect(url_for("dash.index"))
+        return render_template("student_only/grades.html", grades=[], pagination=None, per_page=10, error="No student record found")
 
-    # pagination params
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    submissions_q = StudentAssignmentSubmission.query.filter_by(
-        student_school_record_id=student_record.id
-    ).order_by(StudentAssignmentSubmission.created_at.desc())
+    grades_query = StudentGrade.query.filter_by(student_school_record_id=student_record.id)\
+                                     .order_by(StudentGrade.created_at.desc())
+    grades_paginated = grades_query.paginate(page=page, per_page=per_page, error_out=False)
 
-    submissions_paginated = submissions_q.paginate(page=page, per_page=per_page, error_out=False)
-
-    return render_template(
-        "student_only/view_student_assignments.html",
-        submissions=submissions_paginated.items,
-        pagination=submissions_paginated,
-        per_page=per_page
-    )
+    return render_template("student_only/grades.html",
+                           grades=grades_paginated.items,
+                           pagination=grades_paginated,
+                           per_page=per_page,
+                           error=None,
+                           success=None)
 
 
+# -------------------- Grade Detail --------------------
+@dash_bp.route("/grades/<int:id>", methods=["GET"])
+@role_required("student", "admin")
+def grade_detail(id):
+    from dash.models import StudentGrade
+    student_record = getattr(current_user, "student_school_record", None)
+    grade = StudentGrade.query.get_or_404(id)
+    if grade.student_school_record_id != student_record.id:
+        abort(403)
+    return render_template("student_only/grade_detail.html", grade=grade, error=None, success=None)
 
-@dash_bp.route("/view_student_assignment_details/<int:id>", methods=["GET"])
-@role_required("admin", "student")
-def view_student_assignment_detail(id):
-    return render_template("student_only/view_student_assignment_detail.html")
+
+# -------------------- Attendances List --------------------
+@dash_bp.route("/attendances", methods=["GET"])
+@role_required("student", "admin")
+def view_attendances():
+    from dash.models import StudentAttendance
+    student_record = getattr(current_user, "student_school_record", None)
+    if not student_record:
+        return render_template("student_only/attendances.html", attendances=[], pagination=None, per_page=10, error="No student record found")
+
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    attendances_query = StudentAttendance.query.filter_by(student_school_record_id=student_record.id)\
+                                               .order_by(StudentAttendance.attendance_date.desc())
+    attendances_paginated = attendances_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template("student_only/attendances.html",
+                           attendances=attendances_paginated.items,
+                           pagination=attendances_paginated,
+                           per_page=per_page,
+                           error=None,
+                           success=None)
 
 
-@dash_bp.route("/student_grades", methods=["GET"])
-@role_required("admin", "student")
-def student_grades():
-    return render_template("student_only/student_grades.html")
+# -------------------- Attendance Detail --------------------
+@dash_bp.route("/attendances/<int:id>", methods=["GET"])
+@role_required("student", "admin")
+def attendance_detail(id):
+    from dash.models import StudentAttendance
+    student_record = getattr(current_user, "student_school_record", None)
+    attendance = StudentAttendance.query.get_or_404(id)
+    if attendance.student_school_record_id != student_record.id:
+        abort(403)
+    return render_template("student_only/attendance_detail.html", attendance=attendance, error=None, success=None)
 
 
-@dash_bp.route("/student_grade_details/<int:id>", methods=["GET"])
-@role_required("admin", "student")
-def student_grade_details(id):
-    return render_template("student_only/student_grade_detail.html")
+# -------------------- Class Assignments List --------------------
+@dash_bp.route("/class_assignments", methods=["GET"])
+@role_required("student", "admin")
+def view_class_assignments():
+    from dash.models import ClassAssignment
+    student_record = getattr(current_user, "student_school_record", None)
+    if not student_record or not getattr(student_record, "classroom", None):
+        return render_template("student_only/class_assignments.html", assignments=[], pagination=None, per_page=10, error="No classroom assigned")
+
+    classroom_id = student_record.classroom.id
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    assignments_query = ClassAssignment.query.filter_by(classroom_id=classroom_id)\
+                                             .order_by(ClassAssignment.created_at.desc())
+    assignments_paginated = assignments_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template("student_only/class_assignments.html",
+                           assignments=assignments_paginated.items,
+                           pagination=assignments_paginated,
+                           per_page=per_page,
+                           error=None,
+                           success=None)
+
+
+# -------------------- Assignment Submissions List --------------------
+@dash_bp.route("/assignment_submissions", methods=["GET"])
+@role_required("student", "admin")
+def view_assignment_submissions():
+    from dash.models import StudentAssignmentSubmission
+    student_record = getattr(current_user, "student_school_record", None)
+    if not student_record:
+        return render_template("student_only/assignment_submissions.html", submissions=[], pagination=None, per_page=10, error="No student record found")
+
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    submissions_query = StudentAssignmentSubmission.query.filter_by(student_school_record_id=student_record.id)\
+                                                        .order_by(StudentAssignmentSubmission.created_at.desc())
+    submissions_paginated = submissions_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template("student_only/assignment_submissions.html",
+                           submissions=submissions_paginated.items,
+                           pagination=submissions_paginated,
+                           per_page=per_page,
+                           error=None,
+                           success=None)
+
+
+# -------------------- Assignment Submission Detail --------------------
+@dash_bp.route("/assignment_submissions/<int:id>", methods=["GET"])
+@role_required("student", "admin")
+def assignment_submission_detail(id):
+    from dash.models import StudentAssignmentSubmission
+    student_record = getattr(current_user, "student_school_record", None)
+    submission = StudentAssignmentSubmission.query.get_or_404(id)
+    if submission.student_school_record_id != student_record.id:
+        abort(403)
+    return render_template("student_only/assignment_submission_detail.html", submission=submission, error=None, success=None)
+
+# ==============================================================================================================
 
 # -------------------------- Student Attentance --------------------------------
 from flask import request

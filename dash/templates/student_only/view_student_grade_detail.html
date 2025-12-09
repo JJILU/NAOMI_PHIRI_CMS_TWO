@@ -1,26 +1,28 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block content %}
-<!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->
+
+<style>
+.big-text { font-size: 17px !important; }
+.bigger-title { font-size: 22px !important; }
+</style>
+
 <div class="page-breadcrumb">
-  <div class="row align-items-center">
-      <div class="col-md-6 col-8 align-self-center">
-          <h3 class="page-title mb-0 p-0">View Grades</h3>
-          <div class="d-flex align-items-center">
-              <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                      <li class="breadcrumb-item">Student</li>
-                      <li class="breadcrumb-item active" aria-current="page">View Grade Details</li>
-                  </ol>
-              </nav>
-          </div>
-      </div>
-  </div>
+    <h3 class="bigger-title">Grade Details</h3>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item big-text"><a href="{{ url_for('dash.student_grades') }}">My Grades</a></li>
+        <li class="breadcrumb-item active big-text">Details</li>
+    </ol>
 </div>
-<!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
-<!-- ============================================================== -->  
-{% endblock content %}
+
+<div class="card">
+    <div class="card-body big-text">
+
+        <p><strong>Assignment:</strong> {{ grade.assignment_name }}</p>
+        <p><strong>Subject:</strong> {{ grade.assignment_subject_Name }}</p>
+        <p><strong>Score:</strong> {{ grade.student_score }}</p>
+        <p><strong>Grade:</strong> {{ grade.student_grade }}</p>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -601,7 +601,7 @@
                             <ul class="collapse first-level" aria-expanded="false">
 
                                 {# ------------------ STUDENT MENU ------------------ #}
-                                {% if current_user.role == "student" %}
+                                {% if current_user.student_school_record_id %}
                                 <li class="sidebar-item">
                                     <a href="{{ url_for('dash.student_submission_assignments') }}" class="sidebar-link">
                                         <span class="hide-menu">My Assignments</span>
@@ -642,26 +642,109 @@
                             </ul>
                         </li>
 
+                        <!-- student only -->
+                        {% if current_user.is_authenticated and current_user.student_school_record_id %}
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" 
+                              href="javascript:void(0)" aria-expanded="false">
+                                <i class="fa fa-user-circle me-3"></i>
+                                <span class="hide-menu" style="font-size: 16px;">Student</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+
+                                <!-- My Assignment Submissions -->
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu" style="font-size: 15px;">My Assignment Submissions</span>
+                                    </a>
+                                </li>
+
+                                <!-- View One Assignment -->
+                                <li class="sidebar-item">
+                                    <a href="javascript:void(0)" class="sidebar-link">
+                                        <span class="hide-menu" style="font-size: 15px;">Assignment Details</span>
+                                    </a>
+                                </li>
+
+                                <!-- My Grades -->
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.student_grades') }}" class="sidebar-link">
+                                        <span class="hide-menu" style="font-size: 15px;">My Grades</span>
+                                    </a>
+                                </li>
+
+                                <!-- View One Grade -->
+                                <li class="sidebar-item">
+                                    <a href="javascript:void(0)" class="sidebar-link">
+                                        <span class="hide-menu" style="font-size: 15px;">Grade Details</span>
+                                    </a>
+                                </li>
+
+                                <!-- My Attendance -->
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.student_attendances') }}" class="sidebar-link">
+                                        <span class="hide-menu" style="font-size: 15px;">My Attendance</span>
+                                    </a>
+                                </li>
+
+                                <!-- View One Attendance -->
+                                <li class="sidebar-item">
+                                    <a href="javascript:void(0)" class="sidebar-link">
+                                        <span class="hide-menu" style="font-size: 15px;">Attendance Details</span>
+                                    </a>
+                                </li>
+
+                                <!-- Class Assignments -->
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.student_class_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu" style="font-size: 15px;">Class Assignments</span>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+{% endif %}
+
+
                         {% endif %}
                         <!-- ===================== END ASSIGNMENT SUBMISSIONS MENU ===================== -->
 
-                        <!-- Student only -->
-                        {% if  current_user.is_authenticated and current_user.role == "student" %}
-                            <!-- Students Only -->
+                        {% if current_user.is_authenticated and current_user.student_school_record %}
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
                                 <i class="fa fa-user-circle me-3"></i>
                                 <span class="hide-menu">Student</span>
                             </a>
                             <ul class="collapse first-level" aria-expanded="false">
-                                
+                        
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link"><span class="hide-menu">View  Assignments</span></a>
+                                    <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu">View Submitted Assignments</span>
+                                    </a>
                                 </li>
-                                
+                        
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.student_class_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu">View Class Assignments</span>
+                                    </a>
+                                </li>
+                        
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.student_grades') }}" class="sidebar-link">
+                                        <span class="hide-menu">My Grades</span>
+                                    </a>
+                                </li>
+                        
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.student_attendances') }}" class="sidebar-link">
+                                        <span class="hide-menu">My Attendance</span>
+                                    </a>
+                                </li>
+                        
                             </ul>
                         </li>
                         {% endif %}
+                        
                         
                 
                         {% if current_user.is_authenticated %}
