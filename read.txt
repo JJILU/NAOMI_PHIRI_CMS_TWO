@@ -498,3 +498,26 @@ Now you have:
     #     return redirect(url_for("dash.create_grade"))
 
     # return render_template("create_grade.html", students=students)
+
+
+
+      {% if  current_user.is_authenticated and current_user.role == "student" %}
+                            <!-- Students Only -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
+                                <i class="fa fa-user-circle me-3"></i>
+                                <span class="hide-menu">Student</span>
+                            </a>
+                            <ul class="collapse first-level" aria-expanded="false">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student_grades') }}" class="sidebar-link"><span class="hide-menu">View grades</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link"><span class="hide-menu">View  Assignments</span></a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_student_attendances') }}" class="sidebar-link"><span class="hide-menu">View Attendances</span></a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}

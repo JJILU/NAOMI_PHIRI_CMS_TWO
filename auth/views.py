@@ -111,6 +111,10 @@ def login():
     login_user(user, remember=remember)
     session.permanent = True
 
+    if user.student:
+        dashboard_url = url_for('dash.student_submission_assignments')
+        return jsonify({"success": True, "message": "Logged in successfully", "redirect": dashboard_url}), 200
+
     return jsonify({"success": True, "message": "Logged in successfully", "redirect": "/dash"}), 200
 
 

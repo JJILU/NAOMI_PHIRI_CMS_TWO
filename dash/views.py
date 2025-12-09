@@ -1171,7 +1171,29 @@ def delete_grade(id):
 @dash_bp.route("/view_student_assignments", methods=["GET"])
 @role_required("admin", "student")
 def view_student_assignments():
-    return render_template("student_only/view_student_assignments.html")
+    from dash.models import StudentAssignmentSubmission
+    student_record = current_user.student  # type: ignore
+
+    if not student_record:
+        return redirect(url_for("dash.index"))
+
+    # pagination params
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    submissions_q = StudentAssignmentSubmission.query.filter_by(
+        student_school_record_id=student_record.id
+    ).order_by(StudentAssignmentSubmission.created_at.desc())
+
+    submissions_paginated = submissions_q.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template(
+        "student_only/view_student_assignments.html",
+        submissions=submissions_paginated.items,
+        pagination=submissions_paginated,
+        per_page=per_page
+    )
+
 
 
 @dash_bp.route("/view_student_assignment_details/<int:id>", methods=["GET"])

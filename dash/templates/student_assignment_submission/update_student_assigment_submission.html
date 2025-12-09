@@ -7,7 +7,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('dash.student_assignments') }}">My Submissions</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.view_student_assignments') }}">My Submissions</a></li>
           <li class="breadcrumb-item active" aria-current="page">Update</li>
         </ol>
       </nav>
@@ -36,7 +36,7 @@
         </div>
 
         <button class="btn btn-primary" type="submit">Upload Additional Files</button>
-        <a class="btn btn-link" href="{{ url_for('dash.student_assignments') }}">Back</a>
+        <a class="btn btn-link" href="{{ url_for('dash.view_student_assignments') }}">Back</a>
       </form>
 
       <hr/>

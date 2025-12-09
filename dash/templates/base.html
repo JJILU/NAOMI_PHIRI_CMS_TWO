@@ -645,6 +645,7 @@
                         {% endif %}
                         <!-- ===================== END ASSIGNMENT SUBMISSIONS MENU ===================== -->
 
+                        <!-- Student only -->
                         {% if  current_user.is_authenticated and current_user.role == "student" %}
                             <!-- Students Only -->
                         <li class="sidebar-item">
@@ -653,15 +654,11 @@
                                 <span class="hide-menu">Student</span>
                             </a>
                             <ul class="collapse first-level" aria-expanded="false">
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_student_grades') }}" class="sidebar-link"><span class="hide-menu">View grades</span></a>
-                                </li>
+                                
                                 <li class="sidebar-item">
                                     <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link"><span class="hide-menu">View  Assignments</span></a>
                                 </li>
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_student_attendances') }}" class="sidebar-link"><span class="hide-menu">View Attendances</span></a>
-                                </li>
+                                
                             </ul>
                         </li>
                         {% endif %}

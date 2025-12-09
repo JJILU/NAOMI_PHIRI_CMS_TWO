@@ -285,12 +285,25 @@ class StudentAssignmentSubmission(db.Model):
         nullable=False
     )
     
-    def __init__(self,assignment_name,assignment_subject_Name,assignment_subject_code,student_school_record_id,class_assignment_id) -> None:
+    def __init__(
+            self,assignment_name,
+            assignment_subject_Name,
+            assignment_subject_code,
+            student_school_record_id,
+            class_assignment_id,
+            submitted_by_first_name="Placeholder First Name",
+            submitted_by_last_name="Placeholder Last Name",
+            student_score=0,
+            student_grade="No Grade") -> None:
         self.assignment_name = assignment_name
         self.assignment_subject_Name = assignment_subject_Name
         self.assignment_subject_code = assignment_subject_code
         self.student_school_record_id = student_school_record_id
         self.class_assignment_id = class_assignment_id
+        self.submitted_by_first_name = submitted_by_first_name
+        self.submitted_by_last_name = submitted_by_last_name
+        self.student_score = student_score
+        self.student_grade = student_grade
     
 
 
@@ -314,10 +327,11 @@ class AssignmentSubmisssionFileUpload(db.Model):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}: {self.filename}"
     
-    def __init__(self,original_name,filename,filepath) -> None:
+    def __init__(self,original_name,filename,filepath,student_assignment_submission_id) -> None:
         self.original_name = original_name
         self.filename = filename
         self.filepath = filepath
+        self.student_assignment_submission_id = student_assignment_submission_id
 
 
                 
