@@ -111,11 +111,17 @@ def login():
     login_user(user, remember=remember)
     session.permanent = True
 
-    if user.student:
-        dashboard_url = url_for('dash.student_submission_assignments')
-        return jsonify({"success": True, "message": "Logged in successfully", "redirect": dashboard_url}), 200
+     # Determine redirect based on role
+    if role == "student" or (role == "admin" and hasattr(user, "student")):
+        # Students & admin who has student record → student dashboard
+        dashboard_url = url_for("dash.student_submission_assignments")
+    elif role == "teacher":
+        dashboard_url = url_for("dash.index")
+    else:
+        # fallback
+        dashboard_url = url_for("dash.index")
 
-    return jsonify({"success": True, "message": "Logged in successfully", "redirect": "/dash"}), 200
+    return jsonify({"success": True, "message": "Logged in successfully", "redirect": dashboard_url}), 200
 
 
 # ---------------------------

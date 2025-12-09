@@ -521,3 +521,6 @@ Now you have:
                             </ul>
                         </li>
                         {% endif %}
+
+
+                        <a href="{{ url_for('dash.student_view_submission', submission_id=s.id) }}" class="btn btn-sm btn-outline-primary">View</a>

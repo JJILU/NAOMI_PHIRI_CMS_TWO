@@ -32,7 +32,7 @@
           <input type="text" name="student_grade" class="form-control" value="{{ submission.student_grade }}">
         </div>
         <button class="btn btn-primary" type="submit">Save Grade</button>
-        <a class="btn btn-link" href="{{ url_for('dash.teacher_view_submissions', assignment_id=submission.class_assignment_id) }}">Back</a>
+        <a class="btn btn-link" href="{{ url_for('dash.teacher_view_all_submissions', assignment_id=submission.class_assignment_id) }}">Back</a>
       </form>
     </div>
   </div>
