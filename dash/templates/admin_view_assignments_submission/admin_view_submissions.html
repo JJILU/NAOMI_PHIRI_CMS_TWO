@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Class Submissions</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+          <li class="breadcrumb-item active">Class Submissions</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-body">
+      {% if classroom %}
+        <h5>Class: {{ classroom.classroom_name }}</h5>
+      {% endif %}
+      {% if submissions %}
+        <ul class="list-group">
+          {% for s in submissions %}
+            <li class="list-group-item d-flex justify-content-between">
+              <div>
+                <strong>{{ s.assignment_name }}</strong><br/>
+                <small>{{ s.submitted_by_first_name }} {{ s.submitted_by_last_name }} — {{ s.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <div>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('dash.student_view_submission', submission_id=s.id) }}">View</a>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <!-- pagination -->
+        {% if pagination %}
+          {% if pagination.pages > 1 %}
+            <nav class="mt-2">
+              <ul class="pagination">
+                {% if pagination.has_prev %}
+                  <li class="page-item"><a class="page-link" href="{{ url_for('dash.admin_view_class_submissions', page=pagination.prev_num, per_page=per_page) }}">Previous</a></li>
+                {% endif %}
+                {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                  {% if p %}
+                    <li class="page-item {% if p==pagination.page %}active{% endif %}">
+                      <a class="page-link" href="{{ url_for('dash.admin_view_class_submissions', page=p, per_page=per_page) }}">{{ p }}</a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                  {% endif %}
+                {% endfor %}
+                {% if pagination.has_next %}
+                  <li class="page-item"><a class="page-link" href="{{ url_for('dash.admin_view_class_submissions', page=pagination.next_num, per_page=per_page) }}">Next</a></li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
+        {% endif %}
+      {% else %}
+        <p class="text-muted">No submissions found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -586,52 +586,64 @@
                         </li>
                         {% endif %}
 
-                        {% if current_user.is_authenticated and current_user.role in ["admin", "student"] %}
-                        <!-- Students Assignment Submission -->
+                        <!-- Assignment Submission -->
+                        
+                        <!-- ===================== ASSIGNMENT SUBMISSIONS MENU ===================== -->
+                        {% if current_user.is_authenticated %}
+
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow"
-                            href="javascript:void(0)" aria-expanded="false">
-                                <i class="me-3 fa fa-upload"></i>
-                                <span class="hide-menu">Assignment Submission</span>
+                              href="javascript:void(0)" aria-expanded="false">
+                                <i class="fa fa-paper-plane me-3" aria-hidden="true"></i>
+                                <span class="hide-menu">Assignment Submissions</span>
                             </a>
 
                             <ul class="collapse first-level" aria-expanded="false">
 
+                                {# ------------------ STUDENT MENU ------------------ #}
+                                {% if current_user.role == "student" %}
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_assignment_submissions') }}" class="sidebar-link">
-                                        <i class="fa fa-eye me-2"></i>
-                                        <span class="hide-menu">Submitted Assignments </span>
+                                    <a href="{{ url_for('dash.student_submission_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu">My Assignments</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+
+                                {# ------------------ ADMIN MENU ------------------ #}
+                                {% if current_user.role == "admin" %}
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.student_submission_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu">Student Assignments</span>
                                     </a>
                                 </li>
 
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.create_assignment_submission') }}" class="sidebar-link">
-                                        <i class="fa fa-plus me-2"></i>
-                                        <span class="hide-menu">Submit Assignment</span>
+                                    <a href="{{ url_for('dash.admin_view_class_submissions') }}" class="sidebar-link">
+                                        <span class="hide-menu">Class Submissions</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+
+                                {# ------------------ TEACHER MENU ------------------ #}
+                                {% if current_user.role == "teacher" %}
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.teacher_class_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu">Class Assignments</span>
                                     </a>
                                 </li>
 
-                            </ul>
-                        </li>
-                        {% endif %}
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.teacher_class_assignments') }}" class="sidebar-link">
+                                        <span class="hide-menu">View Submissions</span>
+                                    </a>
+                                </li>
+                                {% endif %}
 
-                        {% if  current_user.is_authenticated and current_user.role == "teacher" %}
-                         <!-- Admin Management -->
-                         <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
-                                <i class="fa fa-user-secret me-3" aria-hidden="true"></i>
-                                <span class="hide-menu">Admin Management</span>
-                            </a>
-                            <ul class="collapse first-level" aria-expanded="false">
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_admins') }}" class="sidebar-link"><span class="hide-menu">View Admin</span></a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.create_admin') }}" class="sidebar-link"><span class="hide-menu">Add Admin</span></a>
-                                </li>
                             </ul>
                         </li>
+
                         {% endif %}
+                        <!-- ===================== END ASSIGNMENT SUBMISSIONS MENU ===================== -->
 
                         {% if  current_user.is_authenticated and current_user.role == "student" %}
                             <!-- Students Only -->

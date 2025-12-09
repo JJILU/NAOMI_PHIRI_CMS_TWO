@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Grade Submission</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.teacher_class_assignments') }}">Assignments</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Grade</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-body">
+      {% if error %}<p class="text-danger">{{ error }}</p>{% endif %}
+      {% if success %}<p class="text-success">{{ success }}</p>{% endif %}
+
+      <h5>{{ submission.assignment_name }} — submitted by {{ submission.submitted_by_first_name }} {{ submission.submitted_by_last_name }}</h5>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Score</label>
+          <input type="number" name="student_score" class="form-control" value="{{ submission.student_score }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Grade</label>
+          <input type="text" name="student_grade" class="form-control" value="{{ submission.student_grade }}">
+        </div>
+        <button class="btn btn-primary" type="submit">Save Grade</button>
+        <a class="btn btn-link" href="{{ url_for('dash.teacher_view_submissions', assignment_id=submission.class_assignment_id) }}">Back</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

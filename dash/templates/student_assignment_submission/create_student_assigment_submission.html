@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Submit Assignment</h3>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Submit Assignment</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Submit form -->
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-body">
+          <h5>New Submission</h5>
+
+          {% if error %}
+            <p class="text-danger">{{ error }}</p>
+          {% endif %}
+          {% if success %}
+            <p class="text-success">{{ success }}</p>
+          {% endif %}
+
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Assignment</label>
+              <select name="assignment_id" class="form-select">
+                <option value="">-- Select Assignment --</option>
+                {% for a in assignments %}
+                  <option value="{{ a.id }}">{{ a.assignment_name }} — {{ a.classroom.classroom_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Files</label>
+              <input type="file" name="assignment_files" multiple class="form-control" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.txt">
+              <small class="text-muted">You can upload multiple files. Allowed types: png, jpg, jpeg, gif, pdf, docx, doc, txt.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Assignment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- List submissions -->
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-body">
+          <h5>Your Submissions</h5>
+
+          {% if submissions %}
+            <div class="mb-2 d-flex justify-content-between">
+              <div>
+                <form method="get" class="d-inline">
+                  <label>Per page</label>
+                  <select name="per_page" onchange="this.form.submit()">
+                    <option {% if per_page==5 %}selected{% endif %} value="5">5</option>
+                    <option {% if per_page==10 %}selected{% endif %} value="10">10</option>
+                    <option {% if per_page==20 %}selected{% endif %} value="20">20</option>
+                  </select>
+                </form>
+              </div>
+            </div>
+
+            <ul class="list-group">
+              {% for s in submissions %}
+                <li class="list-group-item">
+                  <div class="d-flex justify-content-between">
+                    <div>
+                      <strong>{{ s.assignment_name }}</strong>
+                      <div class="small text-muted">{{ s.assignment_subject_Name }} • {{ s.created_at.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                    <div>
+                      <a href="{{ url_for('dash.student_view_submission', submission_id=s.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                      <a href="{{ url_for('dash.student_update_submission', submission_id=s.id) }}" class="btn btn-sm btn-outline-secondary">Update</a>
+                      <form method="post" action="{{ url_for('dash.student_delete_submission', submission_id=s.id) }}" style="display:inline;">
+                        <button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Delete submission?');">Delete</button>
+                      </form>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+
+            <!-- pagination -->
+            {% if pagination.pages > 1 %}
+              <nav class="mt-2">
+                <ul class="pagination">
+                  {% if pagination.has_prev %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('dash.student_assignments', page=pagination.prev_num, per_page=per_page) }}">Previous</a></li>
+                  {% endif %}
+                  {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                      <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('dash.student_assignments', page=p, per_page=per_page) }}">{{ p }}</a>
+                      </li>
+                    {% else %}
+                      <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                  {% endfor %}
+                  {% if pagination.has_next %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('dash.student_assignments', page=pagination.next_num, per_page=per_page) }}">Next</a></li>
+                  {% endif %}
+                </ul>
+              </nav>
+            {% endif %}
+          {% else %}
+            <p class="text-muted">No submissions yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
