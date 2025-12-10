@@ -563,6 +563,8 @@ def create_assignment():
         for s in optional_subs
     ]
 
+    print()
+
     error = None
     success = None
 
@@ -846,12 +848,12 @@ def student_submission_assignments():
                         db.session.flush()  # get ID before commit
 
                         upload_folder = current_app.config.get("STUDENT_SUBMISSION_UPLOAD")
-                        os.makedirs(upload_folder, exist_ok=True)
+                        os.makedirs(upload_folder, exist_ok=True) # type: ignore
 
                         for f in files:
                             if f and allowed_file(f.filename):
-                                filename = secure_filename(f.filename)
-                                dest = os.path.join(upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}")
+                                filename = secure_filename(f.filename) # type: ignore
+                                dest = os.path.join(upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}") # type: ignore
                                 f.save(dest)
 
                                 file_record = AssignmentSubmisssionFileUpload(
@@ -926,13 +928,13 @@ def student_update_submission(submission_id):
         # allow uploading additional files (we won't remove existing files here)
         files = request.files.getlist("assignment_files")
         upload_folder = current_app.config.get("STUDENT_SUBMISSION_UPLOAD")
-        os.makedirs(upload_folder, exist_ok=True)
+        os.makedirs(upload_folder, exist_ok=True) # type: ignore
 
         try:
             for f in files:
                 if f and f.filename and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
-                    dest = os.path.join(upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}")
+                    dest = os.path.join(upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}") # type: ignore
                     f.save(dest)
                     file_record = AssignmentSubmisssionFileUpload(
                         original_name=f.filename,
@@ -1214,7 +1216,7 @@ def delete_grade(id):
 # -------------------- Grades List --------------------
 @dash_bp.route("/grades", methods=["GET"])
 @role_required("student", "admin")
-def view_grades():
+def view_all_grades():
     from dash.models import StudentGrade
     student_record = getattr(current_user, "student_school_record", None)
     if not student_record:

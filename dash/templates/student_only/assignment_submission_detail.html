@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Assignment Submission Details</h4>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    
+                    {% if success %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ success }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Submission Information</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 40%">Assignment:</th>
+                                    <td>
+                                        {% if submission.assignment %}
+                                            {{ submission.assignment.title }}
+                                        {% else %}
+                                            Assignment #{{ submission.assignment_id }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Subject:</th>
+                                    <td>
+                                        {% if submission.assignment %}
+                                            {{ submission.assignment.subject or 'N/A' }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Submitted At:</th>
+                                    <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') if submission.submitted_at else 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Submission Type:</th>
+                                    <td>{{ submission.submission_type or 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        {% if submission.status == 'submitted' %}
+                                            <span class="badge bg-primary fs-6">Submitted</span>
+                                        {% elif submission.status == 'graded' %}
+                                            <span class="badge bg-success fs-6">Graded</span>
+                                        {% elif submission.status == 'late' %}
+                                            <span class="badge bg-warning fs-6">Late</span>
+                                        {% elif submission.status == 'missing' %}
+                                            <span class="badge bg-danger fs-6">Missing</span>
+                                        {% else %}
+                                            <span class="badge bg-info fs-6">{{ submission.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Submitted File:</th>
+                                    <td>
+                                        {% if submission.submitted_file %}
+                                            <a href="{{ url_for('dash.uploaded_assignment_file', filename=submission.submitted_file.filename) }}" 
+                                               target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            No file uploaded

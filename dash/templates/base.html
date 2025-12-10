@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
 
@@ -14,7 +15,8 @@
     <title>Classroom Management System</title>
     <link rel="canonical" href="https://www.wrappixel.com/templates/monster-admin-lite/" />
     <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename="assets/plugins/chartist/dist/chartist.min.css") }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='assets/plugins/chartist/dist/chartist.min.css') }}" rel="stylesheet">
+
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/style.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/dash.css') }}" rel="stylesheet">
@@ -386,67 +388,66 @@
                     <!-- ============================================================== -->
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown">
+                          {% if current_user.role == "teacher" %}
+                          {% set record = current_user.teacherschoolrecord %}
                           <a class="nav-link dropdown-toggle d-flex align-items-center"
-                             href="#"
-                             id="navbarDropdown"
-                             role="button"
-                             data-bs-toggle="dropdown"
-                             aria-expanded="false">
-                            
-                                 
-                             {# ------------------ TEACHER ------------------ #}
-                             {% if current_user.role == "teacher" %}
-                                 {% set record = current_user.teacherschoolrecord %}
-                 
-                                 {% if record.teacher_avator %}
-                                     <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.teacher_avator.filename) }}"
-                                          class="profile-pic me-2"
-                                          width="40" height="40">
-                                 {% else %}
-                                 <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
-                                 class="profile-pic me-2"
-                                 width="40" height="40">
-                                 {% endif %}
-                 
-                                 <span>{{ record.first_name }} {{ record.last_name }}</span>
-                 
-                 
-                             {# ------------------ ADMIN ------------------ #}
-                             {% elif current_user.role == "admin" %}
-                                 {% set record = current_user.admin %}
-                 
-                                 {% if record.student_avator %}
-                                     <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
-                                          class="rounded-circle me-2"
-                                          width="40" height="40">
-                                 {% else %}
-                                 <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
-                                 class="rounded-circle me-2"
-                                 width="50" height="50">
-                                 {% endif %}
-                 
-                                 <span>{{ record.first_name }} {{ record.last_name }}</span>
-                 
-                 
-                             {# ------------------ STUDENT ------------------ #}
-                             {% elif current_user.role == "student" %}
-                                 {% set record = current_user.student %}
-                 
-                                 {% if record.student_avator %}
-                                     <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
-                                          class="rounded-circle me-2"
-                                          width="40" height="40">
-                                 {% else %}
-                                 <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
-                                 class="rounded-circle me-2"
-                                 width="40" height="40">
-                                     </span>
-                                 {% endif %}
-                 
-                                 <span>{{ record.first_name }} {{ record.last_name }}</span>
-                 
-                             {% endif %}
+                            href="#"
+                            id="navbarDropdown"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                              {% if record.teacher_avator %}
+                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.teacher_avator.filename) }}"
+                                      class="profile-pic me-2"
+                                      width="40" height="40">
+                              {% else %}
+                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
+                                      class="profile-pic me-2"
+                                      width="40" height="40">
+                              {% endif %}
+                              <span>{{ record.first_name }} {{ record.last_name }}</span>
                           </a>
+
+                      {% elif current_user.role == "admin" %}
+                          {% set record = current_user.admin %}
+                          <a class="nav-link dropdown-toggle d-flex align-items-center"
+                            href="#"
+                            id="navbarDropdown"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                              {% if record.student_avator %}
+                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
+                                      class="rounded-circle me-2"
+                                      width="40" height="40">
+                              {% else %}
+                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
+                                      class="rounded-circle me-2"
+                                      width="50" height="50">
+                              {% endif %}
+                              <span>{{ record.first_name }} {{ record.last_name }}</span>
+                          </a>
+
+                      {% elif current_user.role == "student" %}
+                          {% set record = current_user.student %}
+                          <a class="nav-link dropdown-toggle d-flex align-items-center"
+                            href="#"
+                            id="navbarDropdown"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                              {% if record.student_avator %}
+                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
+                                      class="rounded-circle me-2"
+                                      width="40" height="40">
+                              {% else %}
+                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
+                                      class="rounded-circle me-2"
+                                      width="40" height="40">
+                              {% endif %}
+                              <span>{{ record.first_name }} {{ record.last_name }}</span>
+                          </a>
+                      {% endif %}
                       
                           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                       
@@ -642,74 +643,65 @@
                             </ul>
                         </li>
 
-                        <!-- student only -->
-                        {% if current_user.is_authenticated and current_user.student_school_record_id %}
+                     
+
+                        <!-- ================= Student Menu ================= -->
+                        {% if current_user.is_authenticated and current_user.student_school_record %}
                         <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" 
-                              href="javascript:void(0)" aria-expanded="false">
-                                <i class="fa fa-user-circle me-3"></i>
-                                <span class="hide-menu" style="font-size: 16px;">Student</span>
-                            </a>
-                            <ul class="collapse first-level" aria-expanded="false">
+                        <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" 
+                            href="javascript:void(0)" aria-expanded="false">
+                            <i class="fa fa-user-circle me-3"></i>
+                            <span class="hide-menu" style="font-size: 16px;">Student</span>
+                        </a>
+                        <ul class="collapse first-level" aria-expanded="false">
 
-                                <!-- My Assignment Submissions -->
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link">
-                                        <span class="hide-menu" style="font-size: 15px;">My Assignment Submissions</span>
-                                    </a>
-                                </li>
+                            <!-- My Grades -->
+                            <li class="sidebar-item">
+                                <a href="{{ url_for('dash.view_all_grades') }}" class="sidebar-link">
+                                    <span class="hide-menu" style="font-size: 15px;">My Grades</span>
+                                </a>
+                            </li>
 
-                                <!-- View One Assignment -->
-                                <li class="sidebar-item">
-                                    <a href="javascript:void(0)" class="sidebar-link">
-                                        <span class="hide-menu" style="font-size: 15px;">Assignment Details</span>
-                                    </a>
-                                </li>
+                            <!-- Grade Details (optional link placeholder) -->
+                            <!-- Accessed via My Grades table -->
 
-                                <!-- My Grades -->
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.student_grades') }}" class="sidebar-link">
-                                        <span class="hide-menu" style="font-size: 15px;">My Grades</span>
-                                    </a>
-                                </li>
+                            <!-- My Attendance -->
+                            <li class="sidebar-item">
+                                <a href="{{ url_for('dash.view_attendances') }}" class="sidebar-link">
+                                    <span class="hide-menu" style="font-size: 15px;">My Attendance</span>
+                                </a>
+                            </li>
 
-                                <!-- View One Grade -->
-                                <li class="sidebar-item">
-                                    <a href="javascript:void(0)" class="sidebar-link">
-                                        <span class="hide-menu" style="font-size: 15px;">Grade Details</span>
-                                    </a>
-                                </li>
+                            <!-- Attendance Details (optional link placeholder) -->
+                            <!-- Accessed via My Attendance table -->
 
-                                <!-- My Attendance -->
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.student_attendances') }}" class="sidebar-link">
-                                        <span class="hide-menu" style="font-size: 15px;">My Attendance</span>
-                                    </a>
-                                </li>
+                            <!-- Class Assignments -->
+                            <li class="sidebar-item">
+                                <a href="{{ url_for('dash.view_class_assignments') }}" class="sidebar-link">
+                                    <span class="hide-menu" style="font-size: 15px;">Class Assignments</span>
+                                </a>
+                            </li>
 
-                                <!-- View One Attendance -->
-                                <li class="sidebar-item">
-                                    <a href="javascript:void(0)" class="sidebar-link">
-                                        <span class="hide-menu" style="font-size: 15px;">Attendance Details</span>
-                                    </a>
-                                </li>
+                            <!-- Assignment Submissions -->
+                            <li class="sidebar-item">
+                                <a href="{{ url_for('dash.view_assignment_submissions') }}" class="sidebar-link">
+                                    <span class="hide-menu" style="font-size: 15px;">My Assignment Submissions</span>
+                                </a>
+                            </li>
 
-                                <!-- Class Assignments -->
-                                <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.student_class_assignments') }}" class="sidebar-link">
-                                        <span class="hide-menu" style="font-size: 15px;">Class Assignments</span>
-                                    </a>
-                                </li>
+                            <!-- Submission Detail (optional link placeholder) -->
+                            <!-- Accessed via Assignment Submissions table -->
 
-                            </ul>
+                        </ul>
                         </li>
-{% endif %}
-
-
                         {% endif %}
+
                         <!-- ===================== END ASSIGNMENT SUBMISSIONS MENU ===================== -->
 
-                        {% if current_user.is_authenticated and current_user.student_school_record %}
+                        {% endif %}
+
+                        <!-- Student Only -->
+                        {% if current_user.is_authenticated and current_user.role == "student" %}
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
                                 <i class="fa fa-user-circle me-3"></i>
@@ -718,25 +710,25 @@
                             <ul class="collapse first-level" aria-expanded="false">
                         
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_student_assignments') }}" class="sidebar-link">
+                                    <a href="{{ url_for('dash.view_class_assignments') }}" class="sidebar-link">
                                         <span class="hide-menu">View Submitted Assignments</span>
                                     </a>
                                 </li>
                         
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.student_class_assignments') }}" class="sidebar-link">
+                                    <a href="{{ url_for('dash.view_class_assignments') }}" class="sidebar-link">
                                         <span class="hide-menu">View Class Assignments</span>
                                     </a>
                                 </li>
                         
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.student_grades') }}" class="sidebar-link">
+                                    <a href="{{ url_for('dash.view_all_grades') }}" class="sidebar-link">
                                         <span class="hide-menu">My Grades</span>
                                     </a>
                                 </li>
                         
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.student_attendances') }}" class="sidebar-link">
+                                    <a href="{{ url_for('dash.view_attendances') }}" class="sidebar-link">
                                         <span class="hide-menu">My Attendance</span>
                                     </a>
                                 </li>
@@ -772,7 +764,7 @@
                         {% if current_user.is_authenticated %}
                             <!-- Logout -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link"  id="logoutSidebar" aria-expanded="false">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link" id="logoutSidebar" aria-expanded="false">
                                 <i class="me-3 fa fa-sign-out-alt" aria-hidden="true"></i>
                                 <span class="hide-menu">Logout</span>
                             </a>
@@ -804,7 +796,7 @@
 
 
 	          <footer class="footer text-center">
-                © {{ current_year}} Classroom Management Dashbaord Created by <a href="https://www.naomiphiri.com/">Naomi Phiri</a> 
+                © {{ current_year }} Classroom Management Dashboard Created by <a href="https://www.naomiphiri.com/">Naomi Phiri</a> 
             </footer>
             <!-- ============================================================== -->
             <!-- End footer -->
@@ -887,136 +879,3 @@
     <button id="chatSendBtn" title="Send">Send</button>
   </div>
 </div>
-
-
-
-<script>
-  // ---------- Dropdown behavior cleanup ----------
-  (function () {
-    // make sure collapse toggles work in Monster theme
-    document.querySelectorAll('.sidebar-item > .sidebar-link.has-arrow').forEach(btn => {
-      btn.addEventListener('click', function (e) {
-        const parent = this.parentElement;
-        const submenu = parent.querySelector('.collapse.first-level');
-        if (!submenu) return;
-        e.preventDefault();
-        submenu.classList.toggle('show');
-      });
-    });
-  })();
-
-  // ---------- Chat widget behavior ----------
-  (function () {
-    const toggleBtn = document.getElementById('chatToggleBtn');
-    const panel = document.getElementById('chatPanel');
-    const chatBody = document.getElementById('chatBody');
-    const chatInput = document.getElementById('chatInput');
-    const sendBtn = document.getElementById('chatSendBtn');
-    const closeBtn = document.getElementById('closeChat');
-    const minimizeBtn = document.getElementById('minimizeChat');
-
-    function openChat() {
-      panel.classList.add('show');
-      panel.setAttribute('aria-hidden', 'false');
-      chatInput.focus();
-    }
-    function closeChat() {
-      panel.classList.remove('show');
-      panel.setAttribute('aria-hidden', 'true');
-    }
-    // toggle
-    toggleBtn.addEventListener('click', function () {
-      if (panel.classList.contains('show')) {
-        closeChat();
-      } else {
-        openChat();
-      }
-    });
-    // close & minimize
-    closeBtn.addEventListener('click', closeChat);
-    minimizeBtn.addEventListener('click', closeChat);
-
-    // send message
-    function appendMessage(text, who = 'bot') {
-      const div = document.createElement('div');
-      div.className = 'chat-msg ' + (who === 'user' ? 'user' : 'bot');
-      div.textContent = text;
-      chatBody.appendChild(div);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const text = chatInput.value.trim();
-      if (!text) return;
-      appendMessage(text, 'user');
-      chatInput.value = '';
-      chatInput.disabled = true;
-      sendBtn.disabled = true;
-
-      // Example: local placeholder response while you connect server
-      appendMessage('Typing...', 'bot');
-      // remove the 'Typing...' after delay and replace with response
-      setTimeout(() => {
-        // remove last bot 'Typing...' and add final
-        const last = chatBody.querySelectorAll('.chat-msg.bot');
-        const lastBot = last[last.length - 1];
-        if (lastBot && lastBot.textContent === 'Typing...') {
-          lastBot.textContent = "Thanks — I received: " + text + ". (This is a demo reply.)";
-        }
-        chatInput.disabled = false;
-        sendBtn.disabled = false;
-        chatInput.focus();
-        chatBody.scrollTop = chatBody.scrollHeight;
-      }, 900);
-
-      
-      try {
-        const resp = await fetch('/dash/chatbot', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
-        const data = await resp.json();
-        // replace the 'Typing...' placeholder with real reply
-        const last = chatBody.querySelectorAll('.chat-msg.bot');
-        const lastBot = last[last.length - 1];
-        if (lastBot && lastBot.textContent === 'Typing...') lastBot.textContent = data.reply || 'No reply';
-      } catch (err) {
-        const last = chatBody.querySelectorAll('.chat-msg.bot');
-        const lastBot = last[last.length - 1];
-        if (lastBot && lastBot.textContent === 'Typing...') lastBot.textContent = 'Sorry — failed to contact server.';
-      } finally {
-        chatInput.disabled = false;
-        sendBtn.disabled = false;
-        chatInput.focus();
-      }
-      
-    }
-
-    // Enter to send
-    chatInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-    sendBtn.addEventListener('click', sendMessage);
-
-    // click outside panel to close (small screens)
-    document.addEventListener('click', function (e) {
-      if (window.innerWidth <= 480) {
-        if (!panel.contains(e.target) && !toggleBtn.contains(e.target) && panel.classList.contains('show')) {
-          closeChat();
-        }
-      }
-    });
-  })();
-
-  
-</script>
-
-
-  
-</body>
-
-</html>

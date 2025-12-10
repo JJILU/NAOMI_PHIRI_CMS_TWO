@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">My Attendance</h4>
+                    <h6 class="card-subtitle mb-2 text-muted">View your attendance record</h6>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    
+                    {% if success %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ success }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Time In</th>
+                                    <th>Time Out</th>
+                                    <th>Teacher</th>
+                                    <th>Subject</th>
+                                    <th>Remarks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attendance in attendances %}
+                                <tr>
+                                    <td>{{ attendance.attendance_date.strftime('%Y-%m-%d') if attendance.attendance_date else 'N/A' }}</td>
+                                    <td>
+                                        {% if attendance.status == 'present' %}
+                                            <span class="badge bg-success">Present</span>
+                                        {% elif attendance.status == 'absent' %}
+                                            <span class="badge bg-danger">Absent</span>
+                                        {% elif attendance.status == 'late' %}
+                                            <span class="badge bg-warning">Late</span>
+                                        {% elif attendance.status == 'excused' %}
+                                            <span class="badge bg-info">Excused</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ attendance.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ attendance.time_in.strftime('%H:%M') if attendance.time_in else 'N/A' }}</td>
+                                    <td>{{ attendance.time_out.strftime('%H:%M') if attendance.time_out else 'N/A' }}</td>
+                                    <td>
+                                        {% if attendance.teacher and attendance.teacher.teacherschoolrecord %}
+                                            {{ attendance.teacher.teacherschoolrecord.first_name }} {{ attendance.teacher.teacherschoolrecord.last_name }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ attendance.subject or 'All Subjects' }}</td>
+                                    <td>{{ attendance.remarks|truncate(30) if attendance.remarks else 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('dash.attendance_detail', id=attendance.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No attendance records found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if pagination and pagination.pages > 1 %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('dash.view_attendances', page=pagination.prev_num, per_page=per_page) if pagination.has_prev else '#' }}">Previous</a>
+                            </li>
+                            
+                            {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
+                                {% if page_num %}
+                                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('dash.view_attendances', page=page_num, per_page=per_page) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('dash.view_attendances', page=pagination.next_num, per_page=per_page) if pagination.has_next else '#' }}">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
