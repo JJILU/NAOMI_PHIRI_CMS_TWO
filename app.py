@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for
-from extensions import db, migrate, login_manager
+from extensions import db, migrate, login_manager,socketio
 from datetime import timedelta,datetime
 import os
 from typing import cast
@@ -69,6 +69,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    socketio.init_app(app,cors_allowed_origins="*")
 
     # ----------------------
     # Automatic DB check on startup
@@ -123,10 +124,12 @@ def create_app():
     # ----------------------
     from auth.views import auth_bp
     from dash.views import dash_bp
+    from chat.views import chat_bp
     from legal.views import legal_bp
 
     app.register_blueprint(auth_bp, url_prefix="/")
     app.register_blueprint(dash_bp, url_prefix="/dash")
+    app.register_blueprint(chat_bp, url_prefix="/chat")
     app.register_blueprint(legal_bp, url_prefix="/legal")
 
     return app

@@ -191,7 +191,7 @@ def create_new_password():
 
         try:
             # ✅ Update correct field
-            user.hashed_password = generate_password_hash(password)
+            user.hashed_password = generate_password_hash(password) # type: ignore
             db.session.commit()
             session.pop('reset_user_id')
             session.pop('reset_role')

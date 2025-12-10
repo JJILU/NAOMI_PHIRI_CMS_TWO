@@ -4,12 +4,14 @@ from flask_login import LoginManager
 from faker import Faker
 from random import randint
 from faker.providers import BaseProvider
+from flask_socketio import SocketIO
 
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 faker = Faker()
+socketio = SocketIO()
 
 class CustomIDGenerator(BaseProvider):
     def generate_teacher_id(self):

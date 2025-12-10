@@ -762,6 +762,14 @@
                         {% endif %}
                 
                         {% if current_user.is_authenticated %}
+
+                         <!-- Chat Menu -->
+                        <li class="sidebar-item">
+                            <a href="{{ url_for('chat.chat_room') }}" class="sidebar-link waves-effect waves-dark sidebar-link" aria-expanded="false">
+                                <i class="me-3 bx bx-chat" aria-hidden="true"></i>
+                                <span class="hide-menu">Chat</span>
+                            </a>
+                        </li>
                             <!-- Logout -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link" id="logoutSidebar" aria-expanded="false">
@@ -879,3 +887,130 @@
     <button id="chatSendBtn" title="Send">Send</button>
   </div>
 </div>
+
+
+
+<script>
+    // ---------- Dropdown behavior cleanup ----------
+    (function () {
+      // make sure collapse toggles work in Monster theme
+      document.querySelectorAll('.sidebar-item > .sidebar-link.has-arrow').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          const parent = this.parentElement;
+          const submenu = parent.querySelector('.collapse.first-level');
+          if (!submenu) return;
+          e.preventDefault();
+          submenu.classList.toggle('show');
+        });
+      });
+    })();
+  
+    // ---------- Chat widget behavior ----------
+    (function () {
+      const toggleBtn = document.getElementById('chatToggleBtn');
+      const panel = document.getElementById('chatPanel');
+      const chatBody = document.getElementById('chatBody');
+      const chatInput = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('chatSendBtn');
+      const closeBtn = document.getElementById('closeChat');
+      const minimizeBtn = document.getElementById('minimizeChat');
+  
+      function openChat() {
+        panel.classList.add('show');
+        panel.setAttribute('aria-hidden', 'false');
+        chatInput.focus();
+      }
+      function closeChat() {
+        panel.classList.remove('show');
+        panel.setAttribute('aria-hidden', 'true');
+      }
+      // toggle
+      toggleBtn.addEventListener('click', function () {
+        if (panel.classList.contains('show')) {
+          closeChat();
+        } else {
+          openChat();
+        }
+      });
+      // close & minimize
+      closeBtn.addEventListener('click', closeChat);
+      minimizeBtn.addEventListener('click', closeChat);
+  
+      // send message
+      function appendMessage(text, who = 'bot') {
+        const div = document.createElement('div');
+        div.className = 'chat-msg ' + (who === 'user' ? 'user' : 'bot');
+        div.textContent = text;
+        chatBody.appendChild(div);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+  
+      async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+        appendMessage(text, 'user');
+        chatInput.value = '';
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+  
+        // Example: local placeholder response while you connect server
+        appendMessage('Typing...', 'bot');
+        // remove the 'Typing...' after delay and replace with response
+        setTimeout(() => {
+          // remove last bot 'Typing...' and add final
+          const last = chatBody.querySelectorAll('.chat-msg.bot');
+          const lastBot = last[last.length - 1];
+          if (lastBot && lastBot.textContent === 'Typing...') {
+            lastBot.textContent = "Thanks — I received: " + text + ". (This is a demo reply.)";
+          }
+          chatInput.disabled = false;
+          sendBtn.disabled = false;
+          chatInput.focus();
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }, 900);
+  
+        
+        try {
+          const resp = await fetch('/dash/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+          });
+          const data = await resp.json();
+          // replace the 'Typing...' placeholder with real reply
+          const last = chatBody.querySelectorAll('.chat-msg.bot');
+          const lastBot = last[last.length - 1];
+          if (lastBot && lastBot.textContent === 'Typing...') lastBot.textContent = data.reply || 'No reply';
+        } catch (err) {
+          const last = chatBody.querySelectorAll('.chat-msg.bot');
+          const lastBot = last[last.length - 1];
+          if (lastBot && lastBot.textContent === 'Typing...') lastBot.textContent = 'Sorry — failed to contact server.';
+        } finally {
+          chatInput.disabled = false;
+          sendBtn.disabled = false;
+          chatInput.focus();
+        }
+        
+      }
+  
+      // Enter to send
+      chatInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      sendBtn.addEventListener('click', sendMessage);
+  
+      // click outside panel to close (small screens)
+      document.addEventListener('click', function (e) {
+        if (window.innerWidth <= 480) {
+          if (!panel.contains(e.target) && !toggleBtn.contains(e.target) && panel.classList.contains('show')) {
+            closeChat();
+          }
+        }
+      });
+    })();
+  
+    
+  </script>
