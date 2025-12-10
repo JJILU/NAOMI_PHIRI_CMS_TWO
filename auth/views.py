@@ -1,7 +1,8 @@
-from flask import request, jsonify, session,render_template,url_for
-from flask_login import login_user, logout_user, login_required,current_user
+from flask import request, jsonify, session,render_template,url_for,redirect
+from flask_login import login_user, logout_user,current_user
 from extensions import db
 from auth.models import TeacherSchoolRecord, StudentSchoolRecord, Teacher, Student, Admin
+from werkzeug.security import generate_password_hash
 from . import auth_bp
 
 # ---------------------------
@@ -144,12 +145,68 @@ def logout():
         }), 200
 
 
+
+# FORGOT PASSWORD
+
+@auth_bp.route('/forgot_password', methods=['GET','POST'])
+def forgot_password():
+    from auth.models import Student, Teacher, Admin
+
+    if request.method=='POST':
+        school_id = request.form.get('school_id')
+        role = request.form.get('role')
+
+        user = None
+        if role=="student": user=Student.query.filter_by(user_card_id=school_id).first()
+        elif role=="teacher": user=Teacher.query.filter_by(user_card_id=school_id).first()
+        elif role=="admin": user=Admin.query.filter_by(user_card_id=school_id).first()
+
+        if user:
+            session['reset_user_id'] = user.id
+            session['reset_role'] = role
+            return redirect(url_for('auth.create_new_password'))
+        else:
+            return render_template('auth/forgot_password.html', error="No user found with this School ID and role")
+
+    return render_template('auth/forgot_password.html')
+
+@auth_bp.route('/create_new_password', methods=['GET','POST'])
+def create_new_password():
+    if 'reset_user_id' not in session or 'reset_role' not in session:
+        return redirect(url_for('auth.forgot_password'))
+
+    user_id = session['reset_user_id']
+    role = session['reset_role']
+    from auth.models import Student, Teacher, Admin
+
+    user_model = {"student": Student, "teacher": Teacher, "admin": Admin}.get(role)
+    user = user_model.query.get(user_id)
+
+    if request.method=='POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        if password != confirm_password:
+            return render_template('auth/create_new_password.html', error="Passwords do not match")
+
+        try:
+            # ✅ Update correct field
+            user.hashed_password = generate_password_hash(password)
+            db.session.commit()
+            session.pop('reset_user_id')
+            session.pop('reset_role')
+            return render_template('auth/create_new_password.html', success="Password updated successfully!")
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+            return render_template('auth/create_new_password.html', error="Failed to update password")
+
+    return render_template('auth/create_new_password.html')
+
+
 # ---------------------------
 # OTHER PAGES (rendered normally)
 # ---------------------------
-@auth_bp.route("/forgot-password")
-def forgot_password():
-    return render_template('auth/forgot_password.html')
 
 
 @auth_bp.route("/contact-us")
