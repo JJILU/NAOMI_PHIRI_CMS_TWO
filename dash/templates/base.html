@@ -701,7 +701,7 @@
                         {% endif %}
 
                         <!-- Student Only -->
-                        {% if current_user.is_authenticated and current_user.role == "student" %}
+                        {% if current_user.is_authenticated and current_user.role in  ["admin","student"] %}
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
                                 <i class="fa fa-user-circle me-3"></i>
