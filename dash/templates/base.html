@@ -561,9 +561,9 @@
                         {% endif %}
 
                         {% if current_user.is_authenticated and current_user.role == "teacher" %}
-                        <!-- Teacher Create,view,delete,update Study Material -->
+                        <!-- Study Materials Teacher -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)">
+                            <a class="sidebar-link waves-effect waves-dark has-arrow" href="javascript:void(0)">
                                 <i class="me-3 fa fa-book" aria-hidden="true"></i>
                                 <span class="hide-menu">Study Material</span>
                             </a>
@@ -581,11 +581,9 @@
                             </ul>
                         </li>
                         {% endif %}
-
-                        
-
+                    
                         {% if current_user.is_authenticated and current_user.role in ["admin", "student"] %}
-                        <!-- Students + Admin -->
+                        <!-- Study Materials Student & Admins -->
                         <li class="sidebar-item">
                             <a href="{{ url_for('dash.list_study_material') }}" class="sidebar-link">
                                 <i class="me-3 fa fa-book" aria-hidden="true"></i>
@@ -593,7 +591,6 @@
                             </a>
                         </li>
                         {% endif %}
-
 
                         {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
                         <!-- Admin Management -->

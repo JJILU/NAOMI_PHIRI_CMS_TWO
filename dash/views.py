@@ -1731,128 +1731,170 @@ def view_profile():
 # -------------------- END PROFILE ------------------------------------------------
 
 # -------------------- START STUDY MATERIAL ------------------------------------------------
-# 
+ 
+
+# ------------------ CREATE ------------------
 @dash_bp.route("/study-material/create", methods=["GET", "POST"])
-@role_required("teacher")
+@login_required
 def create_study_material():
-    from dash.models import StudyMaterial,StudyMaterialFileUpload,Classroom 
+    from dash.models import StudyMaterial, StudyMaterialFileUpload, Classroom
+
+    if current_user.role != "teacher": # type: ignore
+        return render_template("study_material/create.html", error="Access denied", classrooms=[])
 
     classrooms = Classroom.query.all()
+    error = None
+    success = None
 
     if request.method == "POST":
         title = request.form.get("title")
         description = request.form.get("description")
-        classroom_id = request.form.get("classroom_id")
+        classroom_id = request.form.get("classroom_id") or None
 
-        material = StudyMaterial(
-            title=title,
-            description=description,
-            classroom_id=classroom_id,
-            teacher_id=current_user.id # type: ignore
-        )
-        db.session.add(material)
-        db.session.commit()
+        if not title or not description:
+            error = "Title and description are required."
+        else:
+            material = StudyMaterial(title=title, description=description,
+                                     classroom_id=classroom_id, teacher_id=current_user.id) # type: ignore
+            try:
+                from extensions import db
+                db.session.add(material)
+                db.session.commit()
 
-        # File uploads
-        files = request.files.getlist("files")
-        upload_dir = current_app.config["STUDY_MATERIAL_UPLOAD"]
+                # Handle file uploads
+                files = request.files.getlist("files")
+                upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+                os.makedirs(upload_dir, exist_ok=True)
 
-        for file in files:
-            if file.filename:
-                filepath = os.path.join(upload_dir, file.filename)
-                file.save(filepath)
+                for file in files:
+                    if file.filename:
+                        filepath = os.path.join(upload_dir, file.filename)
+                        file.save(filepath)
+                        db.session.add(StudyMaterialFileUpload(
+                            filename=file.filename,
+                            filepath=file.filename,  # store filename only
+                            study_material_id=material.id
+                        ))
+                db.session.commit()
+                success = "Study material created successfully."
+            except Exception as e:
+                db.session.rollback()
+                error = str(e)
 
-                db.session.add(
-                    StudyMaterialFileUpload(
-                        filename=file.filename,
-                        filepath=filepath,
-                        study_material_id=material.id
-                    )
-                )
+    return render_template("study_material/create.html",
+                           classrooms=classrooms, error=error, success=success)
 
-        db.session.commit()
-
-        return redirect(url_for("dash.list_study_material"))
-
-    return render_template("study_material/create.html", classrooms=classrooms)
-
-
-
-# LIST + PAGINATION + PER PAGE
+# ------------------ LIST + PAGINATION ------------------
 @dash_bp.route("/study-material", methods=["GET"])
 @login_required
 def list_study_material():
-    from dash.models import StudyMaterial 
+    from dash.models import StudyMaterial
+    from extensions import db
+
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 6, type=int)
 
-    materials = StudyMaterial.query.order_by(
-        StudyMaterial.created_at.desc()
-    ).paginate(page=page, per_page=per_page)
+    materials = StudyMaterial.query.order_by(StudyMaterial.created_at.desc()).paginate(page=page, per_page=per_page)
+    return render_template("study_material/list.html", materials=materials, per_page=per_page)
 
-    return render_template(
-        "study_material/list.html",
-        materials=materials,
-        per_page=per_page
-    )
+# ------------------ SERVE UPLOADED FILE ------------------
+@dash_bp.route("/study-material/uploads/<filename>")
+@login_required
+def studymaterial_uploaded_file(filename):
+    upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+    return send_from_directory(upload_dir, filename)
 
-# VIEW ONE
+# ------------------ VIEW ONE ------------------
 @dash_bp.route("/study-material/<int:id>", methods=["GET"])
 @login_required
 def view_study_material(id):
-    from dash.models import StudyMaterial 
+    from dash.models import StudyMaterial
     material = StudyMaterial.query.get_or_404(id)
     return render_template("study_material/view.html", material=material)
 
-# UPDATE (Teacher only)
+# ------------------ EDIT ------------------
 @dash_bp.route("/study-material/<int:id>/edit", methods=["GET", "POST"])
-@role_required("teacher")
+@login_required
 def edit_study_material(id):
-    from dash.models import StudyMaterial,Classroom 
+    from dash.models import StudyMaterial, Classroom, StudyMaterialFileUpload
+    from extensions import db
 
     material = StudyMaterial.query.get_or_404(id)
+    if current_user.role != "teacher" or current_user.id != material.teacher_id:
+        return render_template("study_material/edit.html", error="Access denied", material=material, classrooms=[])
+
     classrooms = Classroom.query.all()
+    error = None
+    success = None
 
     if request.method == "POST":
-        material.title = request.form.get("title")
-        material.description = request.form.get("description")
-        material.classroom_id = request.form.get("classroom_id")
+        title = request.form.get("title")
+        description = request.form.get("description")
+        classroom_id = request.form.get("classroom_id") or None
 
-        db.session.commit()
-        return redirect(url_for("dash.view_study_material", id=id))
+        if not title or not description:
+            error = "Title and description are required."
+        else:
+            try:
+                material.title = title
+                material.description = description
+                material.classroom_id = classroom_id
 
-    return render_template("study_material/edit.html", material=material, classrooms=classrooms)
+                # handle new file uploads
+                files = request.files.getlist("files")
+                upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+                os.makedirs(upload_dir, exist_ok=True)
+                for file in files:
+                    if file.filename:
+                        filepath = os.path.join(upload_dir, file.filename)
+                        file.save(filepath)
+                        db.session.add(StudyMaterialFileUpload(
+                            filename=file.filename,
+                            filepath=file.filename,
+                            study_material_id=material.id
+                        ))
 
+                db.session.commit()
+                success = "Study material updated successfully."
+            except Exception as e:
+                db.session.rollback()
+                error = str(e)
 
-# DELETE (Teacher only + confirmation)
-# GET → show confirm page
-@dash_bp.route("/study-material/<int:id>/delete")
-@role_required("teacher")
+    return render_template("study_material/edit.html", material=material, classrooms=classrooms, error=error, success=success)
+
+# ------------------ DELETE CONFIRM ------------------
+@dash_bp.route("/study-material/<int:id>/delete", methods=["GET"])
+@login_required
 def delete_study_material_confirm(id):
     from dash.models import StudyMaterial
     material = StudyMaterial.query.get_or_404(id)
+    if current_user.role != "teacher" or current_user.id != material.teacher_id:
+        return redirect(url_for("dash.list_study_material"))
     return render_template("study_material/delete_confirm.html", material=material)
 
-# POST → delete
+# ------------------ DELETE POST ------------------
 @dash_bp.route("/study-material/<int:id>/delete", methods=["POST"])
-@role_required("teacher")
+@login_required
 def delete_study_material(id):
     from dash.models import StudyMaterial
+    from extensions import db
+
     material = StudyMaterial.query.get_or_404(id)
-    
-    # delete file uploads
-    for f in material.files:
-        if os.path.exists(f.filepath):
-            os.remove(f.filepath)
+    if current_user.role != "teacher" or current_user.id != material.teacher_id:
+        return redirect(url_for("dash.list_study_material"))
 
-    db.session.delete(material)
-    db.session.commit()
-
+    try:
+        upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+        for f in material.files:
+            path = os.path.join(upload_dir, f.filename)
+            if os.path.exists(path):
+                os.remove(path)
+        db.session.delete(material)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        # optional: pass error to template if needed
     return redirect(url_for("dash.list_study_material"))
-
-
-
-
 
 # -------------------- END STUDY MATERIAL ------------------------------------------------
 
