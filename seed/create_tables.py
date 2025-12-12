@@ -1,5 +1,5 @@
 # SEQUENCE: 1
-from dash.models import compulsarysubject_class,CompulsarySubject,OptionalSubject,Classroom
+from dash.models import compulsarysubject_class,CompulsarySubject,OptionalSubject,Classroom,StudyMaterial,StudyMaterialFileUpload
 from app import create_app
 from extensions import db
 
