@@ -1661,16 +1661,16 @@ def view_profile():
     upload_success = None
 
     # Get user and profile record
-    if current_user.role == "teacher":
-        user_profile = Teacher.query.get_or_404(current_user.id)
+    if current_user.role == "teacher": # type: ignore
+        user_profile = Teacher.query.get_or_404(current_user.id) # type: ignore
         profile_record = user_profile.teacherschoolrecord
         existing_avatar = profile_record.teacher_avator
-    elif current_user.role == "admin":
-        user_profile = Admin.query.get_or_404(current_user.id)
+    elif current_user.role == "admin": # type: ignore
+        user_profile = Admin.query.get_or_404(current_user.id) # type: ignore
         profile_record = user_profile.admin
         existing_avatar = profile_record.student_avator
     else:
-        user_profile = Student.query.get_or_404(current_user.id)
+        user_profile = Student.query.get_or_404(current_user.id) # type: ignore
         profile_record = user_profile.student
         existing_avatar = profile_record.student_avator
 
@@ -1688,7 +1688,7 @@ def view_profile():
             if file.filename == "":
                 upload_error = "No file selected."
             elif file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
+                filename = secure_filename(file.filename) # type: ignore
                 upload_folder = current_app.config["PROFILE_PHOTO_UPLOAD"]
                 os.makedirs(upload_folder, exist_ok=True)
                 filepath = os.path.join(upload_folder, filename)
@@ -1706,8 +1706,8 @@ def view_profile():
                             original_name=file.filename,
                             filename=filename,
                             filepath=filepath,
-                            teacher_school_record_id=profile_record.id if current_user.role == "teacher" else None,
-                            student_school_record_id=profile_record.id if current_user.role != "teacher" else None
+                            teacher_school_record_id=profile_record.id if current_user.role == "teacher" else None, # type: ignore
+                            student_school_record_id=profile_record.id if current_user.role != "teacher" else None # type: ignore
                         )
                         db.session.add(new_avatar)
 
@@ -1748,7 +1748,7 @@ def create_study_material():
             title=title,
             description=description,
             classroom_id=classroom_id,
-            teacher_id=current_user.id
+            teacher_id=current_user.id # type: ignore
         )
         db.session.add(material)
         db.session.commit()
