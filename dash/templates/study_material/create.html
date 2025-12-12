@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-6">
+      <h3 class="page-title mb-0">Create Study Material</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.list_study_material') }}">Study Materials</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Create</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          <input type="text" name="title" class="form-control" maxlength="90" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" maxlength="200" rows="4" required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Classroom (optional)</label>
+          <select name="classroom_id" class="form-select">
+            <option value="">All Classes</option>
+            {% for c in classrooms %}
+              <option value="{{ c.id }}">{{ c.classroom_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Files (multiple)</label>
+          <input type="file" name="files" multiple class="form-control">
+          <small class="text-muted">Allowed file types: pdf, docx, pptx, jpg, png, zip, txt</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a href="{{ url_for('dash.list_study_material') }}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

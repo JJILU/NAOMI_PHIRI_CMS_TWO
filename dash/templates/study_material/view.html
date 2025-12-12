@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-6">
+      <h3 class="page-title mb-0">{{ material.title }}</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.list_study_material') }}">Study Materials</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ material.title }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    {% if material.files and material.files|length > 0 %}
+      <img class="card-img-top img-responsive" src="{{ url_for('dash.studymaterial_uploaded_file', filename=material.files[0].filepath) }}" alt="Card">
+    {% endif %}
+    <div class="card-body">
+      <h3 class="font-normal">{{ material.title }}</h3>
+      <p class="text-muted">{{ material.description }}</p>
+      <p><small class="text-muted">Class:
+        {% if material.classroom %}{{ material.classroom.classroom_name }}{% else %}All Classes{% endif %}
+      </small></p>
+
+      <hr>
+      <h5>Files</h5>
+      <ul class="list-group">
+        {% for f in material.files %}
+          <li class="list-group-item">
+            <a href="{{ url_for('dash.studymaterial_uploaded_file', filename=f.filepath) }}" target="_blank">{{ f.filename }}</a>
+          </li>
+        {% else %}
+          <li class="list-group-item">No files uploaded.</li>
+        {% endfor %}
+      </ul>
+
+      <div class="mt-3">
+        <a href="{{ url_for('dash.list_study_material') }}" class="btn btn-secondary">Back</a>
+        {% if current_user.is_authenticated and current_user.role == 'teacher' and current_user.id == material.teacher_id %}
+          <a href="{{ url_for('dash.edit_study_material', id=material.id) }}" class="btn btn-primary">Edit</a>
+          <a href="{{ url_for('dash.delete_study_material_confirm', id=material.id) }}" class="btn btn-danger">Delete</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

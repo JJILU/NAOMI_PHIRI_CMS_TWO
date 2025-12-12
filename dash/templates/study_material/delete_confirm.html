@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-6">
+      <h3 class="page-title mb-0">Delete Study Material</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.list_study_material') }}">Study Materials</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Delete</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-body">
+      <h4>Confirm Delete</h4>
+      <p>Are you sure you want to delete "<strong>{{ material.title }}</strong>"? This action cannot be undone.</p>
+
+      <form method="POST" action="{{ url_for('dash.delete_study_material', id=material.id) }}">
+        <button class="btn btn-danger" type="submit">Yes, Delete</button>
+        <a href="{{ url_for('dash.list_study_material') }}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
