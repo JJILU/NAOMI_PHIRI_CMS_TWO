@@ -1,12 +1,16 @@
-from flask import render_template, redirect, url_for, request, abort, jsonify, current_app,send_from_directory
+from flask import render_template, redirect, url_for, request, abort, jsonify, current_app,send_from_directory,session,request
 from flask_login import login_required, current_user
 from functools import wraps
 from sqlalchemy import desc, asc
-from extensions import db,faker
+from extensions import db,faker,socketio
 from random import choice
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
+
+
+from flask_socketio import SocketIO, join_room, leave_room, send
+
 
 
 
@@ -60,14 +64,57 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
 
 
-
-@dash_bp.route("/",methods=["GET"])
-@role_required("teacher", "admin")
+# ----------------------- START LANDING PAGE --------------------------------------------
+@dash_bp.route("/")
+@login_required
 def index():
-    return render_template("index.html")
+    from dash.models import Classroom, ClassAssignment, StudentAttendance
+    from auth.models import Student
+
+    # Total counts
+    total_students = Student.query.count()
+    total_classes = Classroom.query.count()
+    total_assignments = ClassAssignment.query.count()
+
+    # Attendance %
+    total_present = StudentAttendance.query.filter_by(status="Present").count()
+    total_absent = StudentAttendance.query.filter_by(status="Absent").count()
+    print(">> a>>",total_present,total_absent)
+    total_attendance = total_present + total_absent
+
+    present_percent = round((total_present / total_attendance) * 100, 1) if total_attendance else 0
+    absent_percent = round((total_absent / total_attendance) * 100, 1) if total_attendance else 0
+
+    # Chart.js data
+    chart_labels = ["Total Students", "Attendance Today", "Assignments Submitted", "Pending Assignments"]
+    chart_values = [total_students, total_present, total_assignments, total_assignments - total_present]
+
+    # Flot.js example (daily data for 7 days)
+    chart_total = [[i, total_students] for i in range(7)]
+    chart_attendance = [[i, total_present // 7] for i in range(7)]
+    chart_assignments = [[i, total_assignments // 7] for i in range(7)]
+    chart_pending = [[i, (total_assignments - total_present) // 7] for i in range(7)]
+
+    return render_template(
+        "index.html",
+        total_students=total_students,
+        total_classes=total_classes,
+        total_assignments=total_assignments,
+        present_percent=present_percent,
+        absent_percent=absent_percent,
+        chart_labels=chart_labels,
+        chart_values=chart_values,
+        chart_total=chart_total,
+        chart_attendance=chart_attendance,
+        chart_assignments=chart_assignments,
+        chart_pending=chart_pending
+    ) 
+
+# ----------------------- END LANDING PAGE --------------------------------------------
 
 
-# ------------------ Admin Management End-Points ------------------------
+
+# ------------------ START ADMIN ENDPOINTS ------------------------
 # -------------------------
 # Serve profile photo
 # -------------------------
@@ -184,8 +231,11 @@ def delete_admin(id):
             error = str(e)
 
     return render_template("admin_management/delete_admin.html", admin=admin, error=error, success=success)
+# ------------------ END ADMIN ENDPOINTS ------------------------
 
-# ------------------ Student Management End-Points ------------------------
+
+
+# ------------------ START STUDENT MANAGEMENT END-POINTS ------------------------
 @dash_bp.route("/create_student_school_record", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def create_student_school_record():
@@ -374,8 +424,11 @@ def delete_student(id):
 def uploaded_profile_photo(filename):
     """Serve uploaded profile photo files."""
     return send_from_directory(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
+# ------------------ END STUDENT MANAGEMENT END-POINTS ------------------------
 
-# ------------------ Student CMS Management ------------------------ 
+
+
+# ------------------ START CMS STUDENT END-POINTS ------------------------ 
 @dash_bp.route("/create_cms_student", methods=["GET", "POST"])
 def create_cms_student():
     from auth.models import StudentSchoolRecord, Student
@@ -501,10 +554,11 @@ def delete_cms_student(id):
     return render_template("student_management/delete_cms_student.html", student=student)
 
 
+# ------------------ END CMS STUDENT END-POINTS ------------------------ 
 
 
 
-# ------------------ Assignments End-Points ------------------------ [Teacher & Admin]
+# ------------------ START ASSIGNMENT END-POINTS ------------------------ [Teacher & Admin]
 
 
 # ------------------ LIST ASSIGNMENTS WITH PAGINATION ----------------------
@@ -765,6 +819,11 @@ def download_file(file_id):
         as_attachment=True
     )
 
+
+# ------------------ END ASSIGNMENT END-POINTS ------------------------ [Teacher & Admin]
+
+
+# ------------------ START ASSIGNMENT SUBMISSIION END-POINTS ------------------------ [Teacher & Admin]
 
 # ------------------------------- Assignment Submission [Teacher] ----------------------
 
@@ -1104,11 +1163,14 @@ def admin_view_class_submissions():
         per_page=per_page,
         classroom=classroom
     )
+# ------------------ END ASSIGNMENT SUBMISSIION END-POINTS ------------------------ [Teacher & Admin]
 
 
 
 
-# ------------------ Grade End-Points ------------------------
+
+# -------------------- START GRADE -----------------------------------------------------------------
+
 # ----------------- List all students to view grades -------------------
 @dash_bp.route("/view_grades", methods=["GET"])
 @role_required("teacher")
@@ -1248,6 +1310,10 @@ def grade_detail(id):
         abort(403)
     return render_template("student_only/grade_detail.html", grade=grade, error=None, success=None)
 
+# -------------------- END GRADE -----------------------------------------------------------------
+
+
+# -------------------- START ASSIGNMENT ----------------------------------------------------------
 
 # -------------------- Attendances List --------------------
 @dash_bp.route("/attendances", methods=["GET"])
@@ -1275,7 +1341,7 @@ def view_attendances():
 
 # -------------------- Attendance Detail --------------------
 @dash_bp.route("/attendances/<int:id>", methods=["GET"])
-@role_required("student", "admin")
+@role_required("student", "admin","teacher")
 def attendance_detail(id):
     from dash.models import StudentAttendance
     student_record = getattr(current_user, "student_school_record", None)
@@ -1345,10 +1411,11 @@ def assignment_submission_detail(id):
         abort(403)
     return render_template("student_only/assignment_submission_detail.html", submission=submission, error=None, success=None)
 
-# ==============================================================================================================
+# -------------------- END ASSIGNMENT ----------------------------------------------------------
 
-# -------------------------- Student Attentance --------------------------------
-from flask import request
+
+# -------------------- START ATTENDNACE ----------------------------------------------------------
+
 
 @dash_bp.route("/attendance/students", methods=["GET"])
 @role_required("teacher", "admin")
@@ -1377,6 +1444,15 @@ def view_student_attendance(id):
     attendances = student.student_attendances
     return render_template("attendance/view_student_attendance.html",
                            student=student, attendances=attendances)
+
+@dash_bp.route("/attendance/one_attendnce/<int:id>", methods=["GET"])
+@role_required("teacher", "admin")
+def view_one_attendance(id):
+    from dash.models import StudentAttendance
+    from flask import request
+
+    attendance = StudentAttendance.query.get_or_404(id)
+    return render_template("attendance/view_one_attendance.html", attendance=attendance)
 
 @dash_bp.route("/attendance/create/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
@@ -1440,18 +1516,30 @@ def update_attendance(id):
 def delete_attendance(id):
     from dash.models import StudentAttendance
 
+
     attendance = StudentAttendance.query.get_or_404(id)
     student_id = attendance.student_school_record_id
 
-    db.session.delete(attendance)
-    db.session.commit()
+    try:
+        db.session.delete(attendance)
+        db.session.commit()
 
-    return render_template("attendance/delete_attendance.html",
-                           success="Attendance deleted successfully!",
-                           student_id=student_id)
+        return render_template("attendance/delete_attendance.html",
+                            success="Attendance deleted successfully!",
+                            student_id=student_id)
+    except Exception as e:
+        db.session.rollback()
+        return render_template("attendance/delete_attendance.html",
+                            success="Failed To Delete Attendance, Server Error Occurred",
+                            student_id=student_id)
 
 
-# ------------------------------- CHAT BOT --------------------------
+# -------------------- END ATTENDANCE ----------------------------------------------------------
+
+
+
+# -------------------- START CHAT-BOT ----------------------------------------------------------
+
 from dash.chat_responses import chat_bot_responses
 import re
 
@@ -1550,17 +1638,15 @@ def chatbot():
         reply = choice(chat_bot_responses["fallback"])
 
     return jsonify({"reply": reply})
-# ------------------ Profile ------------------------
+
+# -------------------- END CHAT-BOT ----------------------------------------------------------
+
+
+# -------------------- START PROFILE & SETTINGS ------------------------------------------------
 
 
 
 
-@dash_bp.route("/settings", methods=["GET"])
-@role_required("teacher", "admin")
-def settings():
-    return render_template("profile/settings.html")
-
-# --------------------- Profile End-Point --------------------
 @dash_bp.route("/view_profile", methods=["GET", "POST"])
 @role_required("teacher", "admin", "student")
 def view_profile():
@@ -1642,3 +1728,141 @@ def view_profile():
         upload_error=upload_error,
         upload_success=upload_success
     )
+# -------------------- END PROFILE ------------------------------------------------
+
+# -------------------- START STUDY MATERIAL ------------------------------------------------
+# 
+@dash_bp.route("/study-material/create", methods=["GET", "POST"])
+@role_required("teacher")
+def create_study_material():
+    from dash.models import StudyMaterial,StudyMaterialFileUpload,Classroom 
+
+    classrooms = Classroom.query.all()
+
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        classroom_id = request.form.get("classroom_id")
+
+        material = StudyMaterial(
+            title=title,
+            description=description,
+            classroom_id=classroom_id,
+            teacher_id=current_user.id
+        )
+        db.session.add(material)
+        db.session.commit()
+
+        # File uploads
+        files = request.files.getlist("files")
+        upload_dir = current_app.config["STUDY_MATERIAL_UPLOAD"]
+
+        for file in files:
+            if file.filename:
+                filepath = os.path.join(upload_dir, file.filename)
+                file.save(filepath)
+
+                db.session.add(
+                    StudyMaterialFileUpload(
+                        filename=file.filename,
+                        filepath=filepath,
+                        study_material_id=material.id
+                    )
+                )
+
+        db.session.commit()
+
+        return redirect(url_for("dash.list_study_material"))
+
+    return render_template("study_material/create.html", classrooms=classrooms)
+
+
+
+# LIST + PAGINATION + PER PAGE
+@dash_bp.route("/study-material", methods=["GET"])
+@login_required
+def list_study_material():
+    from dash.models import StudyMaterial 
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 6, type=int)
+
+    materials = StudyMaterial.query.order_by(
+        StudyMaterial.created_at.desc()
+    ).paginate(page=page, per_page=per_page)
+
+    return render_template(
+        "study_material/list.html",
+        materials=materials,
+        per_page=per_page
+    )
+
+# VIEW ONE
+@dash_bp.route("/study-material/<int:id>", methods=["GET"])
+@login_required
+def view_study_material(id):
+    from dash.models import StudyMaterial 
+    material = StudyMaterial.query.get_or_404(id)
+    return render_template("study_material/view.html", material=material)
+
+# UPDATE (Teacher only)
+@dash_bp.route("/study-material/<int:id>/edit", methods=["GET", "POST"])
+@role_required("teacher")
+def edit_study_material(id):
+    from dash.models import StudyMaterial,Classroom 
+
+    material = StudyMaterial.query.get_or_404(id)
+    classrooms = Classroom.query.all()
+
+    if request.method == "POST":
+        material.title = request.form.get("title")
+        material.description = request.form.get("description")
+        material.classroom_id = request.form.get("classroom_id")
+
+        db.session.commit()
+        return redirect(url_for("dash.view_study_material", id=id))
+
+    return render_template("study_material/edit.html", material=material, classrooms=classrooms)
+
+
+# DELETE (Teacher only + confirmation)
+# GET → show confirm page
+@dash_bp.route("/study-material/<int:id>/delete")
+@role_required("teacher")
+def delete_study_material_confirm(id):
+    from dash.models import StudyMaterial
+    material = StudyMaterial.query.get_or_404(id)
+    return render_template("study_material/delete_confirm.html", material=material)
+
+# POST → delete
+@dash_bp.route("/study-material/<int:id>/delete", methods=["POST"])
+@role_required("teacher")
+def delete_study_material(id):
+    from dash.models import StudyMaterial
+    material = StudyMaterial.query.get_or_404(id)
+    
+    # delete file uploads
+    for f in material.files:
+        if os.path.exists(f.filepath):
+            os.remove(f.filepath)
+
+    db.session.delete(material)
+    db.session.commit()
+
+    return redirect(url_for("dash.list_study_material"))
+
+
+
+
+
+# -------------------- END STUDY MATERIAL ------------------------------------------------
+
+
+# -------------------- START GENERATE REPORTS ------------------------------------------------
+
+
+# -------------------- END GENERATE REPORTS ------------------------------------------------
+
+
+
+
+

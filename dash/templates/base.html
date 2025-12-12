@@ -457,11 +457,7 @@
                               </a>
                             </li>
                       
-                            <li>
-                              <a class="dropdown-item d-flex align-items-center" href="{{ url_for('dash.settings') }}">
-                                <i class="fa fa-cog me-3"></i> Settings
-                              </a>
-                            </li>
+                            
                       
                             <li><hr class="dropdown-divider"></li>
                       
@@ -563,6 +559,69 @@
                             </ul>
                         </li>
                         {% endif %}
+
+                        {% if current_user.is_authenticated and current_user.role == "teacher" %}
+                        <!-- Teacher Create,view,delete,update Study Material -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)">
+                                <i class="me-3 fa fa-book" aria-hidden="true"></i>
+                                <span class="hide-menu">Study Material</span>
+                            </a>
+                            <ul class="collapse first-level">
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_study_material') }}" class="sidebar-link">
+                                        <span class="hide-menu">Create Study Material</span>
+                                    </a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.list_study_material') }}" class="sidebar-link">
+                                        <span class="hide-menu">View Study Material</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}
+
+                        
+
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "student"] %}
+                        <!-- Students + Admin -->
+                        <li class="sidebar-item">
+                            <a href="{{ url_for('dash.list_study_material') }}" class="sidebar-link">
+                                <i class="me-3 fa fa-book" aria-hidden="true"></i>
+                                <span class="hide-menu">Study Material</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
+                        <!-- Admin Management -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" 
+                              href="javascript:void(0)" aria-expanded="false">
+                              <i class="me-3 fa fa-user-secret" aria-hidden="true"></i>
+                                <span class="hide-menu">Admin Management</span>
+                            </a>
+
+                            <ul class="collapse first-level" aria-expanded="false">
+
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.create_admin') }}" class="sidebar-link">
+                                        <span class="hide-menu">Create Admin</span>
+                                    </a>
+                                </li>
+
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_admins') }}" class="sidebar-link">
+                                        <span class="hide-menu">View Admins</span>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                        {% endif %}
+
                         
 
                 
@@ -751,25 +810,8 @@
                         {% endif %}
                         
                 
-                        {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
-                            <!-- Settings -->
-                        <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url_for('dash.settings') }}" aria-expanded="false">
-                                <i class="me-3 fa fa-cog" aria-hidden="true"></i>
-                                <span class="hide-menu">Settings</span>
-                            </a>
-                        </li>
-                        {% endif %}
-                
+                       
                         {% if current_user.is_authenticated %}
-
-                         <!-- Chat Menu -->
-                        <li class="sidebar-item">
-                            <a href="{{ url_for('chat.chat_room') }}" class="sidebar-link waves-effect waves-dark sidebar-link" aria-expanded="false">
-                                <i class="me-3 bx bx-chat" aria-hidden="true"></i>
-                                <span class="hide-menu">Chat</span>
-                            </a>
-                        </li>
                             <!-- Logout -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link" id="logoutSidebar" aria-expanded="false">
@@ -820,12 +862,10 @@
     <!-- ============================================================== -->
     <!-- auth js -->
     <script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
-   
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
      <!-- custom chart -->
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/custom_chart.js') }}"></script>
-
-
     <!-- custom flot -->
     <!-- jQuery (required for Flot) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

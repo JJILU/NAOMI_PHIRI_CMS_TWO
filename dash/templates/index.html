@@ -1,10 +1,8 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
-
 <!-- ============================================================== -->
-<!-- Bread crumb and right sidebar toggle -->
+<!-- Bread crumb -->
 <!-- ============================================================== -->
 <div class="page-breadcrumb">
   <div class="row align-items-center">
@@ -23,125 +21,117 @@
 </div>
 
 <!-- ============================================================== -->
-<!-- End Bread crumb and right sidebar toggle -->
+<!-- Cards -->
 <!-- ============================================================== -->
-
-<!-- ============================================================== -->
-            <!-- Container fluid  -->
-            <!-- ============================================================== -->
-            <div class="container-fluid">
-                <!-- ============================================================== -->
-                <div class="row">
-                    <!-- Total Students -->
-                    <div class="col-sm-3">
-                        <a href="students-view.html" class="text-decoration-none">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">Students</h4>
-                                    <div class="text-end">
-                                        <h2 class="font-light mb-0"><i class="ti-arrow-up text-success"></i> 120</h2>
-                                        <span class="text-muted">Signed Up</span>
-                                    </div>
-                                    <span class="text-success">80% Total</span>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" style="width: 80%; height: 6px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Total Classes -->
-                    <div class="col-sm-3">
-                        <a href="classes-view.html" class="text-decoration-none">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">Classes</h4>
-                                    <div class="text-end">
-                                        <h2 class="font-light mb-0"><i class="ti-arrow-up text-success"></i> 5</h2>
-                                        <span class="text-muted">Assigned</span>
-                                    </div>
-                                    <span class="text-success">Active</span>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" style="width: 100%; height: 6px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Assignments -->
-                    <div class="col-sm-3">
-                        <a href="assignments-view.html" class="text-decoration-none">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">Assignments</h4>
-                                    <div class="text-end">
-                                        <h2 class="font-light mb-0"><i class="ti-arrow-up text-info"></i> 15</h2>
-                                        <span class="text-muted">Posted</span>
-                                    </div>
-                                    <span class="text-info">30% Done</span>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-info" style="width: 30%; height: 6px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Attendance -->
-                    <div class="col-sm-3">
-                        <a href="attendance-view.html" class="text-decoration-none">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">Attendance</h4>
-                                    <span class="text-muted">5 Classes Avarage Attendance</span>
-                                    <span class="text-info d-flex align-items-center mt-2">
-                                        <i class="ti-arrow-up text-info me-1"></i> 10% Present
-                                    </span>
-                                    <span class="text-danger d-flex align-items-center mb-2">
-                                        <i class="ti-arrow-down text-danger me-1"></i> 5% Absent
-                                    </span>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-info" style="width: 30%; height: 6px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    
-                </div>
-                <!-- ============================================================== -->
-                <!-- Classroom Activities chart -->
-                <!-- ============================================================== -->
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Classroom Activity</h4>
-                                <div class="flot-chart">
-                                    <div class="flot-chart-content" style="padding: 0px; position: relative;">
-                                        <canvas id="classroomChart" class="flot-base w-100" height="400"></canvas>
-                                    </div>
-                                </div>
-                            </div>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Total Students -->
+        <div class="col-sm-3">
+            <a href="{{ url_for('dash.view_students') }}" class="text-decoration-none">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Students</h4>
+                        <div class="text-end">
+                            <h2 class="font-light mb-0"><i class="ti-arrow-up text-success"></i> {{ total_students }}</h2>
+                            <span class="text-muted">Signed Up</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 100%; height: 6px;"></div>
                         </div>
                     </div>
                 </div>
+            </a>
+        </div>
 
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title">Classroom Activity Trends (Flot.js)</h4>
-                            <div class="flot-chart">
-                                <div class="flot-chart-content" style="padding: 0px; position: relative;">
-                                    <div id="flot-classroom-chart" style="height:400px;"></div>
-                                </div>
-                            </div>
+        <!-- Total Classes -->
+        <div class="col-sm-3">
+            <a href="#" class="text-decoration-none">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Classes</h4>
+                        <div class="text-end">
+                            <h2 class="font-light mb-0"><i class="ti-arrow-up text-success"></i> {{ total_classes }}</h2>
+                            <span class="text-muted">Assigned</span>
                         </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 100%; height: 6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Assignments -->
+        <div class="col-sm-3">
+            <a href="{{ url_for('dash.list_assignments') }}" class="text-decoration-none">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Assignments</h4>
+                        <div class="text-end">
+                            <h2 class="font-light mb-0"><i class="ti-arrow-up text-info"></i> {{ total_assignments }}</h2>
+                            <span class="text-muted">Posted</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: 100%; height: 6px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Attendance -->
+        <div class="col-sm-3">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Attendance</h4>
+                    <span class="text-info d-flex align-items-center mt-2">
+                        <i class="ti-arrow-up text-info me-1"></i> {{ present_percent }}% Present
+                    </span>
+                    <span class="text-danger d-flex align-items-center mb-2">
+                        <i class="ti-arrow-down text-danger me-1"></i> {{ absent_percent }}% Absent
+                    </span>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" style="width: {{ present_percent }}%; height: 6px;"></div>
+                        <div class="progress-bar bg-danger" style="width: {{ absent_percent }}%; height: 6px;"></div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-  
+    <!-- ============================================================== -->
+    <!-- Chart.js Bar Chart -->
+    <!-- ============================================================== -->
+    <div class="row mt-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Classroom Activity</h4>
+                    <canvas id="classroomChart" height="400"
+                        data-labels='{{ chart_labels | tojson }}'
+                        data-values='{{ chart_values | tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- Flot.js Trends Chart -->
+    <!-- ============================================================== -->
+    <!-- <div class="row mt-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Classroom Activity Trends (Flot.js)</h4>
+                    <div id="flot-classroom-chart"
+                        data-total='{{ chart_total | tojson }}'
+                        data-attendance='{{ chart_attendance | tojson }}'
+                        data-assignments='{{ chart_assignments | tojson }}'
+                        data-pending='{{ chart_pending | tojson }}'
+                        style="height:400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> -->
 {% endblock content %}

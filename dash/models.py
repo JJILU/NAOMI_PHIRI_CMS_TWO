@@ -108,6 +108,11 @@ class Classroom(db.Model):
         lazy="joined",
         uselist=True
         )
+    
+    study_material = db.relationship(
+        "StudyMaterial", 
+        backref="classroom", 
+        lazy="joined")
 
     def __init__(self, classroom_name) -> None:
         self.classroom_name = classroom_name
@@ -333,5 +338,53 @@ class AssignmentSubmisssionFileUpload(db.Model):
         self.filepath = filepath
         self.student_assignment_submission_id = student_assignment_submission_id
 
+
+# ==================== STUDENT STUDY MATERIAL MODEL ============================= 
+class StudyMaterial(db.Model):
+    __tablename__ = "study_material"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    title = db.Column(db.String(90), nullable=False)
+    description = db.Column(db.String(200), nullable=False)
+
+    classroom_id = db.Column(db.Integer, db.ForeignKey("classroom.id"), nullable=True)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teacher.id"), nullable=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # One-to-many → file uploads
+    files = db.relationship(
+        "StudyMaterialFileUpload",
+        backref="material",
+        lazy="joined",
+        cascade="all, delete"
+    )
+
+    def __init__(self, title, description, classroom_id, teacher_id):
+        self.title = title
+        self.description = description
+        self.classroom_id = classroom_id
+        self.teacher_id = teacher_id
+
+# ==================== STUDENT STUDY MATERIAL FILE UPLOAD MODEL ============================= 
+
+class StudyMaterialFileUpload(db.Model):
+    __tablename__ = "study_material_file_upload"
+
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(200), nullable=False)
+    filepath = db.Column(db.String(300), nullable=False)
+
+    study_material_id = db.Column(
+        db.Integer,
+        db.ForeignKey("study_material.id"),
+        nullable=False
+    )
+
+    def __init__(self, filename, filepath, study_material_id):
+        self.filename = filename
+        self.filepath = filepath
+        self.study_material_id = study_material_id
 
                 

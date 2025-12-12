@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for
-from extensions import db, migrate, login_manager,socketio
-from datetime import timedelta,datetime
+from extensions import db, migrate, login_manager, socketio
+from datetime import timedelta, datetime
 import os
 from typing import cast
 from auth.models import Teacher, Admin, Student
@@ -9,70 +9,94 @@ from sqlalchemy import text
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
-    
-     # Register your context processor here
+
+    # ----------------------
+    # Context processor
+    # ----------------------
     @app.context_processor
     def inject_year():
         return {"current_year": datetime.now().year}
-    
+
     # ----------------------
     # Error handlers
     # ----------------------
     @app.errorhandler(403)
     def action_forbidden_found(error):
         return render_template('errors/not_found_error.html'), 403
-    
-    @app.errorhandler(403)
+
+    @app.errorhandler(404)
     def resource_not_found(error):
         return render_template('errors/forbidden_action.html'), 404
-    
+
     @app.errorhandler(500)
     def internal_server_error(error):
         return render_template('errors/internal_server_error.html'), 500
-    
+
     @app.route("/cause500")
     def cause500():
         raise Exception("This is a forced 500 error!")
 
     # ----------------------
-    # DB Configurations
+    # Database configuration
     # ----------------------
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///classroom.sqlite3"
+    if "DATABASE_URL" not in os.environ:
+        from dotenv import load_dotenv
+        load_dotenv()
+
+    uri = os.environ.get("DATABASE_URL")
+
+    # ----------------------
+    # Use SQLite locally if DATABASE_URL not set
+    # ----------------------
+    if not uri:
+        # Ensure instance folder exists
+        instance_path = os.path.join(os.getcwd(), "instance")
+        os.makedirs(instance_path, exist_ok=True)
+        # Absolute path for SQLite
+        uri = "sqlite:///" + os.path.join(instance_path, "classroom.sqlite3")
+
+    # Fix Heroku's postgres:// URI
+    if uri.startswith("postgres://"):
+        uri = uri.replace("postgres://", "postgresql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = Config.SECRET_KEY
 
     # ----------------------
-    # File Uploads
+    # File uploads (ephemeral on Heroku)
     # ----------------------
     BASE_UPLOAD = os.path.join(os.getcwd(), "uploads")
     ASSIGNMENT_UPLOAD = os.path.join(BASE_UPLOAD, "assignments_uploads")
     PROFILE_PHOTO_UPLOAD = os.path.join(BASE_UPLOAD, "profile_photo")
     STUDENT_SUBMISSION_UPLOAD = os.path.join(BASE_UPLOAD, "assignment_student_submission_files")
+    STUDY_MATERIAL_UPLOAD = os.path.join(BASE_UPLOAD, "study_material_uploads")
 
-    for folder in [BASE_UPLOAD, ASSIGNMENT_UPLOAD, PROFILE_PHOTO_UPLOAD, STUDENT_SUBMISSION_UPLOAD]:
+    for folder in [BASE_UPLOAD, ASSIGNMENT_UPLOAD, PROFILE_PHOTO_UPLOAD, STUDENT_SUBMISSION_UPLOAD,STUDY_MATERIAL_UPLOAD]:
         os.makedirs(folder, exist_ok=True)
 
     app.config["BASE_UPLOAD"] = BASE_UPLOAD
     app.config["ASSIGNMENT_UPLOAD"] = ASSIGNMENT_UPLOAD
     app.config["PROFILE_PHOTO_UPLOAD"] = PROFILE_PHOTO_UPLOAD
     app.config["STUDENT_SUBMISSION_UPLOAD"] = STUDENT_SUBMISSION_UPLOAD
+    app.config["STUDY_MATERIAL_UPLOAD"] = STUDY_MATERIAL_UPLOAD
 
     # ----------------------
-    # Remember Me / Sessions
+    # Sessions / Remember me
     # ----------------------
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=5)
     app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=5)
 
     # ----------------------
-    # Init Extensions
+    # Init extensions
     # ----------------------
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    socketio.init_app(app,cors_allowed_origins="*")
+    socketio.init_app(app, cors_allowed_origins="*")
 
     # ----------------------
-    # Automatic DB check on startup
+    # Automatic DB check
     # ----------------------
     with app.app_context():
         try:
@@ -82,17 +106,16 @@ def create_app():
             print(f"DB ERROR: {e}")
             raise RuntimeError("Database connection failed") from e
 
-    # Redirect unauthenticated users
-    login_manager.login_view = cast(str, "login") # type: ignore
+    # ----------------------
+    # Login manager
+    # ----------------------
+    login_manager.login_view = cast(str, "login")  # type: ignore
     login_manager.login_message = None  # type: ignore # disable flashing text
 
     @login_manager.unauthorized_handler
     def unauthorized():
         return redirect(url_for("auth.login"))
 
-    # ----------------------
-    # Multi-model user loader
-    # ----------------------
     @login_manager.user_loader
     def load_user(user_id):
         try:
@@ -109,27 +132,18 @@ def create_app():
             return Student.query.get(pk)
 
         return None
-    
-    # @app.route('/favicon.ico')
-    # def favicon():
-    #     return redirect(url_for('static', filename='assets/favicon/learning.png'))
 
     # ----------------------
-    # Register Models
+    # Register models and blueprints
     # ----------------------
-    import dash.models
+    import dash.models  # ensure all models are imported before creating tables
 
-    # ----------------------
-    # Register Blueprints
-    # ----------------------
     from auth.views import auth_bp
     from dash.views import dash_bp
-    from chat.views import chat_bp
     from legal.views import legal_bp
 
     app.register_blueprint(auth_bp, url_prefix="/")
     app.register_blueprint(dash_bp, url_prefix="/dash")
-    app.register_blueprint(chat_bp, url_prefix="/chat")
     app.register_blueprint(legal_bp, url_prefix="/legal")
 
     return app
