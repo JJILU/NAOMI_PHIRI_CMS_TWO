@@ -7,5 +7,5 @@ from . import chat_bp
 
 @chat_bp.route("/",methods=["GET","POST"])
 def chat_room():
-    return ""
+    return "hi"
 
