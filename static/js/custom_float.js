@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", function () {
+
 $(function() {
     // Read chart data from HTML
     var totalData = JSON.parse($('#flot-classroom-chart').data('total'));
@@ -17,3 +19,5 @@ $(function() {
         legend: { position: "nw" }
     });
 });
+
+})

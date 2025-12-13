@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", function () {
+
 const ctx = document.getElementById('classroomChart').getContext('2d');
 
 // Get data from HTML attributes
@@ -32,3 +34,5 @@ new Chart(ctx, {
         scales: { y: { beginAtZero: true, ticks: { stepSize: 10 } } }
     }
 });
+
+})
