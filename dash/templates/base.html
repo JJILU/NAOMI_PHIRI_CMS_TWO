@@ -29,8 +29,8 @@
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
 <style>
-    /* ---------- Layout helpers ---------- */
-    :root {
+ /* ---------- Layout helpers ---------- */
+ :root {
       --brand: #4684ba;
       --brand-soft: #72bde8;
       --chat-bg: #ffffff;
@@ -75,91 +75,66 @@
   }
   
   
-  /* Force Bootstrap dropdown to show even with Monster theme overrides */
-  .dropdown-menu {
-      display: none !important;
-      opacity: 0;
-      visibility: hidden;
-      transition: 0.2s ease-in-out;
-      z-index: 99999 !important;
-  }
-  
-  .dropdown-menu.show {
-      display: block !important;
-      opacity: 1;
-      visibility: visible;
-  }
-  
-  /* Fix Monster Admin cutting off dropdowns */
-  .topbar .navbar-collapse {
-      overflow: visible !important;
-  }
-  
-  .navbar-collapse {
-      overflow: visible !important;
-  }
-  .dropdown-menu {
-      z-index: 99999 !important;
-  }
+/* ======== 100% FIX – Bootstrap dropdown visible ======== */
 
-  /* Dropdown items text color */
+/* DO NOT control visibility here */
+.dropdown-menu {
+    position: absolute;
+    z-index: 1055 !important; /* Bootstrap standard */
+
+    /* styling */
+    background: linear-gradient(135deg, #72bde8, #4684ba) !important;
+    min-width: 220px !important;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+
+/* ❌ DO NOT add display rules */
+/* Bootstrap JS adds/removes .show itself */
+
+/* Fix Monster Admin clipping */
+.topbar,
+.topbar .navbar,
+.topbar .navbar-collapse {
+    overflow: visible !important;
+}
+
+/* Dropdown items */
 .navbar .dropdown-menu .dropdown-item {
     color: #fff !important;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
 }
 
-/* Dropdown items hover effect */
 .navbar .dropdown-menu .dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: #fff !important;
-}
-  
-  /* Fixed Navbar Profile Pic */
-  .navbar .dropdown-toggle img.profile-pic {
-      width: 48px !important;        /* fixed width */
-      height: 48px !important;       /* fixed height */
-      border-radius: 50% !important;/* perfect circle */
-      object-fit: cover !important;  /* fill circle, crop excess */
-      flex-shrink: 0 !important;     /* don't let flex resize */
-      display: block !important;     /* avoid flex distortion */
-      max-width: none !important;    /* override Bootstrap */
-      max-height: none !important;   /* override Bootstrap */
-  }
-  
-  .navbar .dropdown-toggle {
-      display: flex !important;
-      align-items: center !important;
-      gap: 10px;
-      min-height: 60px;  /* match image height */
-  }
-
-  /* bg color & text color the dropdown  */
-  /* Dropdown menu with gradient background */
-.navbar .dropdown-menu {
-    background: linear-gradient(135deg, #72bde8, #4684ba) !important; /* gradient */
-    min-width: 220px !important;           /* slightly bigger width */
-    border-radius: 0.5rem;                 /* optional: rounded corners */
-    padding: 0.5rem 0;                     /* vertical padding */
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); /* subtle shadow */
-}
-
-/* Dropdown items text color */
-.navbar .dropdown-menu .dropdown-item {
-    color: #fff !important;               /* white text */
-    padding: 0.5rem 1.25rem;             /* padding for nicer spacing */
-    font-weight: 500;                     /* slightly bolder */
-}
-
-/* Hover effect for dropdown items */
-.navbar .dropdown-menu .dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.2) !important; /* semi-transparent highlight */
+    background-color: rgba(255, 255, 255, 0.2) !important;
     color: #fff !important;
 }
 
-/* Divider color */
+/* Divider */
 .navbar .dropdown-menu .dropdown-divider {
     border-top: 1px solid rgba(255,255,255,0.3);
     margin: 0.25rem 0;
 }
+
+/* Profile image */
+.navbar .dropdown-toggle img.profile-pic {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+/* Toggle alignment */
+.navbar .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px;
+    min-height: 60px;
+}
+
 
 /* FIX: Add spacing between all dashboard rows */
 .container-fluid .row {
@@ -318,6 +293,8 @@
     }
 
 
+
+
 </style>
 </head>
 
@@ -388,88 +365,81 @@
                     <!-- ============================================================== -->
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item dropdown">
+                      
                           {% if current_user.role == "teacher" %}
                           {% set record = current_user.teacherschoolrecord %}
                           <a class="nav-link dropdown-toggle d-flex align-items-center"
-                            href="#"
-                            id="navbarDropdown"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                              {% if record.teacher_avator %}
-                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.teacher_avator.filename) }}"
-                                      class="profile-pic me-2"
-                                      width="40" height="40">
-                              {% else %}
-                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
-                                      class="profile-pic me-2"
-                                      width="40" height="40">
-                              {% endif %}
+                             href="javascript:void(0)"
+                             id="userDropdown"
+                             role="button"
+                             data-bs-toggle="dropdown"
+                             aria-expanded="false">
+                      
+                              <img src="{{ url_for('dash.uploaded_avator_photo',
+                                  filename=record.teacher_avator.filename if record.teacher_avator else 'placeholder.png') }}"
+                                  class="profile-pic me-2"
+                                  width="40" height="40">
+                      
                               <span>{{ record.first_name }} {{ record.last_name }}</span>
                           </a>
-
-                      {% elif current_user.role == "admin" %}
+                      
+                          {% elif current_user.role == "admin" %}
                           {% set record = current_user.admin %}
                           <a class="nav-link dropdown-toggle d-flex align-items-center"
-                            href="#"
-                            id="navbarDropdown"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                              {% if record.student_avator %}
-                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
-                                      class="rounded-circle me-2"
-                                      width="40" height="40">
-                              {% else %}
-                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
-                                      class="rounded-circle me-2"
-                                      width="50" height="50">
-                              {% endif %}
+                             href="javascript:void(0)"
+                             id="userDropdown"
+                             role="button"
+                             data-bs-toggle="dropdown"
+                             aria-expanded="false">
+                      
+                              <img src="{{ url_for('dash.uploaded_avator_photo',
+                                  filename=record.student_avator.filename if record.student_avator else 'placeholder.png') }}"
+                                  class="rounded-circle me-2"
+                                  width="40" height="40">
+                      
                               <span>{{ record.first_name }} {{ record.last_name }}</span>
                           </a>
-
-                      {% elif current_user.role == "student" %}
+                      
+                          {% elif current_user.role == "student" %}
                           {% set record = current_user.student %}
                           <a class="nav-link dropdown-toggle d-flex align-items-center"
-                            href="#"
-                            id="navbarDropdown"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                              {% if record.student_avator %}
-                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=record.student_avator.filename) }}"
-                                      class="rounded-circle me-2"
-                                      width="40" height="40">
-                              {% else %}
-                                  <img src="{{ url_for('dash.uploaded_avator_photo', filename='placeholder.png') }}"
-                                      class="rounded-circle me-2"
-                                      width="40" height="40">
-                              {% endif %}
+                             href="javascript:void(0)"
+                             id="userDropdown"
+                             role="button"
+                             data-bs-toggle="dropdown"
+                             aria-expanded="false">
+                      
+                              <img src="{{ url_for('dash.uploaded_avator_photo',
+                                  filename=record.student_avator.filename if record.student_avator else 'placeholder.png') }}"
+                                  class="rounded-circle me-2"
+                                  width="40" height="40">
+                      
                               <span>{{ record.first_name }} {{ record.last_name }}</span>
                           </a>
-                      {% endif %}
+                          {% endif %}
                       
-                          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                      
+                          <!-- DROPDOWN MENU -->
+                          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li>
-                              <a class="dropdown-item d-flex align-items-center" href="{{ url_for('dash.view_profile') }}">
+                              <a class="dropdown-item d-flex align-items-center"
+                                 href="{{ url_for('dash.view_profile') }}">
                                 <i class="fa fa-user me-3"></i> Profile
                               </a>
                             </li>
                       
-                            
-                      
                             <li><hr class="dropdown-divider"></li>
                       
                             <li>
-                              <a class="dropdown-item d-flex align-items-center text-danger" id="logoutDropdown" href="{{ url_for('auth.logout') }}">
+                              <a class="dropdown-item d-flex align-items-center text-danger"
+                                 href="{{ url_for('auth.logout') }}">
                                 <i class="fas fa-sign-out-alt me-3"></i> Logout
                               </a>
                             </li>
-                      
                           </ul>
+                      
                         </li>
                       </ul>
+                      
                       
                 </div>
             </nav>
@@ -868,42 +838,34 @@
     <!-- End Wrapper -->
     <!-- ============================================================== -->
     <!-- ============================================================== -->
-    <!-- auth js -->
-    <script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
-    
-     <!-- custom chart -->
-     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/custom_chart.js') }}"></script>
-    <!-- custom flot -->
-    <!-- jQuery (required for Flot) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Flot.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.categories.min.js"></script>
-    <script src="{{ url_for('static', filename='js/custom_float.js') }}"></script>
+<!-- 1️⃣ jQuery (FIRST, only once) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    
+<!-- 2️⃣ Bootstrap 5 bundle (includes Popper) -->
+<script src="{{ url_for('static', filename='assets/plugins/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+
+<!-- 3️⃣ Monster Admin core -->
+<script src="{{ url_for('static', filename='js/app-style-switcher.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sidebarmenu.js') }}"></script>
+<script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+
+<!-- 4️⃣ Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/custom_chart.js') }}"></script>
+
+<!-- 5️⃣ Flot (AFTER jQuery) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.categories.min.js"></script>
+<script src="{{ url_for('static', filename='js/custom_float.js') }}"></script>
+
+<!-- 6️⃣ Dashboard page -->
+<script src="{{ url_for('static', filename='js/pages/dashboards/dashboard1.js') }}"></script>
+
+<!-- 7️⃣ Auth JS LAST -->
+<script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
 
 
-    <!-- All Jquery -->
-    <!-- ============================================================== -->
-    <script src="{{ url_for('static', filename='assets/plugins/jquery/dist/jquery.min.js') }}"></script>
-    <!-- Bootstrap tether Core JavaScript -->
-    <script src="{{ url_for('static', filename='assets/plugins/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app-style-switcher.js') }}"></script>
-    <!--Wave Effects -->
-    <script src="{{ url_for('static', filename='js/waves.js') }}"></script>
-    <!--Menu sidebar -->
-    <script src="{{ url_for('static', filename='js/sidebarmenu.js') }}"></script>
-    <!--Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
-    <!--This page JavaScript -->
-    <!--flot chart-->
-    <script src="{{ url_for('static', filename='assets/plugins/flot/jquery.flot.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/plugins/flot.tooltip/js/jquery.flot.tooltip.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/pages/dashboards/dashboard1.js') }}"></script>
 
-    
  <!-- ---------- Chat widget HTML ---------- -->
  <button id="chatToggleBtn" class="chat-widget-btn" aria-label="Open chat" title="Chat with Omi">
   <!-- simple chat icon svg -->
