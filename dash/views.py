@@ -1,8 +1,10 @@
-from flask import render_template, redirect, url_for, request, abort, jsonify, current_app,send_from_directory,session,request
+import re
+from dash.chat_responses import chat_bot_responses
+from flask import render_template, redirect, url_for, request, abort, jsonify, current_app, send_from_directory, session, request
 from flask_login import login_required, current_user
 from functools import wraps
 from sqlalchemy import desc, asc
-from extensions import db,faker,socketio
+from extensions import db, faker, socketio
 from random import choice
 import os
 from werkzeug.utils import secure_filename
@@ -10,8 +12,6 @@ from datetime import datetime
 
 
 from flask_socketio import SocketIO, join_room, leave_room, send
-
-
 
 
 from . import dash_bp
@@ -27,7 +27,7 @@ def require_login():
         return
 
     # Block ALL views unless user logged in
-    if not current_user.is_authenticated: # type: ignore
+    if not current_user.is_authenticated:  # type: ignore
         return redirect(url_for("auth.login"))
 
     # Example: allow certain views without restriction
@@ -45,11 +45,11 @@ def role_required(*roles):
         @wraps(f)
         def wrapper(*args, **kwargs):
             # Must be logged in
-            if not current_user.is_authenticated: # type: ignore
+            if not current_user.is_authenticated:  # type: ignore
                 return redirect(url_for("auth.login"))
 
             # User logged in but wrong role → Forbidden
-            if current_user.role not in roles: # type: ignore
+            if current_user.role not in roles:  # type: ignore
                 return abort(403)
 
             return f(*args, **kwargs)
@@ -58,7 +58,8 @@ def role_required(*roles):
 
 
 # Allowed extensions
-ALLOWED_EXT = {"pdf", "doc", "docx", "png", "jpg", "jpeg", "gif","jfif"}
+ALLOWED_EXT = {"pdf", "doc", "docx", "png", "jpg", "jpeg", "gif", "jfif"}
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
@@ -79,21 +80,26 @@ def index():
     # Attendance %
     total_present = StudentAttendance.query.filter_by(status="Present").count()
     total_absent = StudentAttendance.query.filter_by(status="Absent").count()
-    print(">> a>>",total_present,total_absent)
+    print(">> a>>", total_present, total_absent)
     total_attendance = total_present + total_absent
 
-    present_percent = round((total_present / total_attendance) * 100, 1) if total_attendance else 0
-    absent_percent = round((total_absent / total_attendance) * 100, 1) if total_attendance else 0
+    present_percent = round((total_present / total_attendance)
+                            * 100, 1) if total_attendance else 0
+    absent_percent = round((total_absent / total_attendance)
+                           * 100, 1) if total_attendance else 0
 
     # Chart.js data
-    chart_labels = ["Total Students", "Attendance Today", "Assignments Submitted", "Pending Assignments"]
-    chart_values = [total_students, total_present, total_assignments, total_assignments - total_present]
+    chart_labels = ["Total Students", "Attendance Today",
+                    "Assignments Submitted", "Pending Assignments"]
+    chart_values = [total_students, total_present,
+                    total_assignments, total_assignments - total_present]
 
     # Flot.js example (daily data for 7 days)
     chart_total = [[i, total_students] for i in range(7)]
     chart_attendance = [[i, total_present // 7] for i in range(7)]
     chart_assignments = [[i, total_assignments // 7] for i in range(7)]
-    chart_pending = [[i, (total_assignments - total_present) // 7] for i in range(7)]
+    chart_pending = [[i, (total_assignments - total_present) // 7]
+                     for i in range(7)]
 
     return render_template(
         "index.html",
@@ -108,10 +114,9 @@ def index():
         chart_attendance=chart_attendance,
         chart_assignments=chart_assignments,
         chart_pending=chart_pending
-    ) 
+    )
 
 # ----------------------- END LANDING PAGE --------------------------------------------
-
 
 
 # ------------------ START ADMIN ENDPOINTS ------------------------
@@ -147,11 +152,13 @@ def create_admin():
         elif password != confirm_password:
             error = "Passwords do not match."
         else:
-            student = Student.query.filter_by(student_school_record_id=student_id).first()
+            student = Student.query.filter_by(
+                student_school_record_id=student_id).first()
             if not student:
                 # Create new Student account
                 student = Student(
-                    user_card_id=StudentSchoolRecord.query.get(student_id).card_id,
+                    user_card_id=StudentSchoolRecord.query.get(
+                        student_id).card_id,
                     password=password,
                     role="admin",
                     student_school_record_id=student_id
@@ -178,7 +185,8 @@ def create_admin():
 @role_required("teacher")
 def view_admins():
     from auth.models import Student, StudentSchoolRecord
-    admins = StudentSchoolRecord.query.filter(StudentSchoolRecord.is_admin==True).all()
+    admins = StudentSchoolRecord.query.filter(
+        StudentSchoolRecord.is_admin == True).all()
     return render_template("admin_management/view_admins.html", admins=admins)
 
 
@@ -234,7 +242,6 @@ def delete_admin(id):
 # ------------------ END ADMIN ENDPOINTS ------------------------
 
 
-
 # ------------------ START STUDENT MANAGEMENT END-POINTS ------------------------
 @dash_bp.route("/create_student_school_record", methods=["GET", "POST"])
 @role_required("teacher", "admin")
@@ -262,7 +269,8 @@ def create_student_school_record():
         # --- GENERATE UNIQUE STUDENT ID ---
         while True:
             generated_id = faker.generate_student_id()
-            exists = StudentSchoolRecord.query.filter_by(card_id=generated_id).first()
+            exists = StudentSchoolRecord.query.filter_by(
+                card_id=generated_id).first()
             if not exists:
                 break
 
@@ -279,8 +287,9 @@ def create_student_school_record():
 
         # --- SAVE AVATAR FILE ---
         if avatar_file and avatar_file.filename != "":
-            filename = secure_filename(avatar_file.filename) # type: ignore
-            upload_path = os.path.join(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
+            filename = secure_filename(avatar_file.filename)  # type: ignore
+            upload_path = os.path.join(
+                current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
             avatar_file.save(upload_path)
 
             avatar_record = AvatorFileUpload(
@@ -303,6 +312,8 @@ def create_student_school_record():
 # -------------------------
 # VIEW STUDENTS
 # -------------------------
+
+
 @dash_bp.route("/view_students")
 @role_required("teacher", "admin")
 def view_students():
@@ -324,6 +335,8 @@ def view_students():
 # -------------------------
 # VIEW ONE STUDENT
 # -------------------------
+
+
 @dash_bp.route("/view_one_student/<int:id>")
 @role_required("teacher", "admin")
 def view_one_student(id):
@@ -334,6 +347,8 @@ def view_one_student(id):
 # -------------------------
 # UPDATE STUDENT
 # -------------------------
+
+
 @dash_bp.route("/update_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def update_student(id):
@@ -355,8 +370,9 @@ def update_student(id):
 
         # --- Update avatar if new file uploaded ---
         if avatar_file and avatar_file.filename != "":
-            filename = secure_filename(avatar_file.filename) # type: ignore
-            upload_path = os.path.join(current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
+            filename = secure_filename(avatar_file.filename)  # type: ignore
+            upload_path = os.path.join(
+                current_app.config["PROFILE_PHOTO_UPLOAD"], filename)
             avatar_file.save(upload_path)
 
             if student.student_avator:
@@ -427,8 +443,7 @@ def uploaded_profile_photo(filename):
 # ------------------ END STUDENT MANAGEMENT END-POINTS ------------------------
 
 
-
-# ------------------ START CMS STUDENT END-POINTS ------------------------ 
+# ------------------ START CMS STUDENT END-POINTS ------------------------
 @dash_bp.route("/create_cms_student", methods=["GET", "POST"])
 def create_cms_student():
     from auth.models import StudentSchoolRecord, Student
@@ -457,7 +472,8 @@ def create_cms_student():
             )
 
         # Ensure card ID exists in School Records
-        school_record = StudentSchoolRecord.query.filter_by(card_id=card_id).first()
+        school_record = StudentSchoolRecord.query.filter_by(
+            card_id=card_id).first()
         if not school_record:
             return render_template(
                 "student_management/create_one_student.html",
@@ -489,7 +505,6 @@ def create_cms_student():
     return render_template("student_management/create_one_student.html", card_ids=available_cards)
 
 
-
 @dash_bp.route("/view_cms_students")
 @role_required("teacher", "admin")
 def view_cms_students():
@@ -517,6 +532,7 @@ def view_one_cms_student(id):
     student = Student.query.get_or_404(id)
     return render_template("student_management/view_one_cms_student_detail.html", student=student)
 
+
 @dash_bp.route("/update_cms_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def update_cms_student(id):
@@ -540,6 +556,7 @@ def update_cms_student(id):
 
     return render_template("student_management/update_cms_student.html", student=student)
 
+
 @dash_bp.route("/delete_cms_student/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def delete_cms_student(id):
@@ -554,8 +571,7 @@ def delete_cms_student(id):
     return render_template("student_management/delete_cms_student.html", student=student)
 
 
-# ------------------ END CMS STUDENT END-POINTS ------------------------ 
-
+# ------------------ END CMS STUDENT END-POINTS ------------------------
 
 
 # ------------------ START ASSIGNMENT END-POINTS ------------------------ [Teacher & Admin]
@@ -583,6 +599,8 @@ def list_assignments():
 # ----------------------------------------------------
 # 3. CREATE ASSIGNMENT
 # ----------------------------------------------------
+
+
 @dash_bp.route("/assignments/create", methods=["GET", "POST"])
 def create_assignment():
     from dash.models import (
@@ -601,7 +619,7 @@ def create_assignment():
     # Get teacher's subjects
     # ------------------------------
     teacher_record = TeacherSchoolRecord.query.filter_by(
-        card_id=current_user.teacherschoolrecord.card_id # type: ignore
+        card_id=current_user.teacherschoolrecord.card_id  # type: ignore
     ).first()
 
     compulsary_subs = teacher_record.compulsarysubject
@@ -652,13 +670,15 @@ def create_assignment():
 
             # Upload files
             files = request.files.getlist("files")
-            upload_folder = current_app.config.get("ASSIGNMENT_UPLOAD", "uploads/assignments")
+            upload_folder = current_app.config.get(
+                "ASSIGNMENT_UPLOAD", "uploads/assignments")
             os.makedirs(upload_folder, exist_ok=True)
 
             for f in files:
                 if f.filename:
                     filename = secure_filename(f.filename)
-                    dest = os.path.join(upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
+                    dest = os.path.join(
+                        upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
                     f.save(dest)
 
                     file_record = AssignmentFileUpload(
@@ -695,7 +715,8 @@ def get_subject_classrooms(subject_type, subject_id):
     from dash.models import CompulsarySubject, OptionalSubject
     from flask import jsonify
 
-    print(f"[DEBUG] Classroom request: subject_type={subject_type}, subject_id={subject_id}")
+    print(
+        f"[DEBUG] Classroom request: subject_type={subject_type}, subject_id={subject_id}")
 
     subject_cls = CompulsarySubject if subject_type == "compulsary" else OptionalSubject
     subject = subject_cls.query.get(subject_id)
@@ -704,8 +725,10 @@ def get_subject_classrooms(subject_type, subject_id):
         return jsonify([])
 
     if hasattr(subject, "classrooms"):
-        classrooms = subject.classrooms.all() if hasattr(subject.classrooms, "all") else subject.classrooms
-        classrooms_data = [{"id": c.id, "classroom_name": c.classroom_name} for c in classrooms]
+        classrooms = subject.classrooms.all() if hasattr(
+            subject.classrooms, "all") else subject.classrooms
+        classrooms_data = [
+            {"id": c.id, "classroom_name": c.classroom_name} for c in classrooms]
         print(f"[DEBUG] Classrooms loaded: {classrooms_data}")
     else:
         classrooms_data = []
@@ -714,9 +737,6 @@ def get_subject_classrooms(subject_type, subject_id):
         print("my debug classes", classrooms_data)
 
     return jsonify(classrooms_data)
-
-
-
 
 
 # ----------------------------------------------------
@@ -732,17 +752,20 @@ def update_assignment(id):
     success = None
 
     if request.method == "POST":
-        assignment.assignment_name = request.form.get("assignment_name").strip()
+        assignment.assignment_name = request.form.get(
+            "assignment_name").strip()
         db.session.commit()
 
         files = request.files.getlist("files")
-        upload_folder = current_app.config.get("ASSIGNMENT_UPLOAD", "uploads/assignments")
+        upload_folder = current_app.config.get(
+            "ASSIGNMENT_UPLOAD", "uploads/assignments")
         os.makedirs(upload_folder, exist_ok=True)
 
         for f in files:
             if f and allowed_file(f.filename):
                 filename = secure_filename(f.filename)
-                dest = os.path.join(upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
+                dest = os.path.join(
+                    upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
                 f.save(dest)
 
                 file_record = AssignmentFileUpload(
@@ -765,6 +788,8 @@ def update_assignment(id):
 # 5. DELETE ASSIGNMENT
 # ----------------------------------------------------
 # DELETE CONFIRMATION PAGE
+
+
 @dash_bp.route("/assignments/<int:id>/delete", methods=["GET", "POST"])
 def delete_assignment(id):
     from dash.models import ClassAssignment, AssignmentFileUpload
@@ -806,6 +831,8 @@ def view_assignment(id):
 # ----------------------------------------------------
 # 7. DOWNLOAD FILE
 # ----------------------------------------------------
+
+
 @dash_bp.route("/assignments/file/<int:file_id>/download", methods=["GET"])
 def download_file(file_id):
     from dash.models import AssignmentFileUpload
@@ -829,7 +856,7 @@ def download_file(file_id):
 
 # ---------- Student: create/view/update/delete submissions ----------
 @dash_bp.route("/student/assignments", methods=["GET", "POST"])
-@role_required("student","admin")
+@role_required("student", "admin")
 def student_submission_assignments():
     # imports inside route
     from dash.models import ClassAssignment, StudentAssignmentSubmission, AssignmentSubmisssionFileUpload
@@ -906,13 +933,18 @@ def student_submission_assignments():
                         db.session.add(submission)
                         db.session.flush()  # get ID before commit
 
-                        upload_folder = current_app.config.get("STUDENT_SUBMISSION_UPLOAD")
-                        os.makedirs(upload_folder, exist_ok=True) # type: ignore
+                        upload_folder = current_app.config.get(
+                            "STUDENT_SUBMISSION_UPLOAD")
+                        # type: ignore
+                        os.makedirs(upload_folder, exist_ok=True)
 
                         for f in files:
                             if f and allowed_file(f.filename):
-                                filename = secure_filename(f.filename) # type: ignore
-                                dest = os.path.join(upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}") # type: ignore
+                                filename = secure_filename(
+                                    f.filename)  # type: ignore
+                                dest = os.path.join(
+                                    # type: ignore
+                                    upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}")
                                 f.save(dest)
 
                                 file_record = AssignmentSubmisssionFileUpload(
@@ -942,7 +974,8 @@ def student_submission_assignments():
         .order_by(StudentAssignmentSubmission.created_at.desc())
     )
 
-    submissions_paginated = submissions_q.paginate(page=page, per_page=per_page, error_out=False)
+    submissions_paginated = submissions_q.paginate(
+        page=page, per_page=per_page, error_out=False)
 
     return render_template(
         "student_assignment_submission/create_student_assigment_submission.html",
@@ -955,10 +988,9 @@ def student_submission_assignments():
     )
 
 
-
 @dash_bp.route("/student/assignments/<int:submission_id>/view", methods=["GET"])
 @login_required
-@role_required("student","admin")
+@role_required("student", "admin")
 def student_view_submission(submission_id):
     from dash.models import StudentAssignmentSubmission
     # ensure student owns this submission
@@ -987,13 +1019,15 @@ def student_update_submission(submission_id):
         # allow uploading additional files (we won't remove existing files here)
         files = request.files.getlist("assignment_files")
         upload_folder = current_app.config.get("STUDENT_SUBMISSION_UPLOAD")
-        os.makedirs(upload_folder, exist_ok=True) # type: ignore
+        os.makedirs(upload_folder, exist_ok=True)  # type: ignore
 
         try:
             for f in files:
                 if f and f.filename and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
-                    dest = os.path.join(upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}") # type: ignore
+                    dest = os.path.join(
+                        # type: ignore
+                        upload_folder, f"{int(datetime.utcnow().timestamp())}_{filename}")
                     f.save(dest)
                     file_record = AssignmentSubmisssionFileUpload(
                         original_name=f.filename,
@@ -1055,8 +1089,10 @@ def teacher_class_assignments():
     # NOTE: If you have teacher -> classroom mapping, filter here by classroom ids the teacher teaches.
     # Example: classroom_ids = [c.id for c in current_user.teacherschoolrecord.classrooms]
     # assignments_q = ClassAssignment.query.filter(ClassAssignment.classroom_id.in_(classroom_ids))
-    assignments_q = ClassAssignment.query.order_by(ClassAssignment.created_at.desc())
-    pagination = assignments_q.paginate(page=page, per_page=per_page, error_out=False)
+    assignments_q = ClassAssignment.query.order_by(
+        ClassAssignment.created_at.desc())
+    pagination = assignments_q.paginate(
+        page=page, per_page=per_page, error_out=False)
 
     return render_template("teacher_manage_assignment_submission/teacher_class_assignments.html",
                            assignments=pagination.items, pagination=pagination, per_page=per_page)
@@ -1076,7 +1112,8 @@ def teacher_view_all_submissions(assignment_id):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    subs_q = StudentAssignmentSubmission.query.filter_by(class_assignment_id=assignment.id).order_by(StudentAssignmentSubmission.created_at.desc())
+    subs_q = StudentAssignmentSubmission.query.filter_by(
+        class_assignment_id=assignment.id).order_by(StudentAssignmentSubmission.created_at.desc())
     pagination = subs_q.paginate(page=page, per_page=per_page, error_out=False)
 
     return render_template("teacher_manage_assignment_submission/teacher_view_submissions.html",
@@ -1091,7 +1128,8 @@ def teacher_view_all_submissions(assignment_id):
 @role_required("teacher")
 def teacher_grade_one_submission(submission_id):
     from dash.models import StudentAssignmentSubmission
-    from werkzeug.security import generate_password_hash  # not used but keep imports grouped
+    # not used but keep imports grouped
+    from werkzeug.security import generate_password_hash
     submission = StudentAssignmentSubmission.query.get_or_404(submission_id)
 
     error = None
@@ -1166,9 +1204,6 @@ def admin_view_class_submissions():
 # ------------------ END ASSIGNMENT SUBMISSIION END-POINTS ------------------------ [Teacher & Admin]
 
 
-
-
-
 # -------------------- START GRADE -----------------------------------------------------------------
 
 # ----------------- List all students to view grades -------------------
@@ -1177,7 +1212,8 @@ def admin_view_class_submissions():
 def view_grades():
     from auth.models import StudentSchoolRecord
 
-    students = StudentSchoolRecord.query.all()  # optionally filter by teacher's classes
+    # optionally filter by teacher's classes
+    students = StudentSchoolRecord.query.all()
     return render_template("grades/view_grades.html", students=students)
 
 
@@ -1188,7 +1224,8 @@ def view_student_grades(student_id):
     from auth.models import StudentSchoolRecord
 
     student = StudentSchoolRecord.query.get_or_404(student_id)
-    grades = student.student_grades  # relationship from StudentSchoolRecord -> StudentGrade
+    # relationship from StudentSchoolRecord -> StudentGrade
+    grades = student.student_grades
     return render_template("grades/view_student_grades.html", student=student, grades=grades)
 
 
@@ -1270,148 +1307,264 @@ def delete_grade(id):
 
 # ------------------ Student Only------------------------
 
-# ==============================================================================================================
-
-# ------------------ Student/Admin Only: -------------
-
-
-# -------------------- Grades List --------------------
-@dash_bp.route("/grades", methods=["GET"])
+# student views all their grades
+@dash_bp.route("/grades")
 @role_required("student", "admin")
 def view_all_grades():
     from dash.models import StudentGrade
-    student_record = getattr(current_user, "student_school_record", None)
-    if not student_record:
-        return render_template("student_only/grades.html", grades=[], pagination=None, per_page=10, error="No student record found")
+    from auth.models import StudentSchoolRecord
+
+    student = StudentSchoolRecord.query.filter_by(
+        id=current_user.student_school_record_id
+    ).first()
+    print("========= text ======")
+    print("student==",student)
+    print("========= text ======")
+
+    if not student:
+        return render_template(
+            "student_only/grades.html",
+            grades=[],
+            pagination=None,
+            per_page=10,
+            error="Student record not found"
+        )
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    grades_query = StudentGrade.query.filter_by(student_school_record_id=student_record.id)\
-                                     .order_by(StudentGrade.created_at.desc())
-    grades_paginated = grades_query.paginate(page=page, per_page=per_page, error_out=False)
+    pagination = StudentGrade.query.filter(
+        StudentGrade.student_school_record_id == student.id
+    ).order_by(StudentGrade.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
 
-    return render_template("student_only/grades.html",
-                           grades=grades_paginated.items,
-                           pagination=grades_paginated,
-                           per_page=per_page,
-                           error=None,
-                           success=None)
+    error = None
+    if pagination.total == 0:
+        error = "No grades found"
+
+    return render_template(
+        "student_only/grades.html",
+        grades=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        error=error,
+        success=None
+    )
 
 
-# -------------------- Grade Detail --------------------
-@dash_bp.route("/grades/<int:id>", methods=["GET"])
+# student views one of their grade details
+@dash_bp.route("/grades/<int:id>")
 @role_required("student", "admin")
 def grade_detail(id):
     from dash.models import StudentGrade
-    student_record = getattr(current_user, "student_school_record", None)
-    grade = StudentGrade.query.get_or_404(id)
-    if grade.student_school_record_id != student_record.id:
-        abort(403)
-    return render_template("student_only/grade_detail.html", grade=grade, error=None, success=None)
+    from auth.models import StudentSchoolRecord
 
-# -------------------- END GRADE -----------------------------------------------------------------
+    student = StudentSchoolRecord.query.filter_by(
+        id=current_user.student_school_record_id
+    ).first()
+    print("========= text ======")
+    print("student==",student)
+    print("========= text ======")
+    grade = StudentGrade.query.filter_by(
+        id=id,
+        student_school_record_id=student.id
+    ).first_or_404()
 
+    return render_template(
+        "student_only/grade_detail.html",
+        grade=grade
+    )
 
-# -------------------- START ASSIGNMENT ----------------------------------------------------------
-
-# -------------------- Attendances List --------------------
-@dash_bp.route("/attendances", methods=["GET"])
+# student views all their attendance records
+@dash_bp.route("/attendances")
 @role_required("student", "admin")
 def view_attendances():
     from dash.models import StudentAttendance
-    student_record = getattr(current_user, "student_school_record", None)
-    if not student_record:
-        return render_template("student_only/attendances.html", attendances=[], pagination=None, per_page=10, error="No student record found")
+    from auth.models import StudentSchoolRecord
+
+    student = StudentSchoolRecord.query.filter_by(
+        id=current_user.student_school_record_id
+    ).first()
+    print("========= text ======")
+    print("student==",student)
+    print("========= text ======")
+
+    if not student:
+        return render_template(
+            "student_only/attendances.html",
+            attendances=[],
+            pagination=None,
+            per_page=10,
+            error="Student record not found"
+        )
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    attendances_query = StudentAttendance.query.filter_by(student_school_record_id=student_record.id)\
-                                               .order_by(StudentAttendance.attendance_date.desc())
-    attendances_paginated = attendances_query.paginate(page=page, per_page=per_page, error_out=False)
+    pagination = StudentAttendance.query.filter(
+        StudentAttendance.student_school_record_id == student.id
+    ).order_by(StudentAttendance.attendance_date.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
 
-    return render_template("student_only/attendances.html",
-                           attendances=attendances_paginated.items,
-                           pagination=attendances_paginated,
-                           per_page=per_page,
-                           error=None,
-                           success=None)
+    error = None
+    if pagination.total == 0:
+        error = "No attendance records found"
+
+    return render_template(
+        "student_only/attendances.html",
+        attendances=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        error=error,
+        success=None
+    )
 
 
-# -------------------- Attendance Detail --------------------
-@dash_bp.route("/attendances/<int:id>", methods=["GET"])
-@role_required("student", "admin","teacher")
+# student views one attendance record
+@dash_bp.route("/attendances/<int:id>")
+@role_required("student", "admin")
 def attendance_detail(id):
     from dash.models import StudentAttendance
-    student_record = getattr(current_user, "student_school_record", None)
-    attendance = StudentAttendance.query.get_or_404(id)
-    if attendance.student_school_record_id != student_record.id:
-        abort(403)
-    return render_template("student_only/attendance_detail.html", attendance=attendance, error=None, success=None)
+    from auth.models import StudentSchoolRecord
 
+    student = StudentSchoolRecord.query.filter_by(
+        id=current_user.student_school_record_id
+    ).first()
+    print("========= text ======")
+    print("student==",student)
+    print("========= text ======")
 
-# -------------------- Class Assignments List --------------------
-@dash_bp.route("/class_assignments", methods=["GET"])
+    attendance = StudentAttendance.query.filter_by(
+        id=id,
+        student_school_record_id=student.id
+    ).first_or_404()
+
+    return render_template(
+        "student_only/attendance_detail.html",
+        attendance=attendance
+    )
+
+# student views all class assignments for their classroom
+@dash_bp.route("/class_assignments")
 @role_required("student", "admin")
 def view_class_assignments():
     from dash.models import ClassAssignment
-    student_record = getattr(current_user, "student_school_record", None)
-    if not student_record or not getattr(student_record, "classroom", None):
-        return render_template("student_only/class_assignments.html", assignments=[], pagination=None, per_page=10, error="No classroom assigned")
+    from auth.models import StudentSchoolRecord
 
-    classroom_id = student_record.classroom.id
+    student = StudentSchoolRecord.query.filter_by(
+        id=current_user.student_school_record_id
+    ).first()
+    print("========= text ======")
+    print("student==",student)
+    print("========= text ======")
+
+    print("student==",student)
+    if not student or not getattr(student, "classroom", None):
+        return render_template(
+            "student_only/class_assignments.html",
+            assignments=[],
+            pagination=None,
+            per_page=10,
+            error="No classroom assigned"
+        )
+
+    classroom_id = student.classroom.id
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    assignments_query = ClassAssignment.query.filter_by(classroom_id=classroom_id)\
-                                             .order_by(ClassAssignment.created_at.desc())
-    assignments_paginated = assignments_query.paginate(page=page, per_page=per_page, error_out=False)
+    pagination = ClassAssignment.query.filter(
+        ClassAssignment.classroom_id == classroom_id
+    ).order_by(ClassAssignment.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
 
-    return render_template("student_only/class_assignments.html",
-                           assignments=assignments_paginated.items,
-                           pagination=assignments_paginated,
-                           per_page=per_page,
-                           error=None,
-                           success=None)
+    error = None
+    if pagination.total == 0:
+        error = "No class assignments found"
+
+    return render_template(
+        "student_only/class_assignments.html",
+        assignments=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        error=error,
+        success=None
+    )
 
 
-# -------------------- Assignment Submissions List --------------------
-@dash_bp.route("/assignment_submissions", methods=["GET"])
+# student views all their assignment submissions
+@dash_bp.route("/assignment_submissions")
 @role_required("student", "admin")
 def view_assignment_submissions():
     from dash.models import StudentAssignmentSubmission
-    student_record = getattr(current_user, "student_school_record", None)
-    if not student_record:
-        return render_template("student_only/assignment_submissions.html", submissions=[], pagination=None, per_page=10, error="No student record found")
+    from auth.models import StudentSchoolRecord
+
+    student = StudentSchoolRecord.query.filter_by(
+        id=current_user.student_school_record_id
+    ).first()
+    print("========= text ======")
+    print("student==",student)
+    print("========= text ======")
+
+    if not student:
+        return render_template(
+            "student_only/assignment_submissions.html",
+            submissions=[],
+            pagination=None,
+            per_page=10,
+            error="Student record not found"
+        )
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    submissions_query = StudentAssignmentSubmission.query.filter_by(student_school_record_id=student_record.id)\
-                                                        .order_by(StudentAssignmentSubmission.created_at.desc())
-    submissions_paginated = submissions_query.paginate(page=page, per_page=per_page, error_out=False)
+    pagination = StudentAssignmentSubmission.query.filter(
+        StudentAssignmentSubmission.student_school_record_id == student.id
+    ).order_by(StudentAssignmentSubmission.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
 
-    return render_template("student_only/assignment_submissions.html",
-                           submissions=submissions_paginated.items,
-                           pagination=submissions_paginated,
-                           per_page=per_page,
-                           error=None,
-                           success=None)
+    error = None
+    if pagination.total == 0:
+        error = "No submissions found"
+
+    return render_template(
+        "student_only/assignment_submissions.html",
+        submissions=pagination.items,
+        pagination=pagination,
+        per_page=per_page,
+        error=error,
+        success=None
+    )
 
 
-# -------------------- Assignment Submission Detail --------------------
-@dash_bp.route("/assignment_submissions/<int:id>", methods=["GET"])
+# student views one assignment submission
+@dash_bp.route("/assignment_submissions/<int:id>")
 @role_required("student", "admin")
 def assignment_submission_detail(id):
     from dash.models import StudentAssignmentSubmission
-    student_record = getattr(current_user, "student_school_record", None)
-    submission = StudentAssignmentSubmission.query.get_or_404(id)
-    if submission.student_school_record_id != student_record.id:
-        abort(403)
-    return render_template("student_only/assignment_submission_detail.html", submission=submission, error=None, success=None)
+    from auth.models import StudentSchoolRecord
 
-# -------------------- END ASSIGNMENT ----------------------------------------------------------
+    student = StudentSchoolRecord.query.filter_by(
+        id=current_user.student_school_record_id
+    ).first()
+    print("========= text ======")
+    print("student==",student)
+    print("========= text ======")
+
+    submission = StudentAssignmentSubmission.query.filter_by(
+        id=id,
+        student_school_record_id=student.id
+    ).first_or_404()
+
+    return render_template(
+        "student_only/assignment_submission_detail.html",
+        submission=submission
+    )
+
+# -------------------- END STUDENT ONLY ----------------------------------------------------------
 
 
 # -------------------- START ATTENDNACE ----------------------------------------------------------
@@ -1424,15 +1577,16 @@ def view_attendance_students():
 
     # Get current page and per_page from query params
     page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)  # default 10 entries per page
+    # default 10 entries per page
+    per_page = request.args.get("per_page", 10, type=int)
 
-    students_paginated = StudentSchoolRecord.query.paginate(page=page, per_page=per_page, error_out=False)
-    
+    students_paginated = StudentSchoolRecord.query.paginate(
+        page=page, per_page=per_page, error_out=False)
+
     return render_template(
-        "attendance/view_attendance_students.html", 
+        "attendance/view_attendance_students.html",
         students=students_paginated
     )
-
 
 
 @dash_bp.route("/attendance/student/<int:id>", methods=["GET"])
@@ -1445,6 +1599,7 @@ def view_student_attendance(id):
     return render_template("attendance/view_student_attendance.html",
                            student=student, attendances=attendances)
 
+
 @dash_bp.route("/attendance/one_attendnce/<int:id>", methods=["GET"])
 @role_required("teacher", "admin")
 def view_one_attendance(id):
@@ -1453,6 +1608,7 @@ def view_one_attendance(id):
 
     attendance = StudentAttendance.query.get_or_404(id)
     return render_template("attendance/view_one_attendance.html", attendance=attendance)
+
 
 @dash_bp.route("/attendance/create/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
@@ -1511,11 +1667,11 @@ def update_attendance(id):
 
     return render_template("attendance/update_attendance.html", attendance=attendance)
 
+
 @dash_bp.route("/attendance/delete/<int:id>", methods=["GET"])
 @role_required("teacher", "admin")
 def delete_attendance(id):
     from dash.models import StudentAttendance
-
 
     attendance = StudentAttendance.query.get_or_404(id)
     student_id = attendance.student_school_record_id
@@ -1525,25 +1681,22 @@ def delete_attendance(id):
         db.session.commit()
 
         return render_template("attendance/delete_attendance.html",
-                            success="Attendance deleted successfully!",
-                            student_id=student_id)
+                               success="Attendance deleted successfully!",
+                               student_id=student_id)
     except Exception as e:
         db.session.rollback()
         return render_template("attendance/delete_attendance.html",
-                            success="Failed To Delete Attendance, Server Error Occurred",
-                            student_id=student_id)
+                               success="Failed To Delete Attendance, Server Error Occurred",
+                               student_id=student_id)
 
 
 # -------------------- END ATTENDANCE ----------------------------------------------------------
 
 
-
 # -------------------- START CHAT-BOT ----------------------------------------------------------
 
-from dash.chat_responses import chat_bot_responses
-import re
-
 # -------------------- CHATBOT ROUTE --------------------
+
 @dash_bp.route('/chatbot', methods=['POST'])
 def chatbot():
     req = request.get_json()
@@ -1644,8 +1797,6 @@ def chatbot():
 # -------------------- START PROFILE & SETTINGS ------------------------------------------------
 
 
-
-
 @dash_bp.route("/view_profile", methods=["GET", "POST"])
 @role_required("teacher", "admin", "student")
 def view_profile():
@@ -1660,16 +1811,18 @@ def view_profile():
     upload_success = None
 
     # Get user and profile record
-    if current_user.role == "teacher": # type: ignore
-        user_profile = Teacher.query.get_or_404(current_user.id) # type: ignore
+    if current_user.role == "teacher":  # type: ignore
+        user_profile = Teacher.query.get_or_404(
+            current_user.id)  # type: ignore
         profile_record = user_profile.teacherschoolrecord
         existing_avatar = profile_record.teacher_avator
-    elif current_user.role == "admin": # type: ignore
-        user_profile = Admin.query.get_or_404(current_user.id) # type: ignore
+    elif current_user.role == "admin":  # type: ignore
+        user_profile = Admin.query.get_or_404(current_user.id)  # type: ignore
         profile_record = user_profile.admin
         existing_avatar = profile_record.student_avator
     else:
-        user_profile = Student.query.get_or_404(current_user.id) # type: ignore
+        user_profile = Student.query.get_or_404(
+            current_user.id)  # type: ignore
         profile_record = user_profile.student
         existing_avatar = profile_record.student_avator
 
@@ -1687,7 +1840,7 @@ def view_profile():
             if file.filename == "":
                 upload_error = "No file selected."
             elif file and allowed_file(file.filename):
-                filename = secure_filename(file.filename) # type: ignore
+                filename = secure_filename(file.filename)  # type: ignore
                 upload_folder = current_app.config["PROFILE_PHOTO_UPLOAD"]
                 os.makedirs(upload_folder, exist_ok=True)
                 filepath = os.path.join(upload_folder, filename)
@@ -1705,8 +1858,8 @@ def view_profile():
                             original_name=file.filename,
                             filename=filename,
                             filepath=filepath,
-                            teacher_school_record_id=profile_record.id if current_user.role == "teacher" else None, # type: ignore
-                            student_school_record_id=profile_record.id if current_user.role != "teacher" else None # type: ignore
+                            teacher_school_record_id=profile_record.id if current_user.role == "teacher" else None,  # type: ignore
+                            student_school_record_id=profile_record.id if current_user.role != "teacher" else None  # type: ignore
                         )
                         db.session.add(new_avatar)
 
@@ -1730,7 +1883,7 @@ def view_profile():
 # -------------------- END PROFILE ------------------------------------------------
 
 # -------------------- START STUDY MATERIAL ------------------------------------------------
- 
+
 
 # ------------------ CREATE ------------------
 @dash_bp.route("/study-material/create", methods=["GET", "POST"])
@@ -1738,7 +1891,7 @@ def view_profile():
 def create_study_material():
     from dash.models import StudyMaterial, StudyMaterialFileUpload, Classroom
 
-    if current_user.role != "teacher": # type: ignore
+    if current_user.role != "teacher":  # type: ignore
         return render_template("study_material/create.html", error="Access denied", classrooms=[])
 
     classrooms = Classroom.query.all()
@@ -1754,7 +1907,7 @@ def create_study_material():
             error = "Title and description are required."
         else:
             material = StudyMaterial(title=title, description=description,
-                                     classroom_id=classroom_id, teacher_id=current_user.id) # type: ignore
+                                     classroom_id=classroom_id, teacher_id=current_user.id)  # type: ignore
             try:
                 from extensions import db
                 db.session.add(material)
@@ -1762,7 +1915,8 @@ def create_study_material():
 
                 # Handle file uploads
                 files = request.files.getlist("files")
-                upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+                upload_dir = current_app.config.get(
+                    "STUDY_MATERIAL_UPLOAD", "uploads/study_material")
                 os.makedirs(upload_dir, exist_ok=True)
 
                 for file in files:
@@ -1784,6 +1938,8 @@ def create_study_material():
                            classrooms=classrooms, error=error, success=success)
 
 # ------------------ LIST + PAGINATION ------------------
+
+
 @dash_bp.route("/study-material", methods=["GET"])
 @login_required
 def list_study_material():
@@ -1793,17 +1949,23 @@ def list_study_material():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 6, type=int)
 
-    materials = StudyMaterial.query.order_by(StudyMaterial.created_at.desc()).paginate(page=page, per_page=per_page)
+    materials = StudyMaterial.query.order_by(
+        StudyMaterial.created_at.desc()).paginate(page=page, per_page=per_page)
     return render_template("study_material/list.html", materials=materials, per_page=per_page)
 
 # ------------------ SERVE UPLOADED FILE ------------------
+
+
 @dash_bp.route("/study-material/uploads/<filename>")
 @login_required
 def studymaterial_uploaded_file(filename):
-    upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+    upload_dir = current_app.config.get(
+        "STUDY_MATERIAL_UPLOAD", "uploads/study_material")
     return send_from_directory(upload_dir, filename)
 
 # ------------------ VIEW ONE ------------------
+
+
 @dash_bp.route("/study-material/<int:id>", methods=["GET"])
 @login_required
 def view_study_material(id):
@@ -1812,6 +1974,8 @@ def view_study_material(id):
     return render_template("study_material/view.html", material=material)
 
 # ------------------ EDIT ------------------
+
+
 @dash_bp.route("/study-material/<int:id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_study_material(id):
@@ -1841,7 +2005,8 @@ def edit_study_material(id):
 
                 # handle new file uploads
                 files = request.files.getlist("files")
-                upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+                upload_dir = current_app.config.get(
+                    "STUDY_MATERIAL_UPLOAD", "uploads/study_material")
                 os.makedirs(upload_dir, exist_ok=True)
                 for file in files:
                     if file.filename:
@@ -1862,6 +2027,8 @@ def edit_study_material(id):
     return render_template("study_material/edit.html", material=material, classrooms=classrooms, error=error, success=success)
 
 # ------------------ DELETE CONFIRM ------------------
+
+
 @dash_bp.route("/study-material/<int:id>/delete", methods=["GET"])
 @login_required
 def delete_study_material_confirm(id):
@@ -1872,6 +2039,8 @@ def delete_study_material_confirm(id):
     return render_template("study_material/delete_confirm.html", material=material)
 
 # ------------------ DELETE POST ------------------
+
+
 @dash_bp.route("/study-material/<int:id>/delete", methods=["POST"])
 @login_required
 def delete_study_material(id):
@@ -1883,7 +2052,8 @@ def delete_study_material(id):
         return redirect(url_for("dash.list_study_material"))
 
     try:
-        upload_dir = current_app.config.get("STUDY_MATERIAL_UPLOAD", "uploads/study_material")
+        upload_dir = current_app.config.get(
+            "STUDY_MATERIAL_UPLOAD", "uploads/study_material")
         for f in material.files:
             path = os.path.join(upload_dir, f.filename)
             if os.path.exists(path):
@@ -1912,7 +2082,8 @@ def report_students():
 
     # Only include students that have accounts (Student or Admin)
     query = StudentSchoolRecord.query.filter(
-        (StudentSchoolRecord.student != None) | (StudentSchoolRecord.admin != None)
+        (StudentSchoolRecord.student != None) | (
+            StudentSchoolRecord.admin != None)
     ).order_by(StudentSchoolRecord.id.desc())
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -1924,7 +2095,6 @@ def report_students():
         pagination=pagination,
         per_page=per_page
     )
-
 
 
 # ====================================
@@ -1971,11 +2141,4 @@ def student_full_report(student_id):
     )
 
 
-
-
 # -------------------- END GENERATE REPORTS ------------------------------------------------
-
-
-
-
-

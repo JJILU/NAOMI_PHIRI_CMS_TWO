@@ -2,138 +2,34 @@
 
 {% block content %}
 <div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('dash.index') }}">Home</a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('dash.view_attendances') }}">My Attendance</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Attendance Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
+                <div class="card-header">
+                    Attendance on {{ attendance.attendance_date.strftime('%Y-%m-%d') }}
+                </div>
                 <div class="card-body">
-                    <h4 class="card-title">Attendance Details</h4>
-                    
-                    {% if error %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ error }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
-                    
-                    {% if success %}
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ success }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Attendance Information</h5>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th style="width: 40%">Date:</th>
-                                    <td>{{ attendance.attendance_date.strftime('%Y-%m-%d') if attendance.attendance_date else 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Status:</th>
-                                    <td>
-                                        {% if attendance.status == 'present' %}
-                                            <span class="badge bg-success fs-6">Present</span>
-                                        {% elif attendance.status == 'absent' %}
-                                            <span class="badge bg-danger fs-6">Absent</span>
-                                        {% elif attendance.status == 'late' %}
-                                            <span class="badge bg-warning fs-6">Late</span>
-                                        {% elif attendance.status == 'excused' %}
-                                            <span class="badge bg-info fs-6">Excused</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary fs-6">{{ attendance.status }}</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Time In:</th>
-                                    <td>{{ attendance.time_in.strftime('%H:%M') if attendance.time_in else 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Time Out:</th>
-                                    <td>{{ attendance.time_out.strftime('%H:%M') if attendance.time_out else 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Duration:</th>
-                                    <td>
-                                        {% if attendance.time_in and attendance.time_out %}
-                                            {% set duration = attendance.time_out - attendance.time_in %}
-                                            {{ duration.total_seconds()//3600 }}h {{ (duration.total_seconds()%3600)//60 }}m
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <h5>Additional Information</h5>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th style="width: 40%">Subject:</th>
-                                    <td>{{ attendance.subject or 'All Subjects' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Teacher:</th>
-                                    <td>
-                                        {% if attendance.teacher and attendance.teacher.teacherschoolrecord %}
-                                            {{ attendance.teacher.teacherschoolrecord.first_name }} {{ attendance.teacher.teacherschoolrecord.last_name }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Classroom:</th>
-                                    <td>
-                                        {% if attendance.student_school_record.classroom %}
-                                            {{ attendance.student_school_record.classroom.name }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Recorded By:</th>
-                                    <td>
-                                        {% if attendance.recorded_by and attendance.recorded_by.teacherschoolrecord %}
-                                            {{ attendance.recorded_by.teacherschoolrecord.first_name }} {{ attendance.recorded_by.teacherschoolrecord.last_name }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Created At:</th>
-                                    <td>{{ attendance.created_at.strftime('%Y-%m-%d %H:%M') if attendance.created_at else 'N/A' }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-                    {% if attendance.remarks %}
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h5>Teacher Remarks</h5>
-                            <div class="card">
-                                <div class="card-body bg-light">
-                                    <p class="mb-0">{{ attendance.remarks }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <a href="{{ url_for('dash.view_attendances') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Attendance
-                            </a>
-                        </div>
-                    </div>
-
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-{% if attendance.status == 'Present' %}success{% else %}danger{% endif %}">
+                            {{ attendance.status }}
+                        </span>
+                    </p>
+                    <p><strong>Date Recorded:</strong> {{ attendance.created_at.strftime('%Y-%m-%d') if attendance.created_at else 'N/A' }}</p>
+                    <a href="{{ url_for('dash.view_attendances') }}" class="btn btn-secondary">Back</a>
                 </div>
             </div>
         </div>

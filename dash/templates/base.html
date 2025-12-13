@@ -679,6 +679,7 @@
 
                             </ul>
                         </li>
+                        {% endif %}
 
                      
 
@@ -735,44 +736,47 @@
 
                         <!-- ===================== END ASSIGNMENT SUBMISSIONS MENU ===================== -->
 
-                        {% endif %}
-
-                        <!-- Student Only -->
-                        {% if current_user.is_authenticated and current_user.role in  ["admin","student"] %}
+                        <!-- ==================== STUDENT & ADMIN SIDEBAR ==================== -->
+                       
+                        <!-- ===================== STUDENT ONLY================= -->
+                        <!-- Student/Admin Menu -->
+                        {% if current_user.is_authenticated and current_user.role in ["student","admin"] %}
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" href="javascript:void(0)" aria-expanded="false">
                                 <i class="fa fa-user-circle me-3"></i>
                                 <span class="hide-menu">Student</span>
                             </a>
                             <ul class="collapse first-level" aria-expanded="false">
-                        
+
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_class_assignments') }}" class="sidebar-link">
+                                    <a href="{{ url_for('dash.view_assignment_submissions') }}" class="sidebar-link">
                                         <span class="hide-menu">View Submitted Assignments</span>
                                     </a>
                                 </li>
-                        
+
                                 <li class="sidebar-item">
                                     <a href="{{ url_for('dash.view_class_assignments') }}" class="sidebar-link">
                                         <span class="hide-menu">View Class Assignments</span>
                                     </a>
                                 </li>
-                        
+
                                 <li class="sidebar-item">
                                     <a href="{{ url_for('dash.view_all_grades') }}" class="sidebar-link">
                                         <span class="hide-menu">My Grades</span>
                                     </a>
                                 </li>
-                        
+
                                 <li class="sidebar-item">
                                     <a href="{{ url_for('dash.view_attendances') }}" class="sidebar-link">
                                         <span class="hide-menu">My Attendance</span>
                                     </a>
                                 </li>
-                        
+
                             </ul>
                         </li>
                         {% endif %}
+
+                        
                         
                         
                 
@@ -784,7 +788,6 @@
                                 <span class="hide-menu">Profile</span>
                             </a>
                         </li>
-                            
                         {% endif %}
                         
                 

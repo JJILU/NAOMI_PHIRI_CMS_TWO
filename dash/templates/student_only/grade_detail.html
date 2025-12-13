@@ -2,127 +2,32 @@
 
 {% block content %}
 <div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('dash.index') }}">Home</a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('dash.view_all_grades') }}">My Grades</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Grade Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
+                <div class="card-header">
+                    <h5>{{ grade.exam_name }} - {{ grade.exam_subject_name }}</h5>
+                </div>
                 <div class="card-body">
-                    <h4 class="card-title">Grade Details</h4>
-                    
-                    {% if error %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ error }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
-                    
-                    {% if success %}
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ success }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Grade Information</h5>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th style="width: 40%">Subject:</th>
-                                    <td>{{ grade.subject or 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Assignment:</th>
-                                    <td>{{ grade.assignment_title or 'General Grade' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Score:</th>
-                                    <td>
-                                        <span class="badge bg-{% if grade.score >= 80 %}success{% elif grade.score >= 60 %}warning{% else %}danger{% endif %} fs-6">
-                                            {{ grade.score }}%
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Grade Letter:</th>
-                                    <td>
-                                        <span class="badge bg-info fs-6">{{ grade.grade_letter or 'N/A' }}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>GPA Points:</th>
-                                    <td>{{ grade.gpa_points or 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Teacher:</th>
-                                    <td>
-                                        {% if grade.teacher and grade.teacher.teacherschoolrecord %}
-                                            {{ grade.teacher.teacherschoolrecord.first_name }} {{ grade.teacher.teacherschoolrecord.last_name }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <h5>Additional Information</h5>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th style="width: 40%">Date Created:</th>
-                                    <td>{{ grade.created_at.strftime('%Y-%m-%d %H:%M') if grade.created_at else 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Term/Period:</th>
-                                    <td>{{ grade.term or 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Academic Year:</th>
-                                    <td>{{ grade.academic_year or 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Grade Type:</th>
-                                    <td>{{ grade.grade_type or 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Weight:</th>
-                                    <td>{{ grade.weight or 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Status:</th>
-                                    <td>
-                                        {% if grade.is_final %}
-                                            <span class="badge bg-success">Final</span>
-                                        {% else %}
-                                            <span class="badge bg-warning">Draft</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-                    {% if grade.notes %}
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h5>Teacher Notes</h5>
-                            <div class="card">
-                                <div class="card-body bg-light">
-                                    <p class="mb-0">{{ grade.notes }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <a href="{{ url_for('dash.view_all_grades') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Grades
-                            </a>
-                        </div>
-                    </div>
-
+                    <p><strong>Score:</strong> {{ grade.student_score }}%</p>
+                    <p><strong>Grade:</strong> {{ grade.student_grade }}</p>
+                    <p><strong>Teacher:</strong> {{ grade.teacher.teacherschoolrecord.first_name if grade.teacher else 'N/A' }}</p>
+                    <p><strong>Date:</strong> {{ grade.created_at.strftime('%Y-%m-%d') if grade.created_at else 'N/A' }}</p>
+                    <a href="{{ url_for('dash.view_all_grades') }}" class="btn btn-secondary">Back</a>
                 </div>
             </div>
         </div>

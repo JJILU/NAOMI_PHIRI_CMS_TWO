@@ -2,132 +2,86 @@
 
 {% block content %}
 <div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('dash.index') }}">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Submitted Assignments</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">My Assignment Submissions</h4>
-                    <h6 class="card-subtitle mb-2 text-muted">View your submitted assignments</h6>
-                    
-                    {% if error %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ error }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
-                    
-                    {% if success %}
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ success }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+            {% endif %}
 
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Assignment</th>
-                                    <th>Subject</th>
-                                    <th>Submitted Date</th>
-                                    <th>Submission Type</th>
-                                    <th>Grade</th>
-                                    <th>Status</th>
-                                    <th>Feedback</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for submission in submissions %}
-                                <tr>
-                                    <td>
-                                        {% if submission.assignment %}
-                                            {{ submission.assignment.title }}
-                                        {% else %}
-                                            Assignment #{{ submission.assignment_id }}
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if submission.assignment %}
-                                            {{ submission.assignment.subject or 'N/A' }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') if submission.submitted_at else 'N/A' }}</td>
-                                    <td>{{ submission.submission_type or 'N/A' }}</td>
-                                    <td>
-                                        {% if submission.grade %}
-                                            <span class="badge bg-{% if submission.grade.score >= 80 %}success{% elif submission.grade.score >= 60 %}warning{% else %}danger{% endif %}">
-                                                {{ submission.grade.score }}%
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Not Graded</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if submission.status == 'submitted' %}
-                                            <span class="badge bg-primary">Submitted</span>
-                                        {% elif submission.status == 'graded' %}
-                                            <span class="badge bg-success">Graded</span>
-                                        {% elif submission.status == 'late' %}
-                                            <span class="badge bg-warning">Late</span>
-                                        {% elif submission.status == 'missing' %}
-                                            <span class="badge bg-danger">Missing</span>
-                                        {% else %}
-                                            <span class="badge bg-info">{{ submission.status }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if submission.feedback %}
-                                            {{ submission.feedback|truncate(30) }}
-                                        {% else %}
-                                            No feedback yet
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('dash.assignment_submission_detail', id=submission.id) }}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="8" class="text-center">No assignment submissions found</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    {% if pagination and pagination.pages > 1 %}
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                                <a class="page-link" href="{{ url_for('dash.view_assignment_submissions', page=pagination.prev_num, per_page=per_page) if pagination.has_prev else '#' }}">Previous</a>
-                            </li>
-                            
-                            {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
-                                {% if page_num %}
-                                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                                        <a class="page-link" href="{{ url_for('dash.view_assignment_submissions', page=page_num, per_page=per_page) }}">{{ page_num }}</a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                                {% endif %}
-                            {% endfor %}
-                            
-                            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                                <a class="page-link" href="{{ url_for('dash.view_assignment_submissions', page=pagination.next_num, per_page=per_page) if pagination.has_next else '#' }}">Next</a>
-                            </li>
-                        </ul>
-                    </nav>
-                    {% endif %}
-
-                </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Assignment</th>
+                            <th>Subject</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Date Submitted</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td>{{ submission.assignment_name }}</td>
+                            <td>{{ submission.assignment_subject_Name }}</td>
+                            <td>{{ submission.student_score }}</td>
+                            <td>{{ submission.student_grade }}</td>
+                            <td>{{ submission.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <a href="{{ url_for('dash.assignment_submission_detail', id=submission.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No submissions found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
+
+            {% if pagination and pagination.pages > 1 %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('dash.view_assignment_submissions', page=pagination.prev_num, per_page=per_page) }}">Previous</a>
+                    </li>
+
+                    {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
+                        {% if page_num %}
+                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('dash.view_assignment_submissions', page=page_num, per_page=per_page) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('dash.view_assignment_submissions', page=pagination.next_num, per_page=per_page) }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
         </div>
     </div>
 </div>
