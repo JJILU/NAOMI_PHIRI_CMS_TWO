@@ -1543,34 +1543,33 @@ def delete_attendance(id):
 from dash.chat_responses import chat_bot_responses
 import re
 
-
+# -------------------- CHATBOT ROUTE --------------------
 @dash_bp.route('/chatbot', methods=['POST'])
 def chatbot():
     req = request.get_json()
     msg = req.get('message', '').lower()
 
-    # ========================= MESSAGE MATCHING =========================
     reply = None
 
-    # BASIC GREETINGS
-    if re.search(r"\b(hello|hi|hey|good morning|good afternoon)\b", msg):
+    # Basic Greetings
+    if re.search(r"\b(hello|hi|hey|good morning|good afternoon|what's up|ola)\b", msg):
         reply = choice(chat_bot_responses["greeting"])
 
-    # AUTHENTICATION
+    # Authentication
     elif "login" in msg or "sign in" in msg:
         reply = choice(chat_bot_responses["auth"])
     elif "logout" in msg or "sign out" in msg:
         reply = choice(chat_bot_responses["logout"])
 
-    # DASHBOARD
+    # Dashboard
     elif "dashboard" in msg:
         reply = choice(chat_bot_responses["dashboard"])
 
-    # PROFILE
+    # Profile
     elif "profile" in msg or "update profile" in msg:
         reply = choice(chat_bot_responses["profile"])
 
-    # STUDENT / TEACHER / ADMIN MANAGEMENT
+    # Student / Teacher / Admin Management
     elif "student" in msg:
         reply = choice(chat_bot_responses["student_management"])
     elif "teacher" in msg:
@@ -1578,50 +1577,50 @@ def chatbot():
     elif "admin" in msg:
         reply = choice(chat_bot_responses["admin_management"])
 
-    # ATTENDANCE
+    # Attendance
     elif "attendance" in msg:
         if "student" in msg:
             reply = choice(chat_bot_responses["student_attendance"])
         else:
             reply = choice(chat_bot_responses["attendance_info"])
 
-    # CLASSROOM / SUBJECTS
+    # Classrooms / Subjects
     elif "classroom" in msg or "class" in msg:
         reply = choice(chat_bot_responses["classroom"])
     elif "subject" in msg:
         reply = choice(chat_bot_responses["subjects"])
 
-    # ASSIGNMENTS
+    # Assignments
     elif "assignment" in msg:
         if "submit" in msg or "student" in msg:
             reply = choice(chat_bot_responses["assignments_student"])
         else:
             reply = choice(chat_bot_responses["assignments_teacher"])
 
-    # GRADES
+    # Grades
     elif "grade" in msg or "grading" in msg:
         if "student" in msg:
             reply = choice(chat_bot_responses["grading_student"])
         else:
             reply = choice(chat_bot_responses["grading_teacher"])
 
-    # FILE UPLOADS
+    # File Uploads
     elif "upload" in msg or "file" in msg or "photo" in msg:
         reply = choice(chat_bot_responses["file_uploads"])
 
-    # TIMETABLE
+    # Timetable
     elif "timetable" in msg or "schedule" in msg:
         reply = choice(chat_bot_responses["timetable"])
 
-    # ANNOUNCEMENTS
+    # Announcements
     elif "announcement" in msg or "notice" in msg:
         reply = choice(chat_bot_responses["announcements"])
 
-    # EVENTS
+    # Events
     elif "event" in msg or "holiday" in msg:
         reply = choice(chat_bot_responses["events"])
 
-    # SETTINGS
+    # Settings
     elif "settings" in msg or "config" in msg:
         reply = choice(chat_bot_responses["settings"])
 
@@ -1629,11 +1628,11 @@ def chatbot():
     elif "cms" in msg or "system" in msg:
         reply = choice(chat_bot_responses["cms_info"])
 
-    # SUPPORT
+    # Support
     elif "help" in msg or "support" in msg or "issue" in msg:
         reply = choice(chat_bot_responses["support"])
 
-    # ERROR / FALLBACK
+    # Fallback
     else:
         reply = choice(chat_bot_responses["fallback"])
 

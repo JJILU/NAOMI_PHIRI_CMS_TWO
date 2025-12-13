@@ -1,175 +1,154 @@
-from random import choice
-
+# -------------------- CHATBOT RESPONSES --------------------
 chat_bot_responses = {
 
-    # ========================= BASIC GREETINGS =========================
+    # ---------------- BASIC GREETINGS ----------------
     "greeting": [
-        "👋 Hello! How can I help you today?",
-        "😊 Hi there! What would you like to do today?",
-        "Welcome back! Ready when you are.",
-        "Hey! Need help with attendance, assignments, grades or admin tasks?"
+        "👋 Hello! How can I assist you with the Classroom Management System today?",
+        "😊 Hi! You can ask me about attendance, assignments, grades, study materials, or reports.",
+        "Welcome back! Ready to manage students, classrooms, and your dashboard.",
+        "Hey! Need help navigating the system or checking reports?"
     ],
 
-    # ========================= AUTHENTICATION =========================
+    # ---------------- AUTHENTICATION ----------------
     "auth": [
-        "To log in, enter your username and password on the login page.",
-        "If you're logged out, you'll be redirected back to the login page.",
-        "Only authenticated users can access the dashboard and other menus."
+        "Log in with your credentials to access the dashboard and system features.",
+        "After logging out, you'll be redirected to the login page.",
+        "Only authenticated users can access student, teacher, and admin features."
     ],
-
     "logout": [
-        "To log out, click the *Logout* link on the menu. You'll be redirected to login.",
-        "You have been logged out. See you next time! 👋",
-        "Logout successful — come back soon!"
+        "Click the *Logout* link to sign out. You'll be redirected to login.",
+        "Logout successful! Come back soon 👋",
+        "You have been logged out of the system."
     ],
 
-    # ========================= DASHBOARD =========================
+    # ---------------- DASHBOARD ----------------
     "dashboard": [
-        "Your dashboard shows a quick overview of students, attendance, grades and activities.",
-        "From the dashboard, you can navigate to any part of the classroom system.",
-        "The dashboard gives school-wide statistics for teachers and admins."
+        "Your dashboard shows students, attendance, grades, assignments, and reports overview.",
+        "Use the dashboard to quickly navigate to any section of the CMS.",
+        "Admins and teachers can view overall school statistics from the dashboard."
     ],
 
-    # ========================= PROFILE =========================
+    # ---------------- PROFILE ----------------
     "profile": [
-        "You can update your personal profile under the **Profile** page.",
-        "Profile photos are stored automatically when uploaded.",
-        "Teachers and students have separate school records linked to their profiles."
+        "Update your profile and password under the Profile page.",
+        "You can upload profile photos; they are linked to your school record.",
+        "Teachers, students, and admins have separate linked records in the system."
     ],
 
-    # ========================= STUDENT MANAGEMENT =========================
+    # ---------------- STUDENT MANAGEMENT ----------------
     "student_management": [
-        "Manage students under **Students Management → View Students**.",
-        "To add new students, open **Students Management → Add Student**.",
-        "You can view CMS students under **Students Management → View CMS Students**.",
-        "Each student has a linked school record you can update anytime.",
-        "Student classroom assignment is handled in the CMS student section."
+        "Manage students under **Students → View Students**.",
+        "Add new students in **Students → Add Student**.",
+        "Each student has a linked school record and classroom assignment.",
+        "Students can also be CMS accounts; manage them under **CMS Students**."
     ],
 
-    # ========================= TEACHER MANAGEMENT =========================
+    # ---------------- TEACHER MANAGEMENT ----------------
     "teacher_management": [
-        "Teachers can be viewed and managed under the Teacher Management menu.",
-        "Teacher records include profile info, school assignment, and role."
+        "Teachers can be managed under **Teacher Management → View Teachers**.",
+        "Each teacher has a linked school record and assigned classrooms."
     ],
 
-    # ========================= ADMIN MANAGEMENT =========================
+    # ---------------- ADMIN MANAGEMENT ----------------
     "admin_management": [
-        "Admins can be added under **Admin Management → Add Admin**.",
-        "To view all admins, open **Admin Management → View Admins**.",
-        "Admin accounts are linked to SchoolRecord entries marked as administrators."
+        "Add new admins via **Admin Management → Add Admin**.",
+        "View all admins under **Admin Management → View Admins**.",
+        "Admin accounts are linked to school records marked as administrators."
     ],
 
-    # ========================= ATTENDANCE =========================
+    # ---------------- ATTENDANCE ----------------
     "attendance_info": [
-        "To check attendance, go to **Attendance → View Students Attendance**.",
-        "Attendance logs are recorded and displayed in the Attendance dashboard.",
-        "Teachers can view daily and monthly attendance reports."
+        "Teachers and admins can view attendance under **Attendance → Students**.",
+        "Attendance can be created, updated, or deleted for each student.",
+        "Daily and monthly attendance reports are available for monitoring."
     ],
-
     "student_attendance": [
-        "Students can check attendance under **Student → View Attendances**.",
-        "Open the Student panel and click *View Attendances*.",
+        "Students can view their attendance under **Student → View Attendances**.",
+        "Click an attendance entry to see details like date and status."
     ],
 
-    # ========================= CLASSROOMS =========================
+    # ---------------- CLASSROOMS ----------------
     "classroom": [
-        "You can manage classrooms under **Classroom → View Classrooms**.",
-        "To add a classroom, go to **Classroom → Add Classroom**.",
-        "Classrooms are linked to subjects, students, and teachers."
+        "Manage classrooms under **Classrooms → View Classrooms**.",
+        "Add classrooms and link them to teachers and subjects.",
+        "Classrooms are assigned to students via their school record."
     ],
 
-    # ========================= SUBJECTS =========================
+    # ---------------- SUBJECTS ----------------
     "subjects": [
-        "You can manage subjects under **Subjects → View Subjects**.",
-        "To register a subject, go to **Subjects → Add Subject**.",
-        "Students and teachers are assigned subjects via classroom CMS records."
+        "Manage subjects under **Subjects → View Subjects**.",
+        "Add new subjects via **Subjects → Add Subject**.",
+        "Subjects are linked to classrooms and student assignments."
     ],
 
-    # ========================= ASSIGNMENTS =========================
+    # ---------------- ASSIGNMENTS ----------------
     "assignments_teacher": [
         "Teachers can create assignments under **Assignments → Create Assignment**.",
-        "You can upload assignment files and instructions under the Assignments menu.",
-        "To manage all assignments, open **Assignments → View All Assignments**."
+        "Upload assignment files and instructions when creating them.",
+        "Manage all assignments via **Assignments → View All Assignments**."
     ],
-
     "assignments_student": [
-        "Students can submit assignments under **Assignment Submission → Submit Assignment**.",
-        "To view your submitted assignments, open **Assignment Submission → Submitted Assignments**.",
-        "Assignment files uploaded by teachers appear in the Assignments section."
+        "Students submit assignments under **Assignment Submissions → Submit Assignment**.",
+        "View submitted assignments under **Assignment Submissions → Submitted Assignments**.",
+        "Assignment files uploaded by teachers are visible in the assignments section."
     ],
 
-    # ========================= GRADING =========================
+    # ---------------- GRADING ----------------
     "grading_teacher": [
-        "You can add or update grades under **Grades → Add / View Grades**.",
-        "Teachers can generate student performance reports in the Grades section.",
-        "To grade assignments, navigate to the Grades menu."
+        "Teachers can add or update grades under **Grades → Add / View Grades**.",
+        "Generate student performance reports in the Grades section."
     ],
-
     "grading_student": [
         "Students can view grades under **Student → View Grades**.",
-        "Your academic performance appears in the Student Grades section."
+        "Grades include assignments and exams linked to your classroom."
     ],
 
-    # ========================= FILE UPLOADS =========================
+    # ---------------- FILE UPLOADS ----------------
     "file_uploads": [
-        "Profile photos are stored under the profile_photo uploads folder.",
-        "Assignments go into the assignments_uploads folder.",
-        "Student submissions are stored separately in *assignment_student_submission_files*."
+        "Profile photos, assignment files, and study materials are uploaded to specific folders.",
+        "Files are linked to the relevant student, teacher, or classroom record."
     ],
 
-    # ========================= TIMETABLE =========================
+    # ---------------- TIMETABLE ----------------
     "timetable": [
-        "You can view the timetable under the Timetable section.",
-        "Teachers and students can access scheduled subjects from the timetable page.",
-        "Timetables are linked to classrooms and subjects."
+        "Timetables show scheduled classes and subjects.",
+        "Students and teachers can view their daily and weekly schedules."
     ],
 
-    # ========================= ANNOUNCEMENTS =========================
+    # ---------------- ANNOUNCEMENTS ----------------
     "announcements": [
-        "Announcements appear on the dashboard once published.",
-        "Admins and teachers can post important notices for students.",
-        "You can manage announcements under the Announcements section."
+        "Announcements are posted on the dashboard for all users.",
+        "Teachers and admins can create important notices for students."
     ],
 
-    # ========================= EVENTS =========================
+    # ---------------- EVENTS ----------------
     "events": [
-        "School events can be viewed from the Events menu.",
-        "Admins can create new events under the Event Management section.",
-        "Events help notify students and teachers about important dates."
+        "School events and holidays are available under the Events section.",
+        "Admins can create events to notify students and teachers."
     ],
 
-    # ========================= SETTINGS =========================
+    # ---------------- SETTINGS ----------------
     "settings": [
-        "You can update system settings under the Settings menu.",
-        "Settings include profile updates, theme options, and preferences.",
+        "Update system and profile settings under the Settings menu.",
         "Only authorized users can modify sensitive settings."
     ],
 
-    # ========================= CMS =========================
+    # ---------------- CMS ----------------
     "cms_info": [
-        "The CMS manages classrooms, subjects, student assignments, and attendance.",
-        "CMS Students section is where you update classroom and subject mappings.",
-        "Your Classroom Management System powers all student and teacher data."
+        "The CMS manages students, teachers, classrooms, subjects, assignments, attendance, and study materials.",
+        "You can view student school records, classroom assignments, and generate reports from the CMS."
     ],
 
-    # ========================= SUPPORT =========================
+    # ---------------- SUPPORT ----------------
     "support": [
-        "If something isn’t working, contact your system administrator.",
-        "For technical support, please notify your teacher or admin.",
-        "Need help? I can guide you to the right menu — just ask!"
+        "If you encounter an issue, contact the admin or teacher for support.",
+        "I can guide you to the correct menu for any feature you need help with."
     ],
 
-    # ========================= ERROR HANDLING =========================
-    "error": [
-        "Something went wrong. Try again later.",
-        "That's not available right now. Please contact the admin.",
-        "I couldn't process that — maybe try asking in another way?"
-    ],
-
-    # ========================= FALLBACK =========================
+    # ---------------- FALLBACK ----------------
     "fallback": [
-        "🤔 I’m not sure I understand. Can you ask another way?",
-        "I didn't catch that. Try asking about attendance, assignments, grades, admins, or students.",
-        "Hmm… I couldn’t match that. What would you like to do?"
+        "🤔 I didn’t understand that. Can you ask another way?",
+        "Try asking about attendance, assignments, grades, classrooms, or students.",
+        "I couldn't match your request — try using simpler keywords."
     ]
 }
