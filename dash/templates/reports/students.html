@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Students Reports</h3>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>School ID</th>
+            <th>Role</th>
+            <th>Class</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in students %}
+        <tr>
+            <td>{{ record.first_name }} {{ record.last_name }}</td>
+            <td>{{ record.card_id }}</td>
+            <td>
+                {% if record.student %}
+                    {{ record.student.role }}
+                {% elif record.admin %}
+                    {{ record.admin.role }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>{{ record.classroom.classroom_name if record.classroom else 'N/A' }}</td>
+            <td>
+                <a href="{{ url_for('dash.student_full_report', student_id=record.id) }}"
+                   class="btn btn-sm btn-primary">
+                    View Report
+                </a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center">No students with accounts found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if pagination.pages > 1 %}
+<nav>
+    <ul class="pagination">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ pagination.prev_num }}&per_page={{ per_page }}">Prev</a>
+        </li>
+        {% endif %}
+        {% for p in pagination.iter_pages() %}
+        {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+            <a class="page-link" href="?page={{ p }}&per_page={{ per_page }}">{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ pagination.next_num }}&per_page={{ per_page }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

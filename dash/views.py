@@ -1900,6 +1900,78 @@ def delete_study_material(id):
 
 
 # -------------------- START GENERATE REPORTS ------------------------------------------------
+# ==========================
+# ENDPOINT: STUDENTS LIST
+# ==========================
+@dash_bp.route("/reports/students")
+@login_required
+def report_students():
+    from auth.models import StudentSchoolRecord, Student, Admin
+
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    # Only include students that have accounts (Student or Admin)
+    query = StudentSchoolRecord.query.filter(
+        (StudentSchoolRecord.student != None) | (StudentSchoolRecord.admin != None)
+    ).order_by(StudentSchoolRecord.id.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    students = pagination.items
+
+    return render_template(
+        "reports/students.html",
+        students=students,
+        pagination=pagination,
+        per_page=per_page
+    )
+
+
+
+# ====================================
+# STUDENT FULL REPORT (Grades, Attendance, Assignments)
+# ====================================
+@dash_bp.route("/reports/student/<int:student_id>")
+@login_required
+def student_full_report(student_id):
+    from auth.models import StudentSchoolRecord
+    from dash.models import StudentGrade, StudentAttendance, StudentAssignmentSubmission
+
+    student = StudentSchoolRecord.query.get_or_404(student_id)
+
+    # Only students with accounts
+    if not (student.student or student.admin):
+        return "No account exists for this student.", 403
+
+    # Pagination per section
+    grades_page = request.args.get("grades_page", 1, type=int)
+    attendance_page = request.args.get("attendance_page", 1, type=int)
+    submissions_page = request.args.get("submissions_page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    grades_pagination = StudentGrade.query.filter_by(
+        student_school_record_id=student.id
+    ).order_by(StudentGrade.created_at.desc()).paginate(page=grades_page, per_page=per_page, error_out=False)
+    attendance_pagination = StudentAttendance.query.filter_by(
+        student_school_record_id=student.id
+    ).order_by(StudentAttendance.attendance_date.desc()).paginate(page=attendance_page, per_page=per_page, error_out=False)
+    submissions_pagination = StudentAssignmentSubmission.query.filter_by(
+        student_school_record_id=student.id
+    ).order_by(StudentAssignmentSubmission.created_at.desc()).paginate(page=submissions_page, per_page=per_page, error_out=False)
+
+    return render_template(
+        "reports/student_full_report.html",
+        student=student,
+        grades=grades_pagination.items,
+        grades_pagination=grades_pagination,
+        attendance=attendance_pagination.items,
+        attendance_pagination=attendance_pagination,
+        submissions=submissions_pagination.items,
+        submissions_pagination=submissions_pagination,
+        per_page=per_page
+    )
+
+
 
 
 # -------------------- END GENERATE REPORTS ------------------------------------------------

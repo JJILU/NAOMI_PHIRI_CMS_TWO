@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Student Report</h3>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+    <p><strong>School ID:</strong> {{ student.card_id }}</p>
+    <p><strong>Role:</strong>
+        {% if student.student %}
+            {{ student.student.role }}
+        {% elif student.admin %}
+            {{ student.admin.role }}
+        {% endif %}
+    </p>
+    <p><strong>Class:</strong> {{ student.classroom.classroom_name if student.classroom else 'N/A' }}</p>
+  </div>
+</div>
+
+<hr>
+
+{% if grades %}
+<h4>Grades</h4>
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Exam</th>
+      <th>Subject</th>
+      <th>Score</th>
+      <th>Grade</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for g in grades %}
+    <tr>
+      <td>{{ g.exam_name }}</td>
+      <td>{{ g.exam_subject_name }}</td>
+      <td>{{ g.student_score }}</td>
+      <td>{{ g.student_grade }}</td>
+      <td>{{ g.created_at.strftime("%d %b %Y") }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if grades_pagination.pages > 1 %}
+<nav>
+    <ul class="pagination">
+        {% if grades_pagination.has_prev %}
+        <li class="page-item"><a class="page-link" href="?grades_page={{ grades_pagination.prev_num }}&per_page={{ per_page }}">Prev</a></li>
+        {% endif %}
+        {% for p in grades_pagination.iter_pages() %}
+        {% if p %}
+        <li class="page-item {% if p == grades_pagination.page %}active{% endif %}">
+            <a class="page-link" href="?grades_page={{ p }}&per_page={{ per_page }}">{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        {% endfor %}
+        {% if grades_pagination.has_next %}
+        <li class="page-item"><a class="page-link" href="?grades_page={{ grades_pagination.next_num }}&per_page={{ per_page }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endif %}
+
+{% if attendance %}
+<h4>Attendance</h4>
+<table class="table table-sm table-bordered">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in attendance %}
+    <tr>
+      <td>{{ a.attendance_date }}</td>
+      <td>{{ a.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if attendance_pagination.pages > 1 %}
+<nav>
+    <ul class="pagination">
+        {% if attendance_pagination.has_prev %}
+        <li class="page-item"><a class="page-link" href="?attendance_page={{ attendance_pagination.prev_num }}&per_page={{ per_page }}">Prev</a></li>
+        {% endif %}
+        {% for p in attendance_pagination.iter_pages() %}
+        {% if p %}
+        <li class="page-item {% if p == attendance_pagination.page %}active{% endif %}">
+            <a class="page-link" href="?attendance_page={{ p }}&per_page={{ per_page }}">{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        {% endfor %}
+        {% if attendance_pagination.has_next %}
+        <li class="page-item"><a class="page-link" href="?attendance_page={{ attendance_pagination.next_num }}&per_page={{ per_page }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endif %}
+
+{% if submissions %}
+<h4>Assignment Submissions</h4>
+<table class="table table-sm table-hover">
+  <thead>
+    <tr>
+      <th>Assignment</th>
+      <th>Subject</th>
+      <th>Score</th>
+      <th>Grade</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in submissions %}
+    <tr>
+      <td>{{ s.assignment_name }}</td>
+      <td>{{ s.assignment_subject_Name }}</td>
+      <td>{{ s.student_score }}</td>
+      <td>{{ s.student_grade }}</td>
+      <td>{{ s.created_at.strftime("%d %b %Y") }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if submissions_pagination.pages > 1 %}
+<nav>
+    <ul class="pagination">
+        {% if submissions_pagination.has_prev %}
+        <li class="page-item"><a class="page-link" href="?submissions_page={{ submissions_pagination.prev_num }}&per_page={{ per_page }}">Prev</a></li>
+        {% endif %}
+        {% for p in submissions_pagination.iter_pages() %}
+        {% if p %}
+        <li class="page-item {% if p == submissions_pagination.page %}active{% endif %}">
+            <a class="page-link" href="?submissions_page={{ p }}&per_page={{ per_page }}">{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        {% endfor %}
+        {% if submissions_pagination.has_next %}
+        <li class="page-item"><a class="page-link" href="?submissions_page={{ submissions_pagination.next_num }}&per_page={{ per_page }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endif %}
+
+{% if not grades and not attendance and not submissions %}
+<div class="alert alert-info">No records available for this student.</div>
+{% endif %}
+
+{% endblock %}

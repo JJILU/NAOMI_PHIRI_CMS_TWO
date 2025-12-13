@@ -1,0 +1,56 @@
+{% if pagination.pages > 1 %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center mt-4">
+
+    <!-- Previous -->
+    {% if pagination.has_prev %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?page={{ pagination.prev_num }}&per_page={{ per_page }}">
+          ‹ Prev
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">‹ Prev</span>
+      </li>
+    {% endif %}
+
+    <!-- Page numbers -->
+    {% for p in pagination.iter_pages(
+        left_edge=1,
+        right_edge=1,
+        left_current=2,
+        right_current=2
+    ) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link"
+             href="?page={{ p }}&per_page={{ per_page }}">
+            {{ p }}
+          </a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">…</span>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next -->
+    {% if pagination.has_next %}
+      <li class="page-item">
+        <a class="page-link"
+           href="?page={{ pagination.next_num }}&per_page={{ per_page }}">
+          Next ›
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">Next ›</span>
+      </li>
+    {% endif %}
+
+  </ul>
+</nav>
+{% endif %}

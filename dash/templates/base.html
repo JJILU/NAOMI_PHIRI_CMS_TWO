@@ -593,6 +593,17 @@
                         {% endif %}
 
                         {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
+                        <!-- STUDENT REPORTS -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{{ url_for('dash.report_students') }}">
+                                <i class="me-3 fa fa-chart-bar"></i>
+                                <span class="hide-menu">Student Reports</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+
+                        {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
                         <!-- Admin Management -->
                         <li class="sidebar-item">
                             <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" 
