@@ -29,7 +29,8 @@ teacherschoolrecord_optionalsubject = db.Table(
 class CompulsarySubject(db.Model):
     __tablename__ = "compulsary_subject"
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     subject_name = db.Column(db.String(50), nullable=False, unique=True)
     subject_code = db.Column(db.String(50), nullable=False, unique=True)
 
@@ -52,7 +53,8 @@ class CompulsarySubject(db.Model):
 class OptionalSubject(db.Model):
     __tablename__ = "optional_subject"
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     subject_name = db.Column(db.String(50), nullable=False, unique=True)
     subject_code = db.Column(db.String(50), nullable=False, unique=True)
 
@@ -78,7 +80,8 @@ class OptionalSubject(db.Model):
 class Classroom(db.Model):
     __tablename__ = "classroom"
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     classroom_name = db.Column(db.String(50), nullable=False, unique=True)
 
     # many-to-many
@@ -132,7 +135,8 @@ class Classroom(db.Model):
 class StudentAttendance(db.Model):
     __tablename__ = "student_attendance"
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
 
     # Updated to match routes (Present / Absent)
     status = db.Column(db.String(20), nullable=False)
@@ -160,7 +164,8 @@ class StudentAttendance(db.Model):
 # ==================== STUDENT GRADE MODEL ============================= 
 class StudentGrade(db.Model):
     __tablename__ = "student_grade"
-    id = db.Column(db.Integer,primary_key=True) 
+    # id = db.Column(db.Integer,primary_key=True) 
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     exam_name = db.Column(db.String(50),nullable=False)
     exam_code = db.Column(db.String(50),nullable=False)
     exam_subject_name = db.Column(db.String(50),nullable=False)
@@ -194,7 +199,8 @@ class StudentGrade(db.Model):
 class ClassAssignment(db.Model):
     __tablename__ = "class_assignment"
 
-    id = db.Column(db.Integer,primary_key=True)
+    # id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     created_by_first_name = db.Column(db.String(50),nullable=False,server_default="Placeholder First Name") 
     created_by_last_name = db.Column(db.String(50),nullable=False,server_default="Placeholder Last Name")  
     assignment_name = db.Column(db.String(50),nullable=False)
@@ -243,7 +249,8 @@ class ClassAssignment(db.Model):
 class AssignmentFileUpload(db.Model):
     __tablename__ = "assignment_fileupload"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)   
+    # id = db.Column(db.Integer,primary_key=True)   
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     original_name = db.Column(db.String(500),nullable=False) 
     filename = db.Column(db.String(500),nullable=False) 
     filepath = db.Column(db.String(500),nullable=False) 
@@ -270,7 +277,8 @@ class AssignmentFileUpload(db.Model):
 class StudentAssignmentSubmission(db.Model):
     __tablename__ = "student_assignment_submission"
 
-    id = db.Column(db.Integer,primary_key=True) 
+    # id = db.Column(db.Integer,primary_key=True) 
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     submitted_by_first_name = db.Column(db.String(50),nullable=False,server_default="Placeholder First Name") 
     submitted_by_last_name = db.Column(db.String(50),nullable=False,server_default="Placeholder Last Name") 
     assignment_name = db.Column(db.String(50),nullable=False)
@@ -334,7 +342,8 @@ class StudentAssignmentSubmission(db.Model):
 class AssignmentSubmisssionFileUpload(db.Model):
     __tablename__ = "assignment_submisssion_file_upload"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)   
+    # id = db.Column(db.Integer,primary_key=True)   
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     original_name = db.Column(db.String(500),nullable=False) 
     filename = db.Column(db.String(500),nullable=False) 
     filepath = db.Column(db.String(500),nullable=False) 
@@ -360,8 +369,8 @@ class AssignmentSubmisssionFileUpload(db.Model):
 class StudyMaterial(db.Model):
     __tablename__ = "study_material"
 
-    id = db.Column(db.Integer, primary_key=True)
-
+    # id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     title = db.Column(db.String(90), nullable=False)
     description = db.Column(db.String(200), nullable=False)
 
@@ -390,7 +399,8 @@ class StudyMaterial(db.Model):
 class StudyMaterialFileUpload(db.Model):
     __tablename__ = "study_material_file_upload"
 
-    id = db.Column(db.Integer, primary_key=True)
+    # id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     filename = db.Column(db.String(200), nullable=False)
     filepath = db.Column(db.String(300), nullable=False)
 

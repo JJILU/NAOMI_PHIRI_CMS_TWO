@@ -49,16 +49,23 @@ def create_app():
         raise Exception("This is a forced 500 error!")
 
     # ===================== DATABASE CONFIG =====================
-    if "DATABASE_URL" not in os.environ:
-        from dotenv import load_dotenv
-        load_dotenv()
-    uri = os.environ.get("DATABASE_URL")
-    if not uri:
+    print(os.environ.get("FLASK_ENV"))
+    # Check if we are in production
+    if os.environ.get("FLASK_ENV") == "production":
+        # Use MySQL
+        username = Config.DB_USERNAME
+        password = Config.DB_PASSWORD
+        host = Config.DB_HOST
+        port = Config.DB_PORT
+        db_name = Config.DB_NAME
+        uri = f"mysql+pymysql://{username}:{password}@{host}:{port}/{db_name}"
+    else:
+        # Use SQLite for development
         instance_path = os.path.join(os.getcwd(), "instance")
         os.makedirs(instance_path, exist_ok=True)
         uri = "sqlite:///" + os.path.join(instance_path, "classroom.sqlite3")
-    if uri.startswith("postgres://"):
-        uri = uri.replace("postgres://", "postgresql://", 1)
+
+    # Apply configuration
     app.config["SQLALCHEMY_DATABASE_URI"] = uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = Config.SECRET_KEY
@@ -137,41 +144,76 @@ def create_app():
    
 
    # ===================== SEED DATA (RUN ONCE) =====================
+    # with app.app_context():
+    #     inspector = inspect(db.engine)
+
+    #     # --- 1. Create tables only if they do not exist ---
+    #     if not inspector.has_table("teacher_school_record"):
+    #         print("Creating tables...")
+    #         create_tables()
+    #         print("Tables created successfully!")
+    #     else:
+    #         print("Tables already exist. Skipping table creation.")
+
+    #     # --- 2. Create seed_status table if not exists ---
+    #     if not inspector.has_table("seed_status"):
+    #         db.session.execute(text(
+    #             "CREATE TABLE IF NOT EXISTS seed_status (id INTEGER PRIMARY KEY AUTOINCREMENT, seeded BOOLEAN)"
+    #         ))
+    #         db.session.commit()
+
+    #     # --- 3. Run seed data only once ---
+    #     result = db.session.execute(text("SELECT seeded FROM seed_status LIMIT 1")).fetchone()
+    #     if not result or not result[0]:
+    #         print("Running seed data for the first time...")
+    #         try:
+    #             create_subject_classes()
+    #             create_teacher_school_records()
+    #             create_student_school_records()
+    #             associate_teachers_to_subjects()
+    #             db.session.execute(text("INSERT INTO seed_status (seeded) VALUES (1)"))
+    #             db.session.commit()
+    #             print("Seed data completed!")
+    #         except Exception as e:
+    #             db.session.rollback()
+    #             print(f"Seed data failed: {e}")
+    #     else:
+    #         print("Seed data already run. Skipping.")
+
+    # with app.app_context():
+    #     try:
+    #         print("Running seed data...")
+    #         create_tables()
+    #         create_subject_classes()
+    #         create_teacher_school_records()
+    #         create_student_school_records()
+    #         associate_teachers_to_subjects()
+
+    #         db.session.commit()
+    #         print("Seed data completed successfully!")
+
+    #     except Exception as e:
+    #         db.session.rollback()
+    #         print(f"Seed data failed: {e}")
+
+
     with app.app_context():
-        inspector = inspect(db.engine)
+    inspector = inspect(db.engine)
 
-        # --- 1. Create tables only if they do not exist ---
-        if not inspector.has_table("teacher_school_record"):
-            print("Creating tables...")
-            create_tables()
-            print("Tables created successfully!")
-        else:
-            print("Tables already exist. Skipping table creation.")
+    if not inspector.has_table("student"):
+        print("Creating tables...")
+        db.create_all()
+        print("Tables created")
 
-        # --- 2. Create seed_status table if not exists ---
-        if not inspector.has_table("seed_status"):
-            db.session.execute(text(
-                "CREATE TABLE IF NOT EXISTS seed_status (id INTEGER PRIMARY KEY AUTOINCREMENT, seeded BOOLEAN)"
-            ))
-            db.session.commit()
-
-        # --- 3. Run seed data only once ---
-        result = db.session.execute(text("SELECT seeded FROM seed_status LIMIT 1")).fetchone()
-        if not result or not result[0]:
-            print("Running seed data for the first time...")
-            try:
-                create_subject_classes()
-                create_teacher_school_records()
-                create_student_school_records()
-                associate_teachers_to_subjects()
-                db.session.execute(text("INSERT INTO seed_status (seeded) VALUES (1)"))
-                db.session.commit()
-                print("Seed data completed!")
-            except Exception as e:
-                db.session.rollback()
-                print(f"Seed data failed: {e}")
-        else:
-            print("Seed data already run. Skipping.")
+        print("Running seed data...")
+        create_subject_classes()
+        create_teacher_school_records()
+        create_student_school_records()
+        associate_teachers_to_subjects()
+        db.session.commit()
+        print("Seed complete")
+    else:
+        print("Database already seeded. Skipping.")
 
         
 

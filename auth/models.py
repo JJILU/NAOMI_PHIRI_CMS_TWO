@@ -11,7 +11,8 @@ from dash.models import teacherschoolrecord_compulsarysubject,teacherschoolrecor
 class TeacherSchoolRecord(db.Model):
     __tablename__ = "teacher_school_record"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)
+    # id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     first_name = db.Column(db.String(50),nullable=False) 
     last_name = db.Column(db.String(50),nullable=False) 
     card_id = db.Column(db.String(50),nullable=False) 
@@ -70,7 +71,8 @@ class TeacherSchoolRecord(db.Model):
 class StudentSchoolRecord(db.Model):
     __tablename__ = "student_school_record"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)   
+    # id = db.Column(db.Integer,primary_key=True) 
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)  
     first_name = db.Column(db.String(50),nullable=False) 
     last_name = db.Column(db.String(50),nullable=False) 
     card_id = db.Column(db.String(50),nullable=False) 
@@ -162,7 +164,8 @@ class StudentSchoolRecord(db.Model):
 class AvatorFileUpload(db.Model):
     __tablename__ = "avator_fileupload"
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)   
+    # id = db.Column(db.Integer,primary_key=True)   
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     original_name = db.Column(db.String(500),nullable=False) 
     filename = db.Column(db.String(500),nullable=False) 
     filepath = db.Column(db.String(500),nullable=False) 
@@ -199,7 +202,8 @@ class AvatorFileUpload(db.Model):
 
 class Teacher(db.Model,UserMixin):
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)
+    # id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     user_card_id = db.Column(db.String(50),nullable=False)
     hashed_password = db.Column(db.String(255),nullable=False)
     role = db.Column(db.String(50),nullable=False)
@@ -260,7 +264,8 @@ class Teacher(db.Model,UserMixin):
 
 class Admin(db.Model,UserMixin):
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)
+    # id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     user_card_id = db.Column(db.String,nullable=False)
     hashed_password = db.Column(db.String(255),nullable=False)
     role = db.Column(db.String(50),nullable=False)
@@ -318,7 +323,8 @@ class Admin(db.Model,UserMixin):
 
 class Student(db.Model,UserMixin):
     # id = db.Column(db.String(255),primary_key=True, default=str(uuid4()))
-    id = db.Column(db.Integer,primary_key=True)
+    # id = db.Column(db.Integer,primary_key=True)
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
     user_card_id = db.Column(db.String,nullable=False)
     hashed_password = db.Column(db.String(255),nullable=False)
     role = db.Column(db.String(50),nullable=False)
