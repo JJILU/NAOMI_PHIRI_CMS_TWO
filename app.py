@@ -59,11 +59,13 @@ def create_app():
         port = Config.DB_PORT
         db_name = Config.DB_NAME
         uri = f"mysql+pymysql://{username}:{password}@{host}:{port}/{db_name}"
+        print("SQLALCHEMY_DATABASE_URI =", uri)
     else:
         # Use SQLite for development
         instance_path = os.path.join(os.getcwd(), "instance")
         os.makedirs(instance_path, exist_ok=True)
         uri = "sqlite:///" + os.path.join(instance_path, "classroom.sqlite3")
+        print("SQLALCHEMY_DATABASE_URI =", uri)
 
     # Apply configuration
     app.config["SQLALCHEMY_DATABASE_URI"] = uri
