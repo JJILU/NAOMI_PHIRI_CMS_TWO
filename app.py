@@ -78,7 +78,7 @@ def create_app():
     # Apply configuration
     app.config["SQLALCHEMY_DATABASE_URI"] = uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = Config.SECRET_KEY
+    app.config["SECRET_KEY"] = "YYIFFGJTF789809"
 
     # ===================== FILE UPLOADS =====================
     BASE_UPLOAD = os.path.join(os.getcwd(), "uploads")
