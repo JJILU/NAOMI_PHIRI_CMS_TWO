@@ -7,7 +7,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('dash.teacher_class_assignments') }}">Assignments</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.teacher_submitted') }}">Assignments</a></li>
           <li class="breadcrumb-item active" aria-current="page">Submissions</li>
         </ol>
       </nav>
@@ -44,7 +44,7 @@
               </div>
               <div>
                 <a href="{{ url_for('dash.teacher_grade_one_submission', submission_id=s.id) }}" class="btn btn-sm btn-outline-success">Grade</a>
-                
+                <a href="{{ url_for('dash.teacher_view_submission', submission_id=s.id) }}" class="btn btn-sm btn-outline-info">view</a>
               </div>
             </li>
           {% endfor %}

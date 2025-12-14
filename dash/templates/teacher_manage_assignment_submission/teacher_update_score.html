@@ -7,7 +7,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('dash.teacher_class_assignments') }}">Assignments</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.teacher_submitted') }}">Assignments</a></li>
           <li class="breadcrumb-item active" aria-current="page">Grade</li>
         </ol>
       </nav>
@@ -29,7 +29,7 @@
         </div>
         <div class="mb-3">
           <label class="form-label">Grade</label>
-          <input type="text" name="student_grade" class="form-control" value="{{ submission.student_grade }}">
+          <input type="text" name="student_grade" class="form-control" placeholder="No Grade">
         </div>
         <button class="btn btn-primary" type="submit">Save Grade</button>
         <a class="btn btn-link" href="{{ url_for('dash.teacher_view_all_submissions', assignment_id=submission.class_assignment_id) }}">Back</a>

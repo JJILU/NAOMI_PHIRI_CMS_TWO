@@ -1078,10 +1078,10 @@ def student_delete_submission(submission_id):
 
 
 # ---------- Teacher: view class assignments & submissions + grade update ----------
-@dash_bp.route("/teacher/class-assignments", methods=["GET"])
+@dash_bp.route("/teacher/class_assignments", methods=["GET","POST"])
 @login_required
 @role_required("teacher")
-def teacher_class_assignments():
+def teacher_submitted():
     from dash.models import ClassAssignment
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
@@ -1097,7 +1097,7 @@ def teacher_class_assignments():
     return render_template("teacher_manage_assignment_submission/teacher_class_assignments.html",
                            assignments=pagination.items, pagination=pagination, per_page=per_page)
 
-
+# click on grade or view
 @dash_bp.route("/teacher/assignments/<int:assignment_id>/submissions", methods=["GET"])
 @login_required
 @role_required("teacher")
@@ -1122,7 +1122,7 @@ def teacher_view_all_submissions(assignment_id):
                            pagination=pagination,
                            per_page=per_page)
 
-
+# teacher update assignment submission 
 @dash_bp.route("/teacher/submissions/<int:submission_id>/grade", methods=["GET", "POST"])
 @login_required
 @role_required("teacher")
@@ -1153,6 +1153,18 @@ def teacher_grade_one_submission(submission_id):
             error = "Failed to update grade. " + str(e)
 
     return render_template("teacher_manage_assignment_submission/teacher_update_score.html", submission=submission, error=error, success=success)
+
+# teacher view assignment submission detail
+@dash_bp.route("/teacher/assignments/<int:submission_id>/view", methods=["GET"])
+@login_required
+@role_required("teacher")
+def teacher_view_submission(submission_id):
+    from dash.models import StudentAssignmentSubmission
+    # ensure student owns this submission
+    submission = StudentAssignmentSubmission.query.get_or_404(submission_id)
+    # if submission.student_school_record_id != current_user.student.id:
+    #     abort(403)
+    return render_template("teacher_manage_assignment_submission/teacher_view_assignment_submission_detail.html", submission=submission)
 
 
 # ---------- Admin: view submissions for their classroom (admin is a student + admin) ----------
