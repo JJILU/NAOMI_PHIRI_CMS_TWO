@@ -19,12 +19,12 @@ def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
 
     # ===================== SQLITE FOREIGN KEYS =====================
-    @event.listens_for(Engine, "connect")
-    def set_sqlite_pragma(dbapi_connection, connection_record):
-        if isinstance(dbapi_connection, sqlite3.Connection):
-            cursor = dbapi_connection.cursor()
-            cursor.execute("PRAGMA foreign_keys=ON")
-            cursor.close()
+    # @event.listens_for(Engine, "connect")
+    # def set_sqlite_pragma(dbapi_connection, connection_record):
+    #     if isinstance(dbapi_connection, sqlite3.Connection):
+    #         cursor = dbapi_connection.cursor()
+    #         cursor.execute("PRAGMA foreign_keys=ON")
+    #         cursor.close()
 
     # ===================== CONTEXT PROCESSOR =====================
     @app.context_processor
@@ -49,23 +49,30 @@ def create_app():
         raise Exception("This is a forced 500 error!")
 
     # ===================== DATABASE CONFIG =====================
-    print("flask env>>",os.environ.get("FLASK_ENV"))
-    # Check if we are in production
-    if os.environ.get("FLASK_ENV") == "production":
-        # Use MySQL
-        username = Config.DB_USERNAME
-        password = Config.DB_PASSWORD
-        host = Config.DB_HOST
-        port = Config.DB_PORT
-        db_name = Config.DB_NAME
-        uri = f"mysql+pymysql://{username}:{password}@{host}:{port}/{db_name}"
-        print("SQLALCHEMY_DATABASE_URI =", uri)
-    else:
-        # Use SQLite for development
-        instance_path = os.path.join(os.getcwd(), "instance")
-        os.makedirs(instance_path, exist_ok=True)
-        uri = "sqlite:///" + os.path.join(instance_path, "classroom.sqlite3")
-        print("SQLALCHEMY_DATABASE_URI =", uri)
+    # print("flask env>>",os.environ.get("FLASK_ENV"))
+    # # Check if we are in production
+    # if os.environ.get("FLASK_ENV") == "production":
+    #     # Use MySQL
+    #     username = Config.DB_USERNAME
+    #     password = Config.DB_PASSWORD
+    #     host = Config.DB_HOST
+    #     port = Config.DB_PORT
+    #     db_name = Config.DB_NAME
+    #     uri = f"mysql+pymysql://{username}:{password}@{host}:{port}/{db_name}"
+    #     print("SQLALCHEMY_DATABASE_URI =", uri)
+    # else:
+    #     # Use SQLite for development
+    #     instance_path = os.path.join(os.getcwd(), "instance")
+    #     os.makedirs(instance_path, exist_ok=True)
+    #     uri = "sqlite:///" + os.path.join(instance_path, "classroom.sqlite3")
+    #     print("SQLALCHEMY_DATABASE_URI =", uri)
+
+    # MySQL connection URI for SQLAlchemy
+    uri = "mysql+pymysql://root:arQDTtHhHareIPehomBlRCPdBnruZbCg@mysql.railway.internal:3306/railway"
+
+    print("SQLALCHEMY_DATABASE_URI =", uri)
+
+
 
     # Apply configuration
     app.config["SQLALCHEMY_DATABASE_URI"] = uri
