@@ -49,21 +49,21 @@ def create_app():
         raise Exception("This is a forced 500 error!")
 
     # ===================== DATABASE CONFIG =====================
-    print(os.environ.get("FLASK_ENV"))
-    # Check if we are in production
-    if os.environ.get("FLASK_ENV") == "production":
+    # print(os.environ.get("FLASK_ENV"))
+    # # Check if we are in production
+    # if os.environ.get("FLASK_ENV") == "production":
         # Use MySQL
-        username = Config.DB_USERNAME
-        password = Config.DB_PASSWORD
-        host = Config.DB_HOST
-        port = Config.DB_PORT
-        db_name = Config.DB_NAME
-        uri = f"mysql+pymysql://{username}:{password}@{host}:{port}/{db_name}"
-    else:
-        # Use SQLite for development
-        instance_path = os.path.join(os.getcwd(), "instance")
-        os.makedirs(instance_path, exist_ok=True)
-        uri = "sqlite:///" + os.path.join(instance_path, "classroom.sqlite3")
+    username = Config.DB_USERNAME
+    password = Config.DB_PASSWORD
+    host = Config.DB_HOST
+    port = Config.DB_PORT
+    db_name = Config.DB_NAME
+    uri = f"mysql+pymysql://{username}:{password}@{host}:{port}/{db_name}"
+    # else:
+    #     # Use SQLite for development
+    #     instance_path = os.path.join(os.getcwd(), "instance")
+    #     os.makedirs(instance_path, exist_ok=True)
+    #     uri = "sqlite:///" + os.path.join(instance_path, "classroom.sqlite3")
 
     # Apply configuration
     app.config["SQLALCHEMY_DATABASE_URI"] = uri
