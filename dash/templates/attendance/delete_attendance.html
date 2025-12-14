@@ -2,12 +2,36 @@
 {% block content %}
 
 <div class="page-breadcrumb">
-  <h3 class="page-title">Attendance Deleted</h3>
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Delete One Attendance For {{ student.first_name}} {{student.last_name }}</h3>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.view_student_attendance', id=student.id) }}">All {{ student.first_name}} {{student.last_name }} Attendances</a></li>
+            <li class="breadcrumb-item active" aria-current="page"> All <span class="page-title">{{ student.first_name}} {{student.last_name }}</span> Attendances</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="alert alert-success">{{ success }}</div>
+<div class="alert alert-warning">
+    ⚠️ Are you sure you want to delete this attendance record?
+</div>
 
-<a href="{{ url_for('dash.view_attendance_students') }}" 
-   class="btn btn-primary">Back to Attendance</a>
+<form method="POST" >
+    <button type="submit" class="btn btn-danger">
+        Yes, Delete
+    </button>
+
+    <a href="{{ url_for('dash.view_student_attendance', id=student.id) }}"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+</form>
 
 {% endblock %}
+

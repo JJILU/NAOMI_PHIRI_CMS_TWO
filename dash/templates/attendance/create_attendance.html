@@ -1,8 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
 
+
+
 <div class="page-breadcrumb">
-  <h3 class="page-title">Mark Attendance</h3>
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">Mark Attendance</h3>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dash.view_attendance_students') }}">View Student Attendance</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create Attendance</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% if error %}

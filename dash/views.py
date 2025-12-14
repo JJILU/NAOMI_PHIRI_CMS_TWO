@@ -1581,7 +1581,7 @@ def assignment_submission_detail(id):
 
 # -------------------- START ATTENDNACE ----------------------------------------------------------
 
-
+# view all attendances
 @dash_bp.route("/attendance/students", methods=["GET"])
 @role_required("teacher", "admin")
 def view_attendance_students():
@@ -1600,7 +1600,7 @@ def view_attendance_students():
         students=students_paginated
     )
 
-
+# view all attendances belonging to one student
 @dash_bp.route("/attendance/student/<int:id>", methods=["GET"])
 @role_required("teacher", "admin")
 def view_student_attendance(id):
@@ -1616,10 +1616,13 @@ def view_student_attendance(id):
 @role_required("teacher", "admin")
 def view_one_attendance(id):
     from dash.models import StudentAttendance
+    from auth.models import StudentSchoolRecord
     from flask import request
 
+
     attendance = StudentAttendance.query.get_or_404(id)
-    return render_template("attendance/view_one_attendance.html", attendance=attendance)
+    student = StudentSchoolRecord.query.get_or_404(attendance.student_school_record_id)
+    return render_template("attendance/view_one_attendance.html", attendance=attendance,student=student)
 
 
 @dash_bp.route("/attendance/create/<int:id>", methods=["GET", "POST"])
@@ -1666,40 +1669,59 @@ def create_attendance(id):
 @role_required("teacher", "admin")
 def update_attendance(id):
     from dash.models import StudentAttendance
+    from auth.models import StudentSchoolRecord
     from flask import request
 
     attendance = StudentAttendance.query.get_or_404(id)
-
+    student = StudentSchoolRecord.query.get_or_404(attendance.student_school_record_id)
     if request.method == "POST":
+        
         attendance.status = request.form.get("status")
         db.session.commit()
         return render_template("attendance/update_attendance.html",
                                attendance=attendance,
                                success="Attendance updated successfully!")
 
-    return render_template("attendance/update_attendance.html", attendance=attendance)
+    return render_template("attendance/update_attendance.html", attendance=attendance,student=student)
 
-
-@dash_bp.route("/attendance/delete/<int:id>", methods=["GET"])
+# delete one attendance for student
+@dash_bp.route("/attendance/delete/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def delete_attendance(id):
     from dash.models import StudentAttendance
+    from auth.models import StudentSchoolRecord
 
     attendance = StudentAttendance.query.get_or_404(id)
-    student_id = attendance.student_school_record_id
+    student = StudentSchoolRecord.query.get_or_404(attendance.student_school_record_id)
 
-    try:
-        db.session.delete(attendance)
-        db.session.commit()
+    # ------------------ WHEN USER CONFIRMS ------------------
+    if request.method == "POST":
+        try:
+            db.session.delete(attendance)
+            db.session.commit()
 
-        return render_template("attendance/delete_attendance.html",
-                               success="Attendance deleted successfully!",
-                               student_id=student_id)
-    except Exception as e:
-        db.session.rollback()
-        return render_template("attendance/delete_attendance.html",
-                               success="Failed To Delete Attendance, Server Error Occurred",
-                               student_id=student_id)
+            return render_template(
+                "attendance/delete_attendance.html",
+                success="Attendance deleted successfully!",
+                student=student,
+                student_id=student.id
+            )
+        except Exception:
+            db.session.rollback()
+            return render_template(
+                "attendance/delete_attendance.html",
+                error="Failed to delete attendance. Server error occurred.",
+                student_id=student.id,
+                student=student
+            )
+
+    # ------------------ FIRST VISIT (CONFIRM PAGE) ------------------
+    return render_template(
+        "attendance/delete_attendance.html",
+        attendance=attendance,
+        student=student,
+    )
+
 
 
 # -------------------- END ATTENDANCE ----------------------------------------------------------
