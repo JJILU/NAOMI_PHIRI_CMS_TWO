@@ -1,47 +1,40 @@
-from auth.models import TeacherSchoolRecord
-from dash.models import CompulsarySubject,OptionalSubject
-from app import create_app
+# seed/associate_teachers_subjects.py
 from extensions import db
+from auth.models import TeacherSchoolRecord
+from dash.models import CompulsarySubject, OptionalSubject
 from random import choice
 
+def associate_teachers_to_subjects():
+    """Associate teachers to subjects randomly."""
+    try:
+        all_compulsary_subjects = CompulsarySubject.query.all()
+        all_optional_subjects = OptionalSubject.query.all()
+        all_teachers = TeacherSchoolRecord.query.all()
 
-app = create_app()
+        if not all_teachers:
+            print("No teachers found. Skipping association.")
+            return
 
-# get subjects
-def get_all_compulsary_subjects() -> list:
-    all_compulsary_subjects = CompulsarySubject.query.all()
-    return all_compulsary_subjects
+        # Assign random teachers to compulsary subjects
+        for cs in all_compulsary_subjects:
+            teacher = choice(all_teachers)
+            cs.teacherschoolrecords.append(teacher)
 
-def get_all_options_subjects() -> list:
-    all_optional_subjects = OptionalSubject.query.all()
-    return all_optional_subjects
+        # Assign random teachers to optional subjects
+        for os in all_optional_subjects:
+            teacher = choice(all_teachers)
+            os.teacherschoolrecords.append(teacher)
 
-def get_all_teachers() -> list:
-    all_teachers = TeacherSchoolRecord.query.all()
-    return all_teachers
+        db.session.commit()
+        print("Successfully associated teachers to subjects.")
 
-with app.app_context():
-  try:
-    for cs in get_all_compulsary_subjects():
-      teacher = choice(get_all_teachers())
-      cs.teacherschoolrecords.append(teacher)
+        # Optional: print sample teacher-subject association
+        sample_teacher = TeacherSchoolRecord.query.first()
+        if sample_teacher:
+            print("Sample teacher associations:")
+            print("Compulsary subjects:", sample_teacher.compulsarysubject)
+            print("Optional subjects:", sample_teacher.optionalsubject)
 
-
-    for os in get_all_options_subjects():
-        teacher = choice(get_all_teachers())
-        os.teacherschoolrecords.append(teacher)  
-
-    db.session.commit()    
-    print("successfully associated teacher teachers to subjects")  
-  except Exception as e:
-     db.session.rollback()
-     print(f"Falied to associated teacher teachers to subjects: {str(e)}")  
-
-     
-
-
-
-  teacher = TeacherSchoolRecord.query.get(9)
-  if teacher:
-    print(teacher.compulsarysubject)
-    print(teacher.optionalsubject)
+    except Exception as e:
+        db.session.rollback()
+        print(f"Failed to associate teachers to subjects: {str(e)}")

@@ -13,6 +13,7 @@ from seed.create_tables import create_tables
 from seed.create_subjects_classes import create_subject_classes
 from seed.create_teacher_school_records import create_teacher_school_records
 from seed.create_students_school_records import create_student_school_records
+from seed.associate_teachers_to_subjects import associate_teachers_to_subjects
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -64,15 +65,20 @@ def create_app():
 
     # ===================== FILE UPLOADS =====================
     BASE_UPLOAD = os.path.join(os.getcwd(), "uploads")
-    for folder in [
-        BASE_UPLOAD,
-        os.path.join(BASE_UPLOAD, "assignments_uploads"),
-        os.path.join(BASE_UPLOAD, "profile_photo"),
-        os.path.join(BASE_UPLOAD, "assignment_student_submission_files"),
-        os.path.join(BASE_UPLOAD, "study_material_uploads"),
-    ]:
+    ASSIGNMENT_UPLOAD = os.path.join(BASE_UPLOAD, "assignments_uploads")
+    PROFILE_PHOTO_UPLOAD = os.path.join(BASE_UPLOAD, "profile_photo")
+    STUDENT_SUBMISSION_UPLOAD = os.path.join(BASE_UPLOAD, "assignment_student_submission_files")
+    STUDY_MATERIAL_UPLOAD = os.path.join(BASE_UPLOAD, "study_material_uploads")
+
+    for folder in [BASE_UPLOAD, ASSIGNMENT_UPLOAD, PROFILE_PHOTO_UPLOAD, STUDENT_SUBMISSION_UPLOAD,STUDY_MATERIAL_UPLOAD]:
         os.makedirs(folder, exist_ok=True)
+
     app.config["BASE_UPLOAD"] = BASE_UPLOAD
+    app.config["ASSIGNMENT_UPLOAD"] = ASSIGNMENT_UPLOAD
+    app.config["PROFILE_PHOTO_UPLOAD"] = PROFILE_PHOTO_UPLOAD
+    app.config["STUDENT_SUBMISSION_UPLOAD"] = STUDENT_SUBMISSION_UPLOAD
+    app.config["STUDY_MATERIAL_UPLOAD"] = STUDY_MATERIAL_UPLOAD    
+
 
     # ===================== SESSIONS =====================
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=5)
@@ -157,6 +163,7 @@ def create_app():
                 create_subject_classes()
                 create_teacher_school_records()
                 create_student_school_records()
+                associate_teachers_to_subjects()
                 db.session.execute(text("INSERT INTO seed_status (seeded) VALUES (1)"))
                 db.session.commit()
                 print("Seed data completed!")
