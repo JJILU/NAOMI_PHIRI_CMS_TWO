@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-breadcrumb">
+  <div class="row align-items-center">
+    <div class="col-md-6 col-8 align-self-center">
+      <h3 class="page-title mb-0 p-0">CMS Admin Accounts</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">CMS Admins</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt-3">
+  {% if admins %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Card ID</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for admin in admins %}
+              <tr>
+                <td>{{ admin.user_card_id }}</td>
+                <td>
+                  <a href="{{ url_for('dash.update_admin', id=admin.id) }}" class="btn btn-warning btn-sm">Update Password</a>
+                  <a href="{{ url_for('dash.delete_admin', id=admin.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-warning">No CMS admin accounts found.</div>
+  {% endif %}
+</div>
+{% endblock %}

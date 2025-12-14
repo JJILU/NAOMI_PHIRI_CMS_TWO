@@ -629,29 +629,30 @@
                         {% if current_user.is_authenticated and current_user.role in ["admin", "teacher"] %}
                         <!-- Admin Management -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link has-arrow" 
-                              href="javascript:void(0)" aria-expanded="false">
-                              <i class="me-3 fa fa-user-secret" aria-hidden="true"></i>
+                            <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                                <i class="me-3 fa fa-user-secret" aria-hidden="true"></i>
                                 <span class="hide-menu">Admin Management</span>
                             </a>
-
                             <ul class="collapse first-level" aria-expanded="false">
-
                                 <li class="sidebar-item">
                                     <a href="{{ url_for('dash.create_admin') }}" class="sidebar-link">
                                         <span class="hide-menu">Create Admin</span>
                                     </a>
                                 </li>
-
                                 <li class="sidebar-item">
-                                    <a href="{{ url_for('dash.view_admins') }}" class="sidebar-link">
-                                        <span class="hide-menu">View Admins</span>
+                                    <a href="{{ url_for('dash.view_school_admins') }}" class="sidebar-link">
+                                        <span class="hide-menu">View School Admins</span>
                                     </a>
                                 </li>
-
+                                <li class="sidebar-item">
+                                    <a href="{{ url_for('dash.view_cms_admins') }}" class="sidebar-link">
+                                        <span class="hide-menu">View CMS Admins</span>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         {% endif %}
+
 
                         
 

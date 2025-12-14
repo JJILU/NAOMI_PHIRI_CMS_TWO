@@ -4,11 +4,11 @@
 <div class="page-breadcrumb">
   <div class="row align-items-center">
     <div class="col-md-6 col-8 align-self-center">
-      <h3 class="page-title mb-0 p-0">All Admins</h3>
+      <h3 class="page-title mb-0 p-0">School Admins</h3>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Admins</li>
+          <li class="breadcrumb-item active" aria-current="page">School Admins</li>
         </ol>
       </nav>
     </div>
@@ -27,25 +27,28 @@
                 <th>Avatar</th>
                 <th>Name</th>
                 <th>Card ID</th>
-                <th>Actions</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {% for a in admins %}
+              {% for s in admins %}
               <tr>
                 <td>
-                  {% if a.student_avator %}
-                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=a.student_avator.filename) }}"
+                  {% if s.student_avator %}
+                  <img src="{{ url_for('dash.uploaded_avator_photo', filename=s.student_avator.filename) }}"
                        class="rounded-circle" width="40" height="40">
                   {% else %}
-                  <span class="round round-primary">{{ a.first_name[0]|upper }}</span>
+                  <span class="round round-primary">{{ s.first_name[0]|upper }}</span>
                   {% endif %}
                 </td>
-                <td>{{ a.first_name }} {{ a.last_name }}</td>
-                <td>{{ a.card_id }}</td>
+                <td>{{ s.first_name }} {{ s.last_name }}</td>
+                <td>{{ s.card_id }}</td>
                 <td>
-                  <a href="{{ url_for('dash.update_admin', id=a.id) }}" class="btn btn-warning btn-sm">Update Password</a>
-                  <a href="{{ url_for('dash.delete_admin', id=a.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                  {% if s.admin %}
+                    <span class="badge bg-success">Already Signed Up</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Not Yet Signed Up</span>
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -56,7 +59,7 @@
     </div>
   </div>
   {% else %}
-  <div class="alert alert-warning">No admin accounts found.</div>
+  <div class="alert alert-warning">No school admins found.</div>
   {% endif %}
 </div>
 {% endblock %}

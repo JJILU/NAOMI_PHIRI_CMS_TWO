@@ -134,7 +134,7 @@ def uploaded_avator_photo(filename):
 @dash_bp.route("/create_admin", methods=["GET", "POST"])
 @role_required("teacher")
 def create_admin():
-    from auth.models import Student, StudentSchoolRecord
+    from auth.models import Student, StudentSchoolRecord,Admin
     from werkzeug.security import generate_password_hash
     error = None
     success = None
@@ -152,11 +152,11 @@ def create_admin():
         elif password != confirm_password:
             error = "Passwords do not match."
         else:
-            student = Student.query.filter_by(
+            cms_admin = Admin.query.filter_by(
                 student_school_record_id=student_id).first()
-            if not student:
+            if not cms_admin:
                 # Create new Student account
-                student = Student(
+                new_cms_admin = Admin(
                     user_card_id=StudentSchoolRecord.query.get(
                         student_id).card_id,
                     password=password,
@@ -166,7 +166,7 @@ def create_admin():
                 db.session.add(student)
             else:
                 # Update password only
-                student.hashed_password = generate_password_hash(password)
+                new_cms_admin.hashed_password = generate_password_hash(password)
 
             db.session.commit()
             success = "Admin account created/updated successfully."
@@ -181,14 +181,21 @@ def create_admin():
 # -------------------------
 # View all admins
 # -------------------------
-@dash_bp.route("/view_admins")
+@dash_bp.route("/view_school_admins")
 @role_required("teacher")
-def view_admins():
-    from auth.models import Student, StudentSchoolRecord
+def view_school_admins():
+    from auth.models import StudentSchoolRecord
     admins = StudentSchoolRecord.query.filter(
         StudentSchoolRecord.is_admin == True).all()
-    return render_template("admin_management/view_admins.html", admins=admins)
+    return render_template("admin_management/view_school_admins.html", admins=admins)
 
+
+@dash_bp.route("/view_cms_admins")
+@role_required("teacher")
+def view_cms_admins():
+    from auth.models import Admin
+    admins = Admin.query.all()
+    return render_template("admin_management/view_cms_admins.html", admins=admins)
 
 # -------------------------
 # Update admin password
@@ -196,11 +203,11 @@ def view_admins():
 @dash_bp.route("/update_admin/<int:id>", methods=["GET", "POST"])
 @role_required("teacher")
 def update_admin(id):
-    from auth.models import Student, StudentSchoolRecord
+    from auth.models import Student, StudentSchoolRecord,Admin
     from werkzeug.security import generate_password_hash
     error = None
     success = None
-    admin = Student.query.get_or_404(id)
+    admin = Admin.query.get_or_404(id)
 
     if request.method == "POST":
         password = request.form.get("password")
@@ -224,10 +231,12 @@ def update_admin(id):
 @dash_bp.route("/delete_admin/<int:id>", methods=["GET", "POST"])
 @role_required("teacher")
 def delete_admin(id):
-    from auth.models import Student
+    from auth.models import Admin
     error = None
     success = None
-    admin = Student.query.get_or_404(id)
+    admin = Admin.query.get_or_404(id)
+
+    
 
     if request.method == "POST":
         try:
