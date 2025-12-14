@@ -98,13 +98,13 @@ def create_app():
     socketio.init_app(app, cors_allowed_origins="*")
 
     # ===================== CHECK DATABASE =====================
-    with app.app_context():
-        try:
-            db.session.execute(text("SELECT 1"))
-            print("DATABASE CONNECTED")
-        except Exception as e:
-            print(f"DB ERROR: {e}")
-            raise RuntimeError("Database connection failed") from e
+    # with app.app_context():
+    #     try:
+    #         db.session.execute(text("SELECT 1"))
+    #         print("DATABASE CONNECTED")
+    #     except Exception as e:
+    #         print(f"DB ERROR: {e}")
+    #         raise RuntimeError("Database connection failed") from e
 
     # ===================== LOGIN MANAGER =====================
     login_manager.login_view = cast(str, "login") # type: ignore
