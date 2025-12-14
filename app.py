@@ -197,23 +197,23 @@ def create_app():
     #         print(f"Seed data failed: {e}")
 
 
-    with app.app_context():
-    inspector = inspect(db.engine)
+    # with app.app_context():
+    #     inspector = inspect(db.engine)
 
-    if not inspector.has_table("student"):
-        print("Creating tables...")
-        db.create_all()
-        print("Tables created")
+    #     if not inspector.has_table("student"):
+    #         print("Creating tables...")
+    #         db.create_all()
+    #         print("Tables created")
 
-        print("Running seed data...")
-        create_subject_classes()
-        create_teacher_school_records()
-        create_student_school_records()
-        associate_teachers_to_subjects()
-        db.session.commit()
-        print("Seed complete")
-    else:
-        print("Database already seeded. Skipping.")
+    #         print("Running seed data...")
+    #         create_subject_classes()
+    #         create_teacher_school_records()
+    #         create_student_school_records()
+    #         associate_teachers_to_subjects()
+    #         db.session.commit()
+    #         print("Seed complete")
+    #     else:
+    #         print("Database already seeded. Skipping.")
 
         
 
