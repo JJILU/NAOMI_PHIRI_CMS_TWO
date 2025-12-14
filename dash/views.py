@@ -1680,11 +1680,13 @@ def update_attendance(id):
         db.session.commit()
         return render_template("attendance/update_attendance.html",
                                attendance=attendance,
-                               success="Attendance updated successfully!")
+                               success="Attendance updated successfully!",
+                               student=student
+                               )
 
     return render_template("attendance/update_attendance.html", attendance=attendance,student=student)
 
-# delete one attendance for student
+# delete attendance record for student
 @dash_bp.route("/attendance/delete/<int:id>", methods=["GET", "POST"])
 @role_required("teacher", "admin")
 def delete_attendance(id):
@@ -1692,9 +1694,11 @@ def delete_attendance(id):
     from auth.models import StudentSchoolRecord
 
     attendance = StudentAttendance.query.get_or_404(id)
-    student = StudentSchoolRecord.query.get_or_404(attendance.student_school_record_id)
+    student = StudentSchoolRecord.query.get_or_404(
+        attendance.student_school_record_id
+    )
 
-    # ------------------ WHEN USER CONFIRMS ------------------
+    # ----------- DELETE AFTER CONFIRM -----------
     if request.method == "POST":
         try:
             db.session.delete(attendance)
@@ -1702,26 +1706,25 @@ def delete_attendance(id):
 
             return render_template(
                 "attendance/delete_attendance.html",
-                success="Attendance deleted successfully!",
-                student=student,
-                student_id=student.id
+                success=True,
+                student=student
             )
-        except Exception:
+        except Exception as e:
             db.session.rollback()
+            print("DELETE ERROR:", e)
             return render_template(
                 "attendance/delete_attendance.html",
-                error="Failed to delete attendance. Server error occurred.",
-                student_id=student.id,
+                error=True,
                 student=student
             )
 
-    # ------------------ FIRST VISIT (CONFIRM PAGE) ------------------
+    # ----------- CONFIRM PAGE -----------
     return render_template(
         "attendance/delete_attendance.html",
+        confirm=True,
         attendance=attendance,
-        student=student,
+        student=student
     )
-
 
 
 # -------------------- END ATTENDANCE ----------------------------------------------------------

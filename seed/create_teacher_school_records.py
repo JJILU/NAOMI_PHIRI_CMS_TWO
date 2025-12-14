@@ -1,28 +1,20 @@
-from extensions import db,faker
+# seed/create_teacher_school_records.py
+from extensions import db, faker
 from auth.models import TeacherSchoolRecord
-from app import create_app
-
-
-flask_app = create_app()
 
 def create_teacher_school_records():
-    for _ in range(10):
-        new_teacher = TeacherSchoolRecord(
-            first_name=faker.first_name(),
-            last_name=faker.last_name(),
-            card_id=faker.generate_teacher_id()
-        )
-        db.session.add(new_teacher)
-    db.session.commit()   
-
-
-with flask_app.app_context():
+    """Creates 10 random teacher records."""
+    
     try:
-        create_teacher_school_records()
-        print("created teacher records successfully")
+        for _ in range(10):
+            teacher = TeacherSchoolRecord(
+                first_name=faker.first_name(),
+                last_name=faker.last_name(),
+                card_id=faker.generate_teacher_id()
+            )
+            db.session.add(teacher)
+        db.session.commit()
+        print("Teacher records created successfully.")
     except Exception as e:
         db.session.rollback()
-        print(f"Failed to create teachers & students error occured {str(e)}")
-        
-            
-
+        print(f"Failed to create teacher records: {e}")

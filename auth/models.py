@@ -22,7 +22,9 @@ class TeacherSchoolRecord(db.Model):
         "Teacher",
         backref="teacherschoolrecord",
         uselist=False,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
 
     # many : many relationship
@@ -30,14 +32,16 @@ class TeacherSchoolRecord(db.Model):
         "CompulsarySubject",
         secondary=teacherschoolrecord_compulsarysubject,
         overlaps="teacherschoolrecords",
-        lazy="joined"
+        lazy="joined",
+        passive_deletes=True
         )
     
     optionalsubject = db.relationship(
         "OptionalSubject",
         secondary=teacherschoolrecord_optionalsubject,
         overlaps="teacherschoolrecords",
-        lazy="joined"
+        lazy="joined",
+        passive_deletes=True
         )
     
     # one : one relationship
@@ -45,7 +49,9 @@ class TeacherSchoolRecord(db.Model):
         "AvatorFileUpload",
          backref="teacher_school_record",
          uselist=False,
-         lazy="joined"
+         lazy="joined",
+         cascade="all, delete-orphan",
+         passive_deletes=True
         )
     
 
@@ -75,20 +81,25 @@ class StudentSchoolRecord(db.Model):
         "Student",
         backref="student",
         uselist=False,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
+    
     admin = db.relationship(
         "Admin",
         backref="admin",
         uselist=False,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
     # one : many relationship
     classroom_id = db.Column(
         db.Integer,
-        db.ForeignKey('classroom.id'),
-        nullable=False
+        db.ForeignKey('classroom.id', ondelete="CASCADE"),
+        nullable=True
     )
 
     # one : many relationship
@@ -96,7 +107,9 @@ class StudentSchoolRecord(db.Model):
         "StudentGrade",
         backref="student_record",
         uselist=True,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
      # one : many relationship
@@ -104,7 +117,9 @@ class StudentSchoolRecord(db.Model):
         "StudentAttendance",
         backref="student_record",
         uselist=True,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
 
     # one : one relationship
@@ -112,7 +127,9 @@ class StudentSchoolRecord(db.Model):
         "AvatorFileUpload",
          backref="student_school_record",
          uselist=False,
-         lazy="joined"
+         lazy="joined",
+         cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
     # one : many
@@ -120,7 +137,9 @@ class StudentSchoolRecord(db.Model):
         "StudentAssignmentSubmission",
         backref="student_school_record",
         uselist=True,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
     def __repr__(self) -> str:
@@ -153,14 +172,14 @@ class AvatorFileUpload(db.Model):
     # fk
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey('student_school_record.id'),
+        db.ForeignKey('student_school_record.id', ondelete="CASCADE"),
         nullable=True,
         unique=True
         )
     
     teacher_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey('teacher_school_record.id'), 
+        db.ForeignKey('teacher_school_record.id',ondelete="CASCADE"), 
         nullable=True,
         unique=True
         )
@@ -190,7 +209,7 @@ class Teacher(db.Model,UserMixin):
     # fk
     teacher_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey("teacher_school_record.id"),
+        db.ForeignKey("teacher_school_record.id",ondelete="CASCADE"),
         unique=True,
         nullable=False
         )
@@ -250,7 +269,7 @@ class Admin(db.Model,UserMixin):
 
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey("student_school_record.id"),
+        db.ForeignKey("student_school_record.id", ondelete="CASCADE"),
         unique=True,
         nullable=False
         )
@@ -309,7 +328,7 @@ class Student(db.Model,UserMixin):
     # fk
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey("student_school_record.id"),
+        db.ForeignKey("student_school_record.id",ondelete="CASCADE"),
         unique=True,
         nullable=False
         )

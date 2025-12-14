@@ -1,19 +1,21 @@
 from extensions import db
 from datetime import datetime
 
+
+
 # ==================== MANY-TO-MANY TABLES ======================
 
 compulsarysubject_class = db.Table(
     "compulsarysubject_class",
-    db.Column("classroom_id", db.Integer, db.ForeignKey("classroom.id"), primary_key=True),
-    db.Column("subject_id", db.Integer, db.ForeignKey("compulsary_subject.id"), primary_key=True),
+    db.Column("classroom_id", db.Integer, db.ForeignKey("classroom.id",ondelete="CASCADE"), primary_key=True),
+    db.Column("subject_id", db.Integer, db.ForeignKey("compulsary_subject.id",ondelete="CASCADE"), primary_key=True),
 )
 
 
 teacherschoolrecord_compulsarysubject = db.Table(
     "teacherschoolrecord_compulsarysubject",
-    db.Column("compulsary_subject_id", db.Integer, db.ForeignKey("compulsary_subject.id"), primary_key=True),
-    db.Column("teacherschoolrecord_id", db.Integer, db.ForeignKey("teacher_school_record.id"), primary_key=True),
+    db.Column("compulsary_subject_id", db.Integer, db.ForeignKey("compulsary_subject.id",ondelete="CASCADE"), primary_key=True),
+    db.Column("teacherschoolrecord_id", db.Integer, db.ForeignKey("teacher_school_record.id",ondelete="CASCADE"), primary_key=True),
 )
 
 
@@ -99,20 +101,28 @@ class Classroom(db.Model):
     student_school_record = db.relationship(
         "StudentSchoolRecord", 
         backref="classroom", 
-        lazy="joined")
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+        )
     
     # one-to-many: ClassAssignment.classroom_id must exist (added in dash.models)
     class_assignments = db.relationship(
         "ClassAssignment", 
         backref="classroom", 
         lazy="joined",
-        uselist=True
+        uselist=True,
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
     study_material = db.relationship(
         "StudyMaterial", 
         backref="classroom", 
-        lazy="joined")
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+        )
 
     def __init__(self, classroom_name) -> None:
         self.classroom_name = classroom_name
@@ -136,7 +146,7 @@ class StudentAttendance(db.Model):
     # Keep FK unchanged
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey('student_school_record.id'),
+        db.ForeignKey('student_school_record.id', ondelete="CASCADE"),
         nullable=False
     )
 
@@ -162,7 +172,7 @@ class StudentGrade(db.Model):
     # fk
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey('student_school_record.id'),
+        db.ForeignKey('student_school_record.id', ondelete="CASCADE"),
         nullable=False
         )
     
@@ -200,20 +210,24 @@ class ClassAssignment(db.Model):
         "AssignmentFileUpload",
         backref="class_assignment",
         uselist=True,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
     assignment_submisssion_file_uploads = db.relationship(
         "StudentAssignmentSubmission",
         backref="class_assignment",
         uselist=True,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
     # fk
     classroom_id = db.Column(
         db.Integer,
-        db.ForeignKey('classroom.id'),
+        db.ForeignKey('classroom.id', ondelete="CASCADE"),
         )
     
     def __init__(self,assignment_name,assignment_subject_Name,assignment_subject_code,classroom_id) -> None:
@@ -236,8 +250,9 @@ class AssignmentFileUpload(db.Model):
     # fk
     class_assignment_id = db.Column(
         db.Integer,
-        db.ForeignKey('class_assignment.id'),
-        nullable=False)
+        db.ForeignKey('class_assignment.id', ondelete="CASCADE"),
+        nullable=False
+        )
     
 
     def __repr__(self) -> str:
@@ -274,13 +289,15 @@ class StudentAssignmentSubmission(db.Model):
         "AssignmentSubmisssionFileUpload",
         backref="student_assignment_submission",
         uselist=True,
-        lazy="joined"
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True
         )
     
     # fk
     student_school_record_id = db.Column(
         db.Integer,
-        db.ForeignKey("student_school_record.id"),
+        db.ForeignKey("student_school_record.id", ondelete="CASCADE"),
         nullable=False
     )
 
@@ -324,7 +341,7 @@ class AssignmentSubmisssionFileUpload(db.Model):
     # fk
     student_assignment_submission_id = db.Column(
         db.Integer,
-        db.ForeignKey('student_assignment_submission.id'),
+        db.ForeignKey('student_assignment_submission.id',ondelete="CASCADE"),
         nullable=False
         )
     
@@ -358,7 +375,8 @@ class StudyMaterial(db.Model):
         "StudyMaterialFileUpload",
         backref="material",
         lazy="joined",
-        cascade="all, delete"
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
     def __init__(self, title, description, classroom_id, teacher_id):
@@ -378,8 +396,8 @@ class StudyMaterialFileUpload(db.Model):
 
     study_material_id = db.Column(
         db.Integer,
-        db.ForeignKey("study_material.id"),
-        nullable=False
+        db.ForeignKey("study_material.id",ondelete="CASCADE"),
+        nullable=True
     )
 
     def __init__(self, filename, filepath, study_material_id):
