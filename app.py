@@ -68,7 +68,8 @@ def create_app():
     #     print("SQLALCHEMY_DATABASE_URI =", uri)
 
     # MySQL connection URI for SQLAlchemy
-    uri = "mysql+pymysql://root:arQDTtHhHareIPehomBlRCPdBnruZbCg@mysql.railway.internal:3306/railway"
+    # uri = "mysql+pymysql://root:arQDTtHhHareIPehomBlRCPdBnruZbCg@mysql.railway.internal:3306/railway"
+    uri = "mysql+pymysql://root:arQDTtHhHareIPehomBlRCPdBnruZbCg@gondola.proxy.rlwy.net:11182/railway"
 
     print("SQLALCHEMY_DATABASE_URI =", uri)
 
