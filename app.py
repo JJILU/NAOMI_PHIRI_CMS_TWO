@@ -49,7 +49,7 @@ def create_app():
         raise Exception("This is a forced 500 error!")
 
     # ===================== DATABASE CONFIG =====================
-    print(os.environ.get("FLASK_ENV"))
+    print("flask env>>",os.environ.get("FLASK_ENV"))
     # Check if we are in production
     if os.environ.get("FLASK_ENV") == "production":
         # Use MySQL
