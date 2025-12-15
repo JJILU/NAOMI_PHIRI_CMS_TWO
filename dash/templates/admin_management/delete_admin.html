@@ -8,7 +8,7 @@
           <nav aria-label="breadcrumb">
               <ol class="breadcrumb">
                   <li class="breadcrumb-item"><a href="{{ url_for('dash.index') }}">Home</a></li>
-                  <li class="breadcrumb-item"><a href="{{ url_for('dash.view_admins') }}">Admins</a></li>
+                  <li class="breadcrumb-item"><a href="{{ url_for('dash.view_cms_admins') }}">Admins</a></li>
                   <li class="breadcrumb-item active" aria-current="page">Delete Admin</li>
               </ol>
           </nav>
@@ -27,11 +27,11 @@
       <div class="alert alert-success">{{ success }}</div>
       {% endif %}
 
-      <p>Are you sure you want to delete admin <strong>{{ admin.student_school_record.first_name }} {{ admin.student_school_record.last_name }}</strong>?</p>
+      <p>Are you sure you want to delete admin <strong>{{ admin.admin.first_name }} {{ admin.admin.last_name }}</strong>?</p>
 
       <form method="POST">
         <button type="submit" class="btn btn-danger">Yes, Delete Admin</button>
-        <a href="{{ url_for('dash.view_admins') }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ url_for('dash.view_cms_admins') }}" class="btn btn-secondary">Cancel</a>
       </form>
 
     </div>

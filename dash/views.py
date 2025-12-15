@@ -220,7 +220,7 @@ def update_admin(id):
             admin.hashed_password = generate_password_hash(password)
             db.session.commit()
             success = "Admin password updated successfully."
-            return redirect(url_for("dash.view_admins"))
+            return redirect(url_for("dash.view_cms_admins"))
 
     return render_template("admin_management/update_admin.html", admin=admin, error=error, success=success)
 
