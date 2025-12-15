@@ -26,93 +26,68 @@
         <div class="card-body">
           <h4 class="card-title mb-4">New Assignment</h4>
 
-          {% if error %}
-            <div class="alert alert-danger">{{ error }}</div>
-          {% endif %}
-          {% if success %}
-            <div class="alert alert-success">{{ success }}</div>
-          {% endif %}
-
+          {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+          {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
+    
           <form method="POST" enctype="multipart/form-data">
+    
             <div class="mb-3">
-              <label for="assignment_name" class="form-label">Assignment Name</label>
-              <input type="text" class="form-control" id="assignment_name" name="assignment_name" required>
+              <label>Assignment Name</label>
+              <input type="text" name="assignment_name" class="form-control" required>
             </div>
-
+    
             <div class="mb-3">
-              <label class="form-label">Subject Type</label>
-              <select class="form-select" id="subject_type" name="subject_type" required onchange="loadSubjects(this.value)">
-                <option value="">Select Type</option>
+              <label>Subject Type</label>
+              <select name="subject_type" class="form-select" required>
+                <option value="">Select</option>
                 <option value="compulsary">Compulsary</option>
                 <option value="optional">Optional</option>
               </select>
             </div>
-
+    
             <div class="mb-3">
-              <label class="form-label">Subject</label>
-              <select class="form-select" id="subject_id" name="subject_id" required onchange="loadClassrooms(this.value)">
-                <option value="">Select Subject</option>
+              <label>Subject</label>
+              <select name="subject_id" class="form-select" required>
+                <optgroup label="Compulsary">
+                  {% for s in compulsary_subs %}
+                    <option value="{{ s.id }}">{{ s.subject_name }}</option>
+                  {% endfor %}
+                </optgroup>
+                <optgroup label="Optional">
+                  {% for s in optional_subs %}
+                    <option value="{{ s.id }}">{{ s.subject_name }}</option>
+                  {% endfor %}
+                </optgroup>
               </select>
             </div>
-
+    
+            <!-- SAME AS STUDY MATERIAL -->
             <div class="mb-3">
-              <label class="form-label">Classroom</label>
-              <select class="form-select" id="classroom_id" name="classroom_id" required>
+              <label>Classroom</label>
+              <select name="classroom_id" class="form-select" required>
                 <option value="">Select Classroom</option>
+                {% for c in classrooms %}
+                  <option value="{{ c.id }}">{{ c.classroom_name }}</option>
+                {% endfor %}
               </select>
             </div>
-
+    
             <div class="mb-3">
-              <label class="form-label">Due Date</label>
-              <input type="date" class="form-control" name="due_date" required>
+              <label>Due Date</label>
+              <input type="date" name="due_date" class="form-control" required>
             </div>
-
+    
             <div class="mb-3">
-              <label class="form-label">Upload Files</label>
-              <input type="file" class="form-control" name="files" multiple>
+              <label>Files</label>
+              <input type="file" name="files" multiple class="form-control">
             </div>
-
-            <button type="submit" class="btn btn-primary w-100">Create Assignment</button>
+    
+            <button class="btn btn-primary w-100">Create Assignment</button>
           </form>
+    
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-// Use JSON-safe data from backend
-const compulsarySubs = {{ compulsary_subs|tojson }};
-const optionalSubs = {{ optional_subs|tojson }};
-
-// Load subjects dropdown based on type
-function loadSubjects(type) {
-    const subjectSelect = document.getElementById("subject_id");
-    subjectSelect.innerHTML = '<option value="">Select Subject</option>';
-    const subjects = type === 'compulsary' ? compulsarySubs : optionalSubs;
-    subjects.forEach(s => {
-        subjectSelect.innerHTML += `<option value="${s.id}">${s.subject_name} (${s.subject_code})</option>`;
-    });
-    // Reset classroom dropdown
-    document.getElementById("classroom_id").innerHTML = '<option value="">Select Classroom</option>';
-}
-
-// Load classrooms for selected subject via AJAX
-function loadClassrooms(subjectId) {
-    const type = document.getElementById("subject_type").value;
-    if (!subjectId || !type) return;
-
-    fetch(`/dash/subject/${type}/${subjectId}/classrooms`)
-      .then(res => res.json())
-      .then(data => {
-          const classroomSelect = document.getElementById("classroom_id");
-          classroomSelect.innerHTML = '<option value="">Select Classroom</option>';
-          data.forEach(c => {
-              classroomSelect.innerHTML += `<option value="${c.id}">${c.classroom_name}</option>`;
-          });
-      })
-      .catch(err => console.error("Error loading classrooms:", err));
-}
-</script>
-
-{% endblock %}

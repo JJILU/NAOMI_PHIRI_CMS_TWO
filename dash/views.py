@@ -609,23 +609,31 @@ def list_assignments():
 # 3. CREATE ASSIGNMENT
 # ----------------------------------------------------
 
-
 @dash_bp.route("/assignments/create", methods=["GET", "POST"])
+@login_required
 def create_assignment():
     from dash.models import (
-        ClassAssignment, AssignmentFileUpload,
-        CompulsarySubject, OptionalSubject
+        ClassAssignment,
+        AssignmentFileUpload,
+        CompulsarySubject,
+        OptionalSubject,
+        Classroom
     )
     from auth.models import TeacherSchoolRecord
     from extensions import db
-    from flask import current_app, request, render_template
-    import os
+    from flask import request, render_template, current_app
+    from flask_login import current_user
     from werkzeug.utils import secure_filename
     from datetime import datetime
-    from flask_login import current_user
+    import os
 
     # ------------------------------
-    # Get teacher's subjects
+    # Load classrooms (SAME AS STUDY MATERIAL)
+    # ------------------------------
+    classrooms = Classroom.query.all()
+
+    # ------------------------------
+    # Teacher subjects
     # ------------------------------
     teacher_record = TeacherSchoolRecord.query.filter_by(
         card_id=current_user.teacherschoolrecord.card_id  # type: ignore
@@ -634,118 +642,69 @@ def create_assignment():
     compulsary_subs = teacher_record.compulsarysubject
     optional_subs = teacher_record.optionalsubject
 
-    # Serialize subjects for JS
-    compulsary_subs_json = [
-        {"id": s.id, "subject_name": s.subject_name, "subject_code": s.subject_code}
-        for s in compulsary_subs
-    ]
-    optional_subs_json = [
-        {"id": s.id, "subject_name": s.subject_name, "subject_code": s.subject_code}
-        for s in optional_subs
-    ]
-
-    print()
-
     error = None
     success = None
 
     if request.method == "POST":
         try:
-            assignment_name = request.form.get("assignment_name").strip()
+            assignment_name = request.form.get("assignment_name")
             subject_type = request.form.get("subject_type")
             subject_id = int(request.form.get("subject_id"))
             classroom_id = int(request.form.get("classroom_id"))
             due_date = request.form.get("due_date")
 
-            created_date = datetime.utcnow().strftime("%Y-%m-%d")
-            if due_date < created_date:
-                error = "Due date must be greater than today's date."
-                raise ValueError(error)
-
-            # Get subject
+            # Subject model
             subject_cls = CompulsarySubject if subject_type == "compulsary" else OptionalSubject
             subject = subject_cls.query.get_or_404(subject_id)
 
-            # Create assignment
-            new_assign = ClassAssignment(
+            assignment = ClassAssignment(
                 assignment_name=assignment_name,
                 assignment_subject_Name=subject.subject_name,
                 assignment_subject_code=subject.subject_code,
                 classroom_id=classroom_id
             )
-            db.session.add(new_assign)
-            db.session.commit()
-            print(f"[DEBUG] Assignment created: {new_assign.assignment_name}")
 
-            # Upload files
+            db.session.add(assignment)
+            db.session.commit()
+
+            # ------------------------------
+            # Files
+            # ------------------------------
             files = request.files.getlist("files")
-            upload_folder = current_app.config.get(
-                "ASSIGNMENT_UPLOAD", "uploads/assignments")
-            os.makedirs(upload_folder, exist_ok=True)
+            upload_dir = current_app.config.get(
+                "ASSIGNMENT_UPLOAD", "uploads/assignments"
+            )
+            os.makedirs(upload_dir, exist_ok=True)
 
             for f in files:
                 if f.filename:
                     filename = secure_filename(f.filename)
-                    dest = os.path.join(
-                        upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
-                    f.save(dest)
+                    path = os.path.join(upload_dir, filename)
+                    f.save(path)
 
-                    file_record = AssignmentFileUpload(
+                    db.session.add(AssignmentFileUpload(
                         original_name=f.filename,
-                        filename=os.path.basename(dest),
-                        filepath=os.path.relpath(dest, start=os.getcwd()),
-                        class_assignment_id=new_assign.id
-                    )
-                    db.session.add(file_record)
+                        filename=filename,
+                        filepath=filename,
+                        class_assignment_id=assignment.id
+                    ))
 
             db.session.commit()
             success = "Assignment created successfully."
-            print("[DEBUG] Files uploaded and DB updated")
 
         except Exception as e:
-            print("[DEBUG] Error creating assignment:", e)
-            if not error:
-                error = str(e)
+            db.session.rollback()
+            error = str(e)
 
     return render_template(
         "assignment/create_assignment.html",
-        compulsary_subs=compulsary_subs_json,
-        optional_subs=optional_subs_json,
+        compulsary_subs=compulsary_subs,
+        optional_subs=optional_subs,
+        classrooms=classrooms,
         error=error,
         success=success
     )
 
-
-# ----------------------------------------------------
-# AJAX – GET CLASSROOMS FOR SUBJECT
-# ----------------------------------------------------
-@dash_bp.route("/subject/<subject_type>/<int:subject_id>/classrooms", methods=["GET"])
-def get_subject_classrooms(subject_type, subject_id):
-    from dash.models import CompulsarySubject, OptionalSubject
-    from flask import jsonify
-
-    print(
-        f"[DEBUG] Classroom request: subject_type={subject_type}, subject_id={subject_id}")
-
-    subject_cls = CompulsarySubject if subject_type == "compulsary" else OptionalSubject
-    subject = subject_cls.query.get(subject_id)
-    if not subject:
-        print(f"[DEBUG] Subject NOT found for id={subject_id}")
-        return jsonify([])
-
-    if hasattr(subject, "classrooms"):
-        classrooms = subject.classrooms.all() if hasattr(
-            subject.classrooms, "all") else subject.classrooms
-        classrooms_data = [
-            {"id": c.id, "classroom_name": c.classroom_name} for c in classrooms]
-        print(f"[DEBUG] Classrooms loaded: {classrooms_data}")
-    else:
-        classrooms_data = []
-        print("[DEBUG] Subject has no classrooms attribute")
-
-        print("my debug classes", classrooms_data)
-
-    return jsonify(classrooms_data)
 
 
 # ----------------------------------------------------
