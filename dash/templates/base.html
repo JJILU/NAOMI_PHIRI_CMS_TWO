@@ -378,7 +378,8 @@
                              role="button"
                              >
                       
-                              <img src="https://res.cloudinary.com/db3wztm1j/image/upload/v1765869688/placeholder_laxheb.jpg"
+                              <img src="{{ url_for('dash.uploaded_avator_photo',
+                                  filename=record.teacher_avator.filename if record.teacher_avator else 'placeholder.png') }}"
                                   class="profile-pic me-2"
                                   width="40" height="40">
                       

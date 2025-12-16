@@ -743,7 +743,7 @@ def update_assignment(id):
 
         for f in files:
             if f and allowed_file(f.filename):
-                filename = secure_filename(f.filename)
+                filename = secure_filename(f.filename) # type: ignore
                 dest = os.path.join(
                     upload_folder, f"{datetime.utcnow().timestamp():.0f}_{filename}")
                 f.save(dest)
@@ -851,11 +851,11 @@ def student_submission_assignments():
     # ----------------------------------------------------
     if hasattr(current_user, "student") and current_user.student:
         # logged in user is a Student
-        student_record = current_user.student
+        student_record = current_user.student # type: ignore
 
     elif hasattr(current_user, "admin") and current_user.admin:
         # logged in user is an Admin
-        student_record = current_user.admin
+        student_record = current_user.admin # type: ignore
 
     else:
         return redirect(url_for("dash.index"))
