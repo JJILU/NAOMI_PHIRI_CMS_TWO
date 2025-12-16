@@ -11,7 +11,8 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 
 
-from flask_socketio import SocketIO, join_room, leave_room, send
+# upload files to cloudinary import
+import cloudinary.uploader
 
 
 from . import dash_bp
@@ -671,21 +672,32 @@ def create_assignment():
             # Files
             # ------------------------------
             files = request.files.getlist("files")
-            upload_dir = current_app.config.get(
-                "ASSIGNMENT_UPLOAD", "uploads/assignments"
-            )
-            os.makedirs(upload_dir, exist_ok=True)
+            # upload_dir = current_app.config.get(
+            #     "ASSIGNMENT_UPLOAD", "uploads/assignments"
+            # )
+            # os.makedirs(upload_dir, exist_ok=True)
+            upload_dir = current_app.config.get("ASSIGNMENT_UPLOAD")
+            os.makedirs(upload_dir, exist_ok=True)  # type: ignore
 
             for f in files:
                 if f.filename:
                     filename = secure_filename(f.filename)
-                    path = os.path.join(upload_dir, filename)
-                    f.save(path)
+                    # path = os.path.join(upload_dir, filename)
+                    # f.save(path)
+
+                    result = cloudinary.uploader.upload(
+                                f,
+                                folder="assignment_upload",
+                                resource_type="auto"
+                            )
+
+                            
+
 
                     db.session.add(AssignmentFileUpload(
                         original_name=f.filename,
                         filename=filename,
-                        filepath=filename,
+                        filepath=result["secure_url"],
                         class_assignment_id=assignment.id
                     ))
 

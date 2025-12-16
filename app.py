@@ -8,12 +8,18 @@ from config import Config
 from sqlalchemy import text, event
 from sqlalchemy import inspect,Engine
 
+import cloudinary
+
+
 # Import seed scripts
 from seed.create_tables import create_tables
 from seed.create_subjects_classes import create_subject_classes
 from seed.create_teacher_school_records import create_teacher_school_records
 from seed.create_students_school_records import create_student_school_records
 from seed.associate_teachers_to_subjects import associate_teachers_to_subjects
+
+# load .ev variables
+from dotenv import load_dotenv
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -106,6 +112,17 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*")
+
+    # ================= CLOUDINARY =================
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        secure=True
+    )
+
+    print(os.getenv("CLOUDINARY_CLOUD_NAME"),os.getenv("CLOUDINARY_API_KEY"),os.getenv("CLOUDINARY_API_SECRET"))
+
 
     # ===================== CHECK DATABASE =====================
     # with app.app_context():

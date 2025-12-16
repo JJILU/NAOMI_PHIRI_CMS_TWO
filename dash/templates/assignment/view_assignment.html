@@ -40,9 +40,7 @@
                         <ul>
                             {% for f in assignment.assignment_file_uploads %}
                                 <li>
-                                    <a href="{{ url_for('dash.download_file', file_id=f.id) }}" target="_blank">
-                                        {{ f.original_name }}
-                                    </a>
+                                    <a href="{{ f.filepath }}" target="_blank">{{ f.original_name }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
